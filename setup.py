@@ -109,7 +109,7 @@ setup(
     url=URL,
     packages=find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"]), # ['clipexplorer', 'clipexplorer.CLOOB_local'],
     # If your package is a single module, use this instead of 'packages':
-    # py_modules=['mypackage'],
+    py_modules=['clipexplorer'],
 
     # entry_points={
     #     'console_scripts': ['mycli=mymodule:cli'],

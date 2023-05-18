@@ -9,6 +9,7 @@ from .CLOOB_local.clip.model import CLIPGeneral
 from .CLOOB_local.cloob_training import model_pt, pretrained
 from torchvision import transforms
 import requests
+from tqdm import tqdm
 
 print("local")
 
@@ -31,7 +32,6 @@ class CLIPModelInterface:
 
 
 def checkpoint_download_helper(url, name):
-
     checkpoint_dir = 'checkpoints/'
     if not os.path.exists(checkpoint_dir):
         os.makedirs(checkpoint_dir)
@@ -39,8 +39,17 @@ def checkpoint_download_helper(url, name):
     checkpoint = checkpoint_dir + name
     if not os.path.exists(checkpoint):
         print('model checkpoint not found. downloading (could take up to 5 min)...')
-        checkpoint_file = requests.get(url)
-        open(checkpoint, 'wb').write(checkpoint_file.content)
+
+        response = requests.get(url, stream=True)
+        total_size = int(response.headers.get('content-length', 0))
+
+        with open(name, 'wb') as file:
+            with tqdm(total=total_size, unit='B', unit_scale=True) as progress_bar:
+                for data in response.iter_content(chunk_size=4096):
+                    file.write(data)
+                    progress_bar.update(len(data))
+        # checkpoint_file = requests.get(url)
+        # open(checkpoint, 'wb').write(checkpoint_file.content)
 
     return checkpoint
     

@@ -19,7 +19,7 @@ URL = 'https://github.com/ginihumer/CLIP-explorer'
 EMAIL = 'ginihumer96@yahoo.de'
 AUTHOR = 'Gin'
 REQUIRES_PYTHON = '>=3.9.16'
-VERSION = '0.1.6'
+VERSION = '0.1.7'
 
 # What packages are required for this module to be executed?
 # TODO: update the required packages
@@ -107,7 +107,7 @@ setup(
     author_email=EMAIL,
     python_requires=REQUIRES_PYTHON,
     url=URL,
-    packages=['clipexplorer'],#find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"]),
+    packages=['clipexplorer', 'clipexplorer.CLOOB_local'],#find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"]),
     # If your package is a single module, use this instead of 'packages':
     # py_modules=['mypackage'],
 

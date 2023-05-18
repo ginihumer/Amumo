@@ -19,7 +19,7 @@ URL = 'https://github.com/ginihumer/CLIP-explorer'
 EMAIL = 'ginihumer96@yahoo.de'
 AUTHOR = 'Gin'
 REQUIRES_PYTHON = '>=3.9.16'
-VERSION = '0.1.19'
+VERSION = '0.1.20'
 
 # What packages are required for this module to be executed?
 # TODO: update the required packages
@@ -27,7 +27,8 @@ REQUIRED = [
     'clip @ git+https://github.com/openai/CLIP.git@a9b1bf5920416aaeaec965c25dd9e8f98c864f16',
     'open-clip-torch==2.20.0',
     'datasets==2.12.0',
-    'webdataset==0.2.48'
+    'webdataset==0.2.48',
+    'numpy==1.23.5',
 ]
 
 # What packages are optional?

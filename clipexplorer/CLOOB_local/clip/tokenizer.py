@@ -9,8 +9,7 @@ import regex as re
 
 @lru_cache()
 def default_bpe():
-    return 'https://github.com/ml-jku/cloob/blob/master/src/clip/bpe_simple_vocab_16e6.txt.gz'
-    # return os.path.join(os.path.dirname(os.path.abspath(__file__)), "bpe_simple_vocab_16e6.txt.gz")
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), "bpe_simple_vocab_16e6.txt.gz")
 
 
 @lru_cache()
@@ -64,7 +63,10 @@ class SimpleTokenizer(object):
     def __init__(self, bpe_path: str = default_bpe(), special_tokens=None):
         self.byte_encoder = bytes_to_unicode()
         self.byte_decoder = {v: k for k, v in self.byte_encoder.items()}
-        merges = gzip.open(bpe_path).read().decode("utf-8").split('\n')
+        import requests
+        response = requests.get('https://github.com/ml-jku/cloob/blob/master/src/clip/bpe_simple_vocab_16e6.txt.gz', stream=True)
+        merges = gzip.open(response.raw).read().decode("utf-8").split('\n')
+        # merges = gzip.open(bpe_path).read().decode("utf-8").split('\n')
         merges = merges[1:49152-256-2+1]
         merges = [tuple(merge.split()) for merge in merges]
         vocab = list(bytes_to_unicode().values())

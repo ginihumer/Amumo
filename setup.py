@@ -24,7 +24,10 @@ VERSION = '0.1.5'
 # What packages are required for this module to be executed?
 # TODO: update the required packages
 REQUIRED = [
-    'pillow==9.1.0',
+    'clip @ git+https://github.com/openai/CLIP.git@a9b1bf5920416aaeaec965c25dd9e8f98c864f16',
+    'open-clip-torch==2.20.0',
+    'img2dataset==1.41.0',
+    'datasets==2.12.0',
 ]
 
 # What packages are optional?

@@ -11,8 +11,8 @@ from PIL import Image
 from torchvision.transforms import Compose, Resize, CenterCrop, ToTensor, Normalize, RandomResizedCrop, InterpolationMode
 from tqdm import tqdm
 
-from CLOOB_local.clip.model import build_model
-from CLOOB_local.clip.tokenizer import SimpleTokenizer as _Tokenizer
+from .model import build_model
+from .tokenizer import SimpleTokenizer as _Tokenizer
 
 __all__ = ["available_models", "load", "tokenize"]
 _tokenizer = _Tokenizer()

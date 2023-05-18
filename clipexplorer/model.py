@@ -38,18 +38,16 @@ def checkpoint_download_helper(url, name):
     
     checkpoint = checkpoint_dir + name
     if not os.path.exists(checkpoint):
-        print('model checkpoint not found. downloading (could take up to 5 min)...')
+        print('model checkpoint not found. downloading...')
 
         response = requests.get(url, stream=True)
         total_size = int(response.headers.get('content-length', 0))
 
-        with open(name, 'wb') as file:
+        with open(checkpoint, 'wb') as file:
             with tqdm(total=total_size, unit='B', unit_scale=True) as progress_bar:
                 for data in response.iter_content(chunk_size=4096):
                     file.write(data)
                     progress_bar.update(len(data))
-        # checkpoint_file = requests.get(url)
-        # open(checkpoint, 'wb').write(checkpoint_file.content)
 
     return checkpoint
     

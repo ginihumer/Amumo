@@ -4,7 +4,7 @@ import numpy as np
 import torch
 import os
 import json
-from ..CLOOB_local import clip
+from .CLOOB_local import clip
 import CLOOB_local.clip.clip as cloob
 from CLOOB_local.clip.model import CLIPGeneral
 from CLOOB_local.cloob_training import model_pt, pretrained

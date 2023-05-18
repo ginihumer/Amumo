@@ -19,7 +19,7 @@ URL = 'https://github.com/ginihumer/CLIP-explorer'
 EMAIL = 'ginihumer96@yahoo.de'
 AUTHOR = 'Gin'
 REQUIRES_PYTHON = '>=3.9.16'
-VERSION = '0.1.11'
+VERSION = '0.1.12'
 
 # What packages are required for this module to be executed?
 # TODO: update the required packages

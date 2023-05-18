@@ -1,4 +1,4 @@
-from img2dataset import download
+# from img2dataset import download
 import os        
 import webdataset as wds
 from datasets import load_dataset
@@ -68,24 +68,24 @@ class MSCOCO_Dataset(DatasetInterface):
         self.all_images = np.array(self.all_images)
         self.all_prompts = np.array(self.all_prompts)
         
-    def download_dataset(self):
-        # TODO: check if this works
-        output_dir = os.path.abspath(self.path + self.output_name)
+    # def download_dataset(self):
+    #     # TODO: check if this works
+    #     output_dir = os.path.abspath(self.path + self.output_name)
 
-        download(
-            processes_count=16,
-            thread_count=32,
-            url_list=self.path+"mscoco.parquet",
-            image_size=256,
-            output_folder=output_dir,
-            output_format="webdataset",
-            input_format="parquet",
-            url_col="URL",
-            caption_col="TEXT",
-            enable_wandb=True,
-            number_sample_per_shard=1000,
-            distributor="multiprocessing",
-        )
+    #     download(
+    #         processes_count=16,
+    #         thread_count=32,
+    #         url_list=self.path+"mscoco.parquet",
+    #         image_size=256,
+    #         output_folder=output_dir,
+    #         output_format="webdataset",
+    #         input_format="parquet",
+    #         url_col="URL",
+    #         caption_col="TEXT",
+    #         enable_wandb=True,
+    #         number_sample_per_shard=1000,
+    #         distributor="multiprocessing",
+    #     )
     
 
 

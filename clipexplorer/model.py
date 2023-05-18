@@ -8,16 +8,18 @@ from .CLOOB_local.clip import clip as cloob
 from .CLOOB_local.clip.model import CLIPGeneral
 from .CLOOB_local.cloob_training import model_pt, pretrained
 from torchvision import transforms
+import requests
+
+print("local")
 
 class CLIPModelInterface:
     available_models = []
     model_name = 'interface'
 
-    def __init__(self, name, device, checkpoints_dir=None) -> None:
+    def __init__(self, name, device) -> None:
         assert name in self.available_models, 'choose one of ' + str(self.available_models)
         self.name=name
         self.device = device
-        self.checkpoints_dir = checkpoints_dir
     
     def encode_image(self):
         """Encode a batch of images to a CLIP embedding space"""
@@ -28,13 +30,27 @@ class CLIPModelInterface:
         pass
 
 
+def checkpoint_download_helper(url, name):
+
+    checkpoint_dir = 'checkpoints/'
+    if not os.path.exists(checkpoint_dir):
+        os.makedirs(checkpoint_dir)
+    
+    checkpoint = checkpoint_dir + name
+    if not os.path.exists(checkpoint):
+        print('model checkpoint not found. downloading (could take up to 5 min)...')
+        checkpoint_file = requests.get(url)
+        open(checkpoint, 'wb').write(checkpoint_file.content)
+
+    return checkpoint
+    
 
 class CLIPModel(CLIPModelInterface):
     available_models = clip.available_models()
     model_name = 'CLIP'
 
-    def __init__(self, name='RN50', device='cpu', checkpoints_dir=None) -> None:
-        super().__init__(name, device, checkpoints_dir)
+    def __init__(self, name='RN50', device='cpu') -> None:
+        super().__init__(name, device)
         self.model, self.preprocess = clip.load(name, device=device)
         self.model.eval()
 
@@ -73,10 +89,14 @@ class OpenCLIPModel(CLIPModelInterface):
 class CyCLIPModel(CLIPModel):
     available_models = ["RN50"]
     model_name = 'CyCLIP'
+    checkpoints = {
+        'cyclip-3M.pt': 'https://drive.google.com/uc?id=1nF33F3yjtiWr3bgllBXk5Wf07Uo7Uv9G&export=download&confirm=9_s_'
+    }
 
-    def __init__(self, name='RN50', device='cpu', checkpoints_dir='checkpoints') -> None:
-        super().__init__(name, device, checkpoints_dir=checkpoints_dir)
-        checkpoint = self.checkpoints_dir + '/cyclip-3M.pt' # 'i-cyclip.pt', 'c-cyclip.pt'
+    def __init__(self, name='RN50', device='cpu') -> None:
+        super().__init__(name, device)
+
+        checkpoint = checkpoint_download_helper(self.checkpoints['cyclip-3M.pt'],'cyclip-3M.pt') # 'i-cyclip.pt', 'c-cyclip.pt'
 
         state_dict = torch.load(checkpoint, map_location = device)["state_dict"]
         if(next(iter(state_dict.items()))[0].startswith("module")):
@@ -103,11 +123,16 @@ class PyramidCLIP(CLIPModelInterface): # TODO
 class CLOOB_Model(CLIPModelInterface):
     available_models = ['RN50', 'RN50x4']
     model_name = 'CLOOB'
+    checkpoints = {
+        'cloob_rn50_yfcc_epoch_28.pt': 'https://ml.jku.at/research/CLOOB/downloads/checkpoints/cloob_rn50_yfcc_epoch_28.pt',
+        'cloob_rn50x4_yfcc_epoch_28.pt': 'https://ml.jku.at/research/CLOOB/downloads/checkpoints/cloob_rn50x4_yfcc_epoch_28.pt'
+    }
 
-    def __init__(self, name='RN50', device='cpu', checkpoints_dir='checkpoints') -> None:
-        super().__init__(name, device, checkpoints_dir)
+    def __init__(self, name='RN50', device='cpu') -> None:
+        super().__init__(name, device)
 
-        checkpoint_path = checkpoints_dir + '/cloob_' + name.lower() + '_yfcc_epoch_28.pt' # cloob_rn50x4_yfcc_epoch_28.pt
+        ckpt_name = 'cloob_' + name.lower() + '_yfcc_epoch_28.pt' # cloob_rn50x4_yfcc_epoch_28.pt
+        checkpoint_path = checkpoint_download_helper(self.checkpoints[ckpt_name], ckpt_name)
         checkpoint = torch.load(checkpoint_path, map_location=device)
         model_config_file = os.path.join(os.path.dirname(__file__), 'CLOOB_local/training/model_configs/', checkpoint['model_config_file'])
 
@@ -140,8 +165,8 @@ class CLOOB_LAION400M_Model(CLIPModelInterface):
     available_models = ['ViT-B/16']
     model_name = 'CLOOB-LAION400M'
 
-    def __init__(self, name='ViT-B/16', device='cpu', checkpoints_dir=None) -> None:
-        super().__init__(name, device, checkpoints_dir)
+    def __init__(self, name='ViT-B/16', device='cpu') -> None:
+        super().__init__(name, device)
         
         # ['cloob_laion_400m_vit_b_16_16_epochs', 'cloob_laion_400m_vit_b_16_32_epochs']
         config = pretrained.get_config('cloob_laion_400m_vit_b_16_16_epochs')

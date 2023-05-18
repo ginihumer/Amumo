@@ -19,7 +19,7 @@ URL = 'https://github.com/ginihumer/CLIP-explorer'
 EMAIL = 'ginihumer96@yahoo.de'
 AUTHOR = 'Gin'
 REQUIRES_PYTHON = '>=3.9.16'
-VERSION = '0.1.23'
+VERSION = '0.1.24'
 
 # What packages are required for this module to be executed?
 # TODO: update the required packages
@@ -112,7 +112,7 @@ setup(
     packages=find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"]), # ['clipexplorer', 'clipexplorer.CLOOB_local'],
     # If your package is a single module, use this instead of 'packages':
     py_modules=['clipexplorer'],
-    package_data={'clipexplorer': ['CLOOB_local/clip/bpe_simple_vocab_16e6.txt.gz.csv', 'CLOOB_local/cloob_training/pretrained_configs/*.json', 'CLOOB_local/example_configs/*.json', 'CLOOB_local/training/model_configs/*.json']},
+    package_data={'clipexplorer': ['CLOOB_local/clip/bpe_simple_vocab_16e6.txt.gz', 'CLOOB_local/cloob_training/pretrained_configs/*.json', 'CLOOB_local/example_configs/*.json', 'CLOOB_local/training/model_configs/*.json']},
     # entry_points={
     #     'console_scripts': ['mycli=mymodule:cli'],
     # },

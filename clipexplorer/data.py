@@ -62,7 +62,7 @@ class MSCOCO_Dataset(DatasetInterface):
 
         # https://webdataset.github.io/webdataset/gettingstarted/
         url = "file:" + self.path + self.output_name + "/{00000..00591}.tar" # http://storage.googleapis.com/nvdata-openimages/openimages-train-000000.tar"
-        dataset = wds.WebDataset(url).shuffle(1000).decode("pil").rename(image="jpg;png;jpeg;webp", text="txt", json="json").to_tuple("image", "text").batched(1000)#.map_dict(image=preprocess, text=lambda text: clip.tokenize(text, truncate=True)[0], json=lambda json: json).to_tuple("image", "text", "json")
+        dataset = wds.WebDataset(url).shuffle(batch_size).decode("pil").rename(image="jpg;png;jpeg;webp", text="txt", json="json").to_tuple("image", "text").batched(batch_size)#.map_dict(image=preprocess, text=lambda text: clip.tokenize(text, truncate=True)[0], json=lambda json: json).to_tuple("image", "text", "json")
         dataloader = torch.utils.data.DataLoader(dataset, num_workers=4, batch_size=None)
         self.all_images, self.all_prompts = next(iter(dataloader))
         self.all_images = np.array(self.all_images)

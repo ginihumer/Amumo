@@ -28,6 +28,11 @@ REQUIRED = [
     'open-clip-torch==2.20.0',
     'datasets==2.12.0',
     'webdataset==0.2.48',
+    'plotly',
+    'ipywidgets',
+    'scikit-learn',
+    'openTSNE',
+    'umap-learn',
     'numpy==1.23.5',
 ]
 

@@ -19,7 +19,7 @@ URL = 'https://github.com/ginihumer/CLIP-explorer'
 EMAIL = 'ginihumer96@yahoo.de'
 AUTHOR = 'Gin'
 REQUIRES_PYTHON = '>=3.9.16'
-VERSION = '0.1.28'
+VERSION = '0.1.29'
 
 # What packages are required for this module to be executed?
 # TODO: update the required packages
@@ -29,7 +29,8 @@ REQUIRED = [
     'datasets==2.12.0',
     'webdataset==0.2.48',
     'plotly',
-    'ipywidgets',
+    'ipywidgets==8.0.6',
+    'ipykernel==6.23.1',
     'scikit-learn',
     'openTSNE',
     'umap-learn',

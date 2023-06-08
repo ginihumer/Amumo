@@ -14,20 +14,22 @@ from transformers import AutoProcessor, BlipModel
 
 class CLIPModelInterface:
     available_models = []
-    model_name = 'interface'
-    logit_scale = 100.
+    model_name = 'interface' 
+    logit_scale = torch.tensor(0) # defines the temperature parameter used for scaling the contrastive loss
 
     def __init__(self, name, device) -> None:
         assert name in self.available_models, 'choose one of ' + str(self.available_models)
         self.name=name
         self.device = device
     
-    def encode_image(self):
+    def encode_image(self, images):
         """Encode a batch of images to a CLIP embedding space"""
+        """images: a list of PIL images"""
         pass
 
-    def encode_text(self):
+    def encode_text(self, texts):
         """Encode a batch of texts to a CLIP embedding space"""
+        """texts: a list of strings"""
         pass
 
 
@@ -233,7 +235,7 @@ class CLOOB_LAION400M_Model(CLIPModelInterface):
 available_CLIP_models = {
         'CLIP': CLIPModel,
         'OpenCLIP': OpenCLIPModel,
-        'BLIP': BLIPModel,
+        # 'BLIP': BLIPModel,
         'CyCLIP': CyCLIPModel,
         # 'PyramidCLIP': PyramidCLIP,
         'CLOOB': CLOOB_Model,

@@ -361,7 +361,7 @@ class CLIPExplorerWidget(widgets.AppLayout):
         # ui select widgets
         self.model_select_widget = widgets.Dropdown(
             description='Model: ',
-            value='CLIP',
+            value=list(self.models.keys())[0],
             options=list(self.models.keys()),
         )
 

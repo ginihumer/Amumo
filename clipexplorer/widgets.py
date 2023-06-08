@@ -335,8 +335,22 @@ class ScatterPlotWidget(widgets.VBox):
 class CLIPExplorerWidget(widgets.AppLayout):
     idcs = traitlets.Any().tag(sync=True)
 
-    def __init__(self, dataset_name, all_images, all_prompts):
+    def __init__(self, dataset_name, all_images, all_prompts, models=None):
+        ### models... list of strings or instances that inherit from CLIPModelInterface 
         super(CLIPExplorerWidget, self).__init__()
+
+        if models is None:
+            models = model.available_CLIP_models
+
+        self.models = {}
+        for m in models:
+            if type(m) == str:
+                self.models[m] = model.get_model(m)
+            elif issubclass(type(m), model.CLIPModelInterface):
+                self.models[m.model_name] = m
+            else:
+                print('skipped', m, 'because it is not string or of type CLIPModelInterface')
+
         
         self.dataset_name = dataset_name
         self.all_images = np.array(all_images)
@@ -348,7 +362,7 @@ class CLIPExplorerWidget(widgets.AppLayout):
         self.model_select_widget = widgets.Dropdown(
             description='Model: ',
             value='CLIP',
-            options=list(model.available_CLIP_models),
+            options=list(self.models.keys()),
         )
 
         self.cluster_similarity_matrix_widget = widgets.Checkbox(
@@ -368,7 +382,8 @@ class CLIPExplorerWidget(widgets.AppLayout):
         # output widgets
         self.hover_widget = HoverWidget()
 
-        image_embedding_norm, text_embedding_norm, logit_scale = get_embedding(self.model_select_widget.value, self.dataset_name, self.all_images, self.all_prompts)
+        m = self.models[self.model_select_widget.value]
+        image_embedding_norm, text_embedding_norm, logit_scale = get_embedding(m, self.dataset_name, self.all_images, self.all_prompts)
         self.scatter_widget = ScatterPlotWidget()
         self.scatter_widget.embedding = np.concatenate((image_embedding_norm, text_embedding_norm))
 
@@ -409,7 +424,8 @@ class CLIPExplorerWidget(widgets.AppLayout):
         with self.log_widget:
             print("loading...")
 
-        image_embedding, text_embedding, logit_scale = get_embedding(self.model_select_widget.value, self.dataset_name, self.all_images, self.all_prompts)
+        m = self.models[self.model_select_widget.value]
+        image_embedding, text_embedding, logit_scale = get_embedding(m, self.dataset_name, self.all_images, self.all_prompts)
 
         if self.close_modality_gap_widget.value:
             image_embedding, text_embedding = get_closed_modality_gap(image_embedding, text_embedding)
@@ -509,9 +525,9 @@ class CLIPComparerWidget(widgets.AppLayout):
 
         self.heatmap_grid = widgets.GridspecLayout(math.ceil(len(models)/2), 2)
         for i in range(len(models)):
-            model = models[i]
+            m = models[i]
 
-            image_embedding_norm, text_embedding_norm, logit_scale = get_embedding(model, self.dataset_name, self.all_images, self.all_prompts)
+            image_embedding_norm, text_embedding_norm, logit_scale = get_embedding(m, self.dataset_name, self.all_images, self.all_prompts)
             if close_modality_gap[i]:
                 image_embedding_norm, text_embedding_norm = get_closed_modality_gap(image_embedding_norm, text_embedding_norm)
 

@@ -1,4 +1,5 @@
 from .model import get_model
+from . import model
 import scipy.cluster.hierarchy as sch
 from sklearn.feature_extraction.text import CountVectorizer
 import os
@@ -18,7 +19,12 @@ if not os.path.exists(data_checkpoint_dir):
 def get_embedding(model_name, dataset_name, all_images, all_prompts, batch_size = 500):
     batch_size = min(len(all_images), batch_size)
 
-    clip_model = get_model(model_name, device=device)
+    if type(model_name) == str:
+        clip_model = get_model(model_name, device=device)
+    elif issubclass(type(model_name), model.CLIPModelInterface):
+        clip_model = model_name
+    else:
+        print('model_name must either be a string or of type CLIPModelInterface')
 
     data_prefix = dataset_name + '_' + clip_model.model_name + '_' + clip_model.name
     data_prefix = data_prefix.replace('/','-')

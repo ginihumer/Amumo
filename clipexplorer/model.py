@@ -10,12 +10,12 @@ from .CLOOB_local.cloob_training import model_pt, pretrained
 from torchvision import transforms
 import requests
 from tqdm import tqdm
-
-print("local")
+from transformers import AutoProcessor, BlipModel
 
 class CLIPModelInterface:
     available_models = []
     model_name = 'interface'
+    logit_scale = 100.
 
     def __init__(self, name, device) -> None:
         assert name in self.available_models, 'choose one of ' + str(self.available_models)
@@ -29,6 +29,7 @@ class CLIPModelInterface:
     def encode_text(self):
         """Encode a batch of texts to a CLIP embedding space"""
         pass
+
 
 
 def checkpoint_download_helper(url, name):
@@ -60,6 +61,7 @@ class CLIPModel(CLIPModelInterface):
         super().__init__(name, device)
         self.model, self.preprocess = clip.load(name, device=device)
         self.model.eval()
+        self.logit_scale = self.model.logit_scale
 
     def encode_image(self, images):
         images = [self.preprocess(i) for i in images]
@@ -81,6 +83,7 @@ class OpenCLIPModel(CLIPModelInterface):
         self.model, _, self.preprocess = open_clip.create_model_and_transforms(name, pretrained=dataset, device=self.device)
         self.tokenize = open_clip.get_tokenizer(name)
         self.model.eval()
+        self.logit_scale = self.model.logit_scale
 
     def encode_image(self, images):
         images = [self.preprocess(i) for i in images]
@@ -91,6 +94,26 @@ class OpenCLIPModel(CLIPModelInterface):
         text_tokens = self.tokenize(texts).to(self.device)
         return self.model.encode_text(text_tokens).float().cpu()
 
+
+class BLIPModel(CLIPModelInterface):
+    available_models = ['Vit-B'] # option for 'Vit-L'?
+    model_name = 'BLIP'
+
+    def __init__(self, name='Vit-B', device='cpu') -> None:
+        super().__init__(name, device)
+        self.model = BlipModel.from_pretrained("Salesforce/blip-image-captioning-base").to(device)
+        self.preprocess = AutoProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
+
+        self.model.eval()
+        self.logit_scale = torch.tensor(0) # TODO: check if temperature is really 0
+
+    def encode_image(self, images):
+        input = self.preprocess(images=list(images), return_tensors="pt").to(self.device)
+        return self.model.get_image_features(**input).float().cpu()
+
+    def encode_text(self, texts):
+        tokens = self.preprocess(text=list(texts), padding=True, truncation=True, return_tensors="pt").to(self.device)
+        return self.model.get_text_features(**tokens).float().cpu()
 
 
 class CyCLIPModel(CLIPModel):
@@ -109,6 +132,8 @@ class CyCLIPModel(CLIPModel):
         if(next(iter(state_dict.items()))[0].startswith("module")):
             state_dict = {key[len("module."):]: value for key, value in state_dict.items()}
         self.model.load_state_dict(state_dict)
+
+        self.logit_scale = self.model.logit_scale
 
     def encode_image(self, images):
         images = [self.preprocess(i) for i in images]
@@ -158,6 +183,8 @@ class CLOOB_Model(CLIPModelInterface):
 
         self.preprocess = cloob._transform(self.model.visual.input_resolution, is_train=False)
 
+        self.logit_scale = self.model.logit_inv_tau
+
 
     def encode_image(self, images):
         images = [self.preprocess(i) for i in images]
@@ -190,6 +217,8 @@ class CLOOB_LAION400M_Model(CLIPModelInterface):
             transforms.Normalize(mean=self.model.config['image_encoder']['normalize']['mean'],
                             std=self.model.config['image_encoder']['normalize']['std'])
             ])
+        
+        self.logit_scale = torch.tensor(3.4012)
 
     def encode_image(self, images):
         images = [self.preprocess(i) for i in images]
@@ -204,6 +233,7 @@ class CLOOB_LAION400M_Model(CLIPModelInterface):
 available_CLIP_models = {
         'CLIP': CLIPModel,
         'OpenCLIP': OpenCLIPModel,
+        'BLIP': BLIPModel,
         'CyCLIP': CyCLIPModel,
         # 'PyramidCLIP': PyramidCLIP,
         'CLOOB': CLOOB_Model,

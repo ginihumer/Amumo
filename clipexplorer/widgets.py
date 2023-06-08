@@ -1,3 +1,5 @@
+# ipywidgets meets plotly: https://plotly.com/python/figurewidget-app/
+
 import traitlets
 from ipywidgets import widgets
 import plotly.graph_objects as go
@@ -8,11 +10,12 @@ import numpy as np
 from sklearn.decomposition import PCA
 from openTSNE import TSNE
 from umap import UMAP
+import torch
 
 import math
 
 from . import model
-from .utils import get_textual_label_for_cluster, get_embedding, get_similarity, get_cluster_sorting
+from .utils import get_textual_label_for_cluster, get_embedding, get_similarity, get_cluster_sorting, get_modality_distance, calculate_val_loss, get_closed_modality_gap, get_modality_gap_normed, l2_norm, get_gap_direction
 
 
 class SimilarityHeatmapWidget(widgets.VBox):
@@ -143,7 +146,7 @@ class HoverWidget(widgets.VBox):
 
     @traitlets.validate("value1", "value2")
     def _validate_value(self, proposal):
-        print("TODO: validate value1")
+        # print("TODO: validate value1")
         return proposal.value
 
     @traitlets.observe("valueX", "valueY")
@@ -259,7 +262,7 @@ class ScatterPlotWidget(widgets.VBox):
 
     @traitlets.validate("embedding")
     def _validate_value(self, proposal):
-        print("TODO: validate embedding")
+        # print("TODO: validate embedding")
         return proposal.value
 
     @traitlets.observe("embedding")
@@ -355,23 +358,36 @@ class CLIPExplorerWidget(widgets.AppLayout):
             indent=False
         )
 
+        self.close_modality_gap_widget = widgets.Checkbox(
+            value=False,
+            description='Close modality gap',
+            disabled=False,
+            indent=False
+        )
+
         # output widgets
         self.hover_widget = HoverWidget()
 
-        image_embedding_norm, text_embedding_norm = get_embedding(self.model_select_widget.value, self.dataset_name, self.all_images, self.all_prompts)
+        image_embedding_norm, text_embedding_norm, logit_scale = get_embedding(self.model_select_widget.value, self.dataset_name, self.all_images, self.all_prompts)
         self.scatter_widget = ScatterPlotWidget()
         self.scatter_widget.embedding = np.concatenate((image_embedding_norm, text_embedding_norm))
+
+        modality_distance = get_modality_distance(image_embedding_norm, text_embedding_norm)
+        validation_loss = calculate_val_loss(image_embedding_norm, text_embedding_norm, logit_scale.exp())
+        self.log_widget = widgets.Output()
+        with self.log_widget:
+            print('Modality distance: %.2f | Loss: %.2f'%(modality_distance, validation_loss))
 
         similarity_texts_images, similarity_all = get_similarity(image_embedding_norm, text_embedding_norm)
         self.heatmap_widget = SimilarityHeatmapWidget()
         self.heatmap_widget.value = similarity_all
 
-        self.log_widget = widgets.Output()
 
 
         # callback functions
         self.model_select_widget.observe(self.model_changed, names="value")
         self.cluster_similarity_matrix_widget.observe(self.model_changed, names='value')
+        self.close_modality_gap_widget.observe(self.model_changed, names='value')
         self.heatmap_widget.heatmap.on_hover(self.hover_fn)
         self.scatter_widget.scatter_image.on_hover(self.scatter_hover_fn)
         self.scatter_widget.scatter_text.on_hover(self.scatter_hover_fn)
@@ -379,8 +395,8 @@ class CLIPExplorerWidget(widgets.AppLayout):
         self.scatter_widget.scatter_text.on_unhover(self.scatter_unhover_fn)
 
         # display everyting
-        self.header = widgets.HBox([self.model_select_widget, self.cluster_similarity_matrix_widget, self.log_widget])
-        self.header.layout.height = '40px'
+        self.header = widgets.VBox([widgets.HBox([self.model_select_widget, self.cluster_similarity_matrix_widget, self.close_modality_gap_widget]),self.log_widget])
+        self.header.layout.height = '80px'
         vis_widgets = widgets.HBox([self.heatmap_widget, self.scatter_widget])
         self.center = vis_widgets
         self.right_sidebar = self.hover_widget
@@ -388,11 +404,20 @@ class CLIPExplorerWidget(widgets.AppLayout):
 
 
     def model_changed(self, change):
+
+        self.log_widget.clear_output()
         with self.log_widget:
             print("loading...")
 
-        image_embedding, text_embedding = get_embedding(self.model_select_widget.value, self.dataset_name, self.all_images, self.all_prompts)
+        image_embedding, text_embedding, logit_scale = get_embedding(self.model_select_widget.value, self.dataset_name, self.all_images, self.all_prompts)
+
+        if self.close_modality_gap_widget.value:
+            image_embedding, text_embedding = get_closed_modality_gap(image_embedding, text_embedding)
+
         self.scatter_widget.embedding = np.concatenate((image_embedding, text_embedding))
+
+        modality_distance = get_modality_distance(image_embedding, text_embedding)
+        validation_loss = calculate_val_loss(image_embedding, text_embedding, logit_scale.exp())
 
         similarity_texts_images, similarity_all = get_similarity(image_embedding, text_embedding)
 
@@ -415,6 +440,8 @@ class CLIPExplorerWidget(widgets.AppLayout):
         self.heatmap_widget.cluster = (cluster_labels, cluster_sizes)
 
         self.log_widget.clear_output()
+        with self.log_widget:
+            print('Modality distance: %.2f | Loss: %.2f'%(modality_distance, validation_loss))
 
 
     def hover_fn(self, trace, points, state):
@@ -463,8 +490,14 @@ class CLIPExplorerWidget(widgets.AppLayout):
 class CLIPComparerWidget(widgets.AppLayout):
 
 
-    def __init__(self, dataset_name, all_images, all_prompts, models=list(model.available_CLIP_models)):
+    def __init__(self, dataset_name, all_images, all_prompts, models=list(model.available_CLIP_models), close_modality_gap=False):
+        # close_modality_gap: boolean or list of booleans with same length as models that specifies whether or not the modality gap should be closed
         super(CLIPComparerWidget, self).__init__()
+
+        if type(close_modality_gap) == bool:
+            close_modality_gap = [close_modality_gap] * len(models)
+
+        assert type(close_modality_gap) == list and len(close_modality_gap) == len(models), 'close_modality_gap must be a bool or list of the same length as models'
         
         self.dataset_name = dataset_name
         self.all_images = np.array(all_images)
@@ -477,14 +510,21 @@ class CLIPComparerWidget(widgets.AppLayout):
         self.heatmap_grid = widgets.GridspecLayout(math.ceil(len(models)/2), 2)
         for i in range(len(models)):
             model = models[i]
-            image_embedding_norm, text_embedding_norm = get_embedding(model, self.dataset_name, self.all_images, self.all_prompts)
+
+            image_embedding_norm, text_embedding_norm, logit_scale = get_embedding(model, self.dataset_name, self.all_images, self.all_prompts)
+            if close_modality_gap[i]:
+                image_embedding_norm, text_embedding_norm = get_closed_modality_gap(image_embedding_norm, text_embedding_norm)
+
             _, similarity_all = get_similarity(image_embedding_norm, text_embedding_norm)
             heatmap_widget = SimilarityHeatmapWidget(zmin=0, zmax=1)
             heatmap_widget.value = similarity_all
             heatmap_widget.heatmap.on_hover(self.hover_fn)
             # heatmap_widget.layout = widgets.Layout(height='500px', width='auto')
 
-            text_widget = widgets.HTML(value='<h2>' + models[i] + '</h2>')
+            modality_distance = get_modality_distance(image_embedding_norm, text_embedding_norm)
+            validation_loss = calculate_val_loss(image_embedding_norm, text_embedding_norm, logit_scale.exp())
+            text_widget = widgets.HTML(value='<h2>' + models[i] + '</h2>' 
+                                       + ' Modality distance: %.2f | Loss: %.2f'%(modality_distance, validation_loss))
 
             self.heatmap_grid[int(i/2), i%2] = widgets.VBox([text_widget, heatmap_widget])
             self.heatmap_grid[int(i/2), i%2].layout.height = '500px'
@@ -514,3 +554,54 @@ class CLIPComparerWidget(widgets.AppLayout):
             self.hover_widget.valueY = output_img
         else:
             self.hover_widget.valueY = self.all_prompts[y_idx%self.size]
+
+
+class ModalityGapWidget(widgets.AppLayout):
+    
+    def __init__(self, image_embedding, text_embedding, logit_scale=100.0, title='Loss Landscape CLIP'):
+        super(ModalityGapWidget, self).__init__()
+        
+        image_embedding = np.array(image_embedding)
+        text_embedding = np.array(text_embedding)
+
+        modality_gap = get_modality_gap_normed(image_embedding, text_embedding)
+        
+        distance_lst = []
+        loss_lst = []
+        for delta in np.arange(-5.0, 5.0, 0.25): 
+            modified_text_features = l2_norm(text_embedding) + 0.5 * delta * modality_gap
+            modified_text_features = l2_norm(modified_text_features)
+
+            modified_image_features = l2_norm(image_embedding) - 0.5 * delta * modality_gap
+            modified_image_features = l2_norm(modified_image_features)
+
+            avg_val_loss = calculate_val_loss(torch.from_numpy(modified_image_features), torch.from_numpy(modified_text_features), logit_scale = logit_scale)
+
+            pca = PCA(n_components=6)
+            pca.fit(np.concatenate((image_embedding, text_embedding), axis=0))
+
+            gap_direction = get_gap_direction(modified_image_features, modified_text_features, pca)
+
+            loss_lst.append(avg_val_loss)
+
+            # Euclidean distance between mass centers
+            distance_lst.append(
+                get_modality_distance(modified_image_features, modified_text_features) * gap_direction
+            )
+
+
+        orig_distance = get_modality_distance(image_embedding, text_embedding)
+
+        fig = go.FigureWidget(data=go.Scatter(x=distance_lst, y=loss_lst, mode='lines+markers', hovertemplate='Distance: %{x} <br>Loss: %{y}'))
+        fig.add_shape(type="line",
+            x0=orig_distance, y0=0, x1=orig_distance, y1=max(loss_lst)*1.2,
+            line=dict(
+                color="Black",
+                width=1,
+                dash="dash",
+            )
+        )
+        fig.update_layout(xaxis_title='Euclidean Distance', yaxis_title='Loss', width=500, title=title)
+        
+        self.center = widgets.HBox([fig])
+        

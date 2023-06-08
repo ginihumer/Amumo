@@ -6,6 +6,8 @@ import torch
 import numpy as np
 import torchvision.transforms as transforms
 from PIL import Image
+from pycocotools.coco import COCO
+import requests
 
 
 class DatasetInterface:
@@ -28,6 +30,8 @@ class DatasetInterface:
         return self.all_images[batch_idcs], self.all_prompts[batch_idcs]
 
     def _get_random_subsample(self, arr_len):
+        if self.batch_size is None:
+            self.batch_size = arr_len
         np.random.seed(self.seed)
         arr = np.random.rand(arr_len) 
         sorted_indices = arr.argsort()
@@ -49,6 +53,48 @@ class DatasetInterface:
         batch_idcs = self._get_random_subsample(len(subset_ids))
         subset_ids = subset_ids[batch_idcs]
         return self.all_images[subset_ids], self.all_prompts[subset_ids]
+
+class MSCOCO_Val_Dataset(DatasetInterface):
+    # TODO: implement more efficient dataset filtering: https://github.com/ppwwyyxx/cocoapi/blob/master/PythonAPI/pycocoDemo.ipynb 
+    # TODO: optimize the code so that not everything is loaded at startup
+    # download validation annotations from https://cocodataset.org/#download 
+    # 2017 Train/Val annotations [241MB] -> captions_val2017.json
+    name = 'MSCOCO-Val'
+
+    def __init__(self, path, seed=31415, batch_size = 100):
+        super().__init__(path, seed, batch_size)
+
+        self.annotation_file = '%s/captions_val2017.json'%(path)
+        self.img_folder = '%s/%s/'%(path, self.name)
+
+        if not os.path.exists(self.img_folder):
+            os.makedirs(self.img_folder)
+
+        # init prompts and images
+        self.coco_caps = COCO(self.annotation_file)
+        img_ids = list(self.coco_caps.imgs.keys())
+
+        batch_idcs = self._get_random_subsample(len(img_ids))
+        img_ids = np.array(img_ids)[batch_idcs]
+
+        self.all_prompts = []
+        self.all_images = []
+
+        for id in img_ids:
+            anns = self.coco_caps.loadAnns(self.coco_caps.getAnnIds([id]))
+            self.all_prompts.append(anns[0]['caption']) # only take the first caption out of the 5 available ones
+
+            coco_img = self.coco_caps.loadImgs([id])[0]
+            if not os.path.exists(self.img_folder + coco_img['file_name']):
+                print('downloading file', coco_img['file_name'])
+                response = requests.get(coco_img['coco_url'])
+                with open(self.img_folder + coco_img['file_name'], "wb") as file:
+                    file.write(response.content)
+
+            self.all_images.append(Image.open(self.img_folder + coco_img['file_name']).convert("RGB"))
+
+        self.all_prompts = np.array(self.all_prompts)
+        self.all_images = np.array(self.all_images)
 
 
 class MSCOCO_Dataset(DatasetInterface):

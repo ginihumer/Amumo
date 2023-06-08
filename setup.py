@@ -35,6 +35,8 @@ REQUIRED = [
     'openTSNE',
     'umap-learn',
     'numpy==1.23.5',
+    'pycocotools',
+    'transformers'
 ]
 
 # What packages are optional?

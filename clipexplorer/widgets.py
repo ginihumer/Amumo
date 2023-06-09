@@ -532,7 +532,7 @@ class CLIPComparerWidget(widgets.AppLayout):
                 image_embedding_norm, text_embedding_norm = get_closed_modality_gap(image_embedding_norm, text_embedding_norm)
 
             _, similarity_all = get_similarity(image_embedding_norm, text_embedding_norm)
-            heatmap_widget = SimilarityHeatmapWidget(zmin=0, zmax=1)
+            heatmap_widget = SimilarityHeatmapWidget()#(zmin=0, zmax=1)
             heatmap_widget.value = similarity_all
             heatmap_widget.heatmap.on_hover(self.hover_fn)
             # heatmap_widget.layout = widgets.Layout(height='500px', width='auto')

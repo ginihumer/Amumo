@@ -1,6 +1,13 @@
 # CLIP-explorer
 python framework for exploring CLIP models
 
+set up conda environment:
+
+conda create -n myenv python=3.9
+activate myenv
+pip install ipykernel
+pip install ipywidgets
+
 
 for local installation:
 pip install -e .

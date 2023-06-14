@@ -66,7 +66,10 @@ class CLIPModel(CLIPModelInterface):
         self.logit_scale = self.model.logit_scale
 
     def encode_image(self, images):
-        images = [self.preprocess(i) for i in images]
+        try:
+            images = [self.preprocess(i) for i in images]
+        except:
+            print(images)
         image_input = torch.tensor(np.stack(images)).to(self.device)
         return self.model.encode_image(image_input).float().cpu()
 

@@ -73,8 +73,9 @@ def get_similarity(image_features_norm, text_features_norm):
 def get_cluster_sorting(similarity):
     # adapted from https://wil.yegelwel.com/cluster-correlation-matrix/
     linkage = sch.linkage(1-similarity, method='complete')
-    cluster_distance_threshold = (1-similarity).max()/2
-    idx_to_cluster_array = sch.fcluster(linkage, cluster_distance_threshold, criterion='distance')
+    # cluster_distance_threshold = (1-similarity_texts_images).max()/2 # np.percentile(1-similarity, 75)
+    # idx_to_cluster_array = sch.fcluster(linkage, cluster_distance_threshold, criterion='distance')
+    idx_to_cluster_array = sch.fcluster(linkage, 10, criterion='maxclust')
     idx = np.argsort(idx_to_cluster_array)
     return idx, idx_to_cluster_array[idx], idx_to_cluster_array
 

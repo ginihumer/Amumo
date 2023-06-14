@@ -98,7 +98,7 @@ class SimilarityHeatmapWidget(widgets.VBox):
                     y0=offset, 
                     x1=len(self.value)/2+offset+cluster_size, 
                     y1=offset+cluster_size, 
-                    label=dict(text=cluster_label, textposition=textposition, font=dict(size=10, color="white"), padding=cluster_size*5), 
+                    label=dict(text=cluster_label, textposition=textposition, font=dict(size=10, color="white"), padding=np.log(cluster_size)*10), 
                     line=dict(width=1, color='white')
                 )]
 

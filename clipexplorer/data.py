@@ -6,7 +6,7 @@ from datasets.utils.file_utils import get_datasets_user_agent
 import torch
 import numpy as np
 import torchvision.transforms as transforms
-from PIL import Image
+from PIL import Image, ImageFilter
 from pycocotools.coco import COCO
 import requests
 from concurrent.futures import ThreadPoolExecutor
@@ -208,6 +208,53 @@ class Rotate_Dataset(DatasetInterface):
         self.all_images = np.array(images)
         self.all_prompts = np.array([prompt]*batch_size)
 
+class Blur_Dataset(DatasetInterface):
+    name='Blurred'
+
+    def __init__(self, image, prompt, id=0, batch_size=100) -> None:
+        super().__init__("", None, None) # set batch_size to none to prevent randomization
+        self.name = self.name + '-' + str(id)
+
+        max_radius = image.width/8
+        blur_radius = max_radius/batch_size
+        images = []
+        for i in range(batch_size):
+            images.append(image.filter(ImageFilter.GaussianBlur(radius=blur_radius*i)))
+        
+        self.all_images = np.array(images)
+        self.all_prompts = np.array([prompt]*batch_size)
+
+class HShift_Dataset(DatasetInterface):
+    name='HShift'
+
+    def __init__(self, image, prompt, id=0, batch_size=100) -> None:
+        super().__init__("", None, None) # set batch_size to none to prevent randomization
+        self.name = self.name + '-' + str(id)
+
+        shift_min = -image.width
+        shift_max = image.width
+        images = []
+        for shift_x in np.linspace(shift_min, shift_max, batch_size):
+            images.append(image.transform(image.size, Image.AFFINE, (1, 0, shift_x, 0, 1, 0)))
+        
+        self.all_images = np.array(images)
+        self.all_prompts = np.array([prompt]*batch_size)
+
+class VShift_Dataset(DatasetInterface):
+    name='VShift'
+
+    def __init__(self, image, prompt, id=0, batch_size=100) -> None:
+        super().__init__("", None, None) # set batch_size to none to prevent randomization
+        self.name = self.name + '-' + str(id)
+
+        shift_min = -image.height
+        shift_max = image.height
+        images = []
+        for shift_y in np.linspace(shift_min, shift_max, batch_size):
+            images.append(image.transform(image.size, Image.AFFINE, (1, 0, 0, 0, 1, shift_y)))
+        
+        self.all_images = np.array(images)
+        self.all_prompts = np.array([prompt]*batch_size)
 
 class Noise_Dataset(DatasetInterface):
     name='Noisy'
@@ -219,8 +266,10 @@ class Noise_Dataset(DatasetInterface):
         noise_level = 1/batch_size
         image_array = np.array(image)
         images = []
+        # noise = np.zeros_like(image_array.shape)
         for i in range(batch_size):
-            
+            # noise += noise_level*np.random.randint(low=0, high=256, size=image_array.shape,dtype='uint8')
+            # noisy_image_array = np.clip((1-i*noise_level)*image_array + noise, 0, 255).astype('uint8')
             noise = np.random.randint(low=0, high=256, size=image_array.shape,dtype='uint8')
             noisy_image_array = np.clip((1-i*noise_level)*image_array + i*noise_level*noise, 0, 255).astype('uint8')
             noisy_image = Image.fromarray(noisy_image_array)

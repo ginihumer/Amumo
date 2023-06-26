@@ -62,6 +62,12 @@
                 })
                 .catch(error => console.error(error));
         }
+
+        const load_meta_info_fn = function(dataset, name){
+            return fetch('./exported_data_checkpoints/' + dataset + '/similarities/' + name + '_meta_info.json')
+                .then(response => response.json())
+                .catch(error => console.error(error));
+        }
             
     </script>
 
@@ -72,7 +78,6 @@
             tag.src = "./scripts/plotly-2.24.1.min.js";
             document.getElementsByTagName("head")[0].appendChild(tag);
 
-            console.log(Plotly.color)
         }
 
         // define widgets
@@ -329,13 +334,14 @@
 
 
         class SimilarityHeatmapWidget{
-            constructor(dataset_name, model_name, title='', width=500, height=420){
+            constructor(dataset_name, model_name, do_cluster=false, title='', width=500, height=420){
+                this.do_cluster = do_cluster;
                 let margin_top = 30;
                 if(title == ''){
                     margin_top = 10;
                 }
 
-                const data = [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]];
+                const data = Array.from(Array(200), () => Array(200).fill(0));
                 var trace1 = {
                     z: data,
                     type: 'heatmap',
@@ -356,11 +362,20 @@
 
                 this.update_heatmap(dataset_name, model_name);
 
-                const this_ = this;
-                this.heatmap_div.on('plotly_hover', function(data){
-                    const idx = data.points[0].pointIndex;
-                    this_.update_hoverIdx([idx]);
-                })
+                this.meta_info_div = document.createElement('div');
+
+                this.div = document.createElement('div');
+                this.div.appendChild(this.meta_info_div);
+                this.div.appendChild(this.heatmap_div);
+
+            }
+
+            _set_plotly_event(){
+              const this_ = this;
+              this.heatmap_div.on('plotly_hover', function(data){
+                  const idx = data.points[0].pointIndex;
+                  this_.update_hoverIdx([idx]);
+              })
             }
 
             _get_matrix_gridlines(data){
@@ -391,29 +406,97 @@
             }
 
             update_heatmap(dataset_name, model_name){
-                load_similarities_fn(dataset_name, model_name).then((data) => {
-                    Plotly.update(this.heatmap_div, {'z': [data]}, {
-                        xaxis: {
-                            tickmode: 'array',
-                            ticktext: ['Image', 'Text'],
-                            tickvals: [data.length/4, 3*data.length/4],
-                            fixedrange: false
-                        },
-                        yaxis: {
-                            tickmode: 'array',
-                            tickvals: [data.length/4, 3*data.length/4],
-                            ticktext: ['Image', 'Text'], 
-                            fixedrange: false,
-                            autorange: 'reversed', 
-                        },
-                        shapes: this._get_matrix_gridlines(data)
-                    }, [0]);
-                })
+                load_meta_info_fn(dataset_name, model_name).then((meta_data) => {
+                  this.meta_info_div.innerHTML = `Modality distance: ${meta_data.gap_distance.toFixed(2)} | Loss: ${meta_data.loss.toFixed(2)}`;
+
+                  this.cluster_sort_idcs = meta_data.cluster_sort_idcs;
+                  this.cluster_sort_idcs_reverse = meta_data.cluster_sort_idcs_reverse;
+
+                  load_similarities_fn(dataset_name, model_name).then((data) => {
+                      if(self.do_cluster){
+                        var clustered_data = Array.from(Array(data.length), () => Array(data[0].length).fill(0));
+
+                        for (let i = 0; i < this.cluster_sort_idcs.length; i++) {
+                          const i_x = this.cluster_sort_idcs[i];
+                          for (let j = 0; j < this.cluster_sort_idcs.length; j++) {
+                            const i_y = this.cluster_sort_idcs[j];
+
+                            // sort and add to clustered array for each quadrant
+                            clustered_data[i][j] = data[i_x][i_y];
+                            clustered_data[i][j+this.cluster_sort_idcs.length] = data[i_x][i_y+this.cluster_sort_idcs.length];
+                            clustered_data[i+this.cluster_sort_idcs.length][j] = data[i_x+this.cluster_sort_idcs.length][i_y];
+                            clustered_data[i+this.cluster_sort_idcs.length][j+this.cluster_sort_idcs.length] = data[i_x+this.cluster_sort_idcs.length][i_y+this.cluster_sort_idcs.length];
+                          }
+                        }
+                        data = clustered_data;
+                      }
+
+                      const shapes = this._get_matrix_gridlines(data);
+
+                      if(this.do_cluster){
+                        const cluster_labels = meta_data.cluster_labels;
+                        const cluster_sizes = meta_data.cluster_sizes;
+
+                        let offset = 0-0.5 // -0.5 because heatmap rectangles are drawn around [-0.5, 0.5]
+                        for (let i = 0; i < cluster_labels.length; i++) {
+                          const cluster_label = cluster_labels[i];
+                          const cluster_size = cluster_sizes[i];
+                          
+                          if(cluster_size > 5){
+                            let textposition = 'middle right';
+                            if(offset < data.length/2/2){
+                              textposition = 'middle right';
+                            }
+                            shapes.push(
+                              {
+                                type: 'rect',
+                                x0: data.length/2+offset,
+                                y0: offset,
+                                x1: data.length/2+offset+cluster_size,
+                                y1: offset+cluster_size,
+                                label: {
+                                  text: cluster_label, 
+                                  textposition: textposition, 
+                                  font: {size: 10, color: 'white'},
+                                  padding: Math.log(cluster_size)*10
+                                },
+                                line: {
+                                    width: 1,
+                                    color: 'white'
+                                },
+                              }
+                            );
+                          }
+                          offset += cluster_size;
+                        }
+
+                      }
+                      Plotly.update(this.heatmap_div, {'z': [data]}, {
+                          xaxis: {
+                              tickmode: 'array',
+                              ticktext: ['Image', 'Text'],
+                              tickvals: [data.length/4, 3*data.length/4],
+                              fixedrange: false
+                          },
+                          yaxis: {
+                              tickmode: 'array',
+                              tickvals: [data.length/4, 3*data.length/4],
+                              ticktext: ['Image', 'Text'], 
+                              fixedrange: false,
+                              autorange: 'reversed', 
+                          },
+                          shapes: shapes
+                      }, [0]);
+
+                      this._set_plotly_event();
+                  });
+                });
+
             }
 
             update_hoverIdx(idcs){
                 const data = this.heatmap_div.data[0].z;
-                let shapes = this._get_matrix_gridlines(data);
+                let shapes = this.heatmap_div.layout.shapes.filter((shape) => shape.name !== 'hover_idx');
                 for(let i = 0; i < idcs.length; i++){
                     const y_idx = idcs[i][0];
                     const x_idx = idcs[i][1];
@@ -470,8 +553,8 @@
         function connect_heatmap_hover(heatmap_widget, hover_widget){
             heatmap_widget.heatmap_div.on('plotly_hover', function(data){
                 const idx = data.points[0].pointIndex;
-                const y_idx = idx[0];
-                const x_idx = idx[1];
+                let y_idx = idx[0];
+                let x_idx = idx[1];
                 const z_data = data.points[0].data.z;
                 let mode1 = 'text';
                 let mode2 = 'text';
@@ -481,8 +564,16 @@
                 if(y_idx < z_data.length/2){
                     mode2 = 'image';
                 }
-                hover_widget.update1(mode1, x_idx%(z_data.length/2));
-                hover_widget.update2(mode2, y_idx%(z_data.length/2));
+                  x_idx = x_idx%(z_data.length/2);
+                  y_idx = y_idx%(z_data.length/2);
+
+                if(heatmap_widget.do_cluster){
+                  y_idx = heatmap_widget.cluster_sort_idcs[y_idx];
+                  x_idx = heatmap_widget.cluster_sort_idcs[x_idx];
+                }
+
+                hover_widget.update1(mode1, x_idx);
+                hover_widget.update2(mode2, y_idx);
             })
         }
 
@@ -526,14 +617,14 @@
             // });
         }
 
-        function clip_explorer_by_model(dataset_name, model_name, el, prompts_promise, projection_promise, projection_method = 'PCA'){
+        function clip_explorer_by_model(dataset_name, model_name, el, prompts_promise, projection_promise, projection_method = 'PCA', do_cluster=false){
 
             if(!(el instanceof Element)){
                 el = document.getElementById(el);
             }
             projection_promise.then(function(data){ 
-                const heatmap_widget = new SimilarityHeatmapWidget(dataset_name, model_name);
-                el.appendChild(heatmap_widget.heatmap_div)
+                const heatmap_widget = new SimilarityHeatmapWidget(dataset_name, model_name, do_cluster=do_cluster);
+                el.appendChild(heatmap_widget.div)
 
                 const scatter_widget = new ScatterPlotWidget(data, model_name, selected_method=projection_method);
                 el.appendChild(scatter_widget.div)
@@ -572,10 +663,23 @@
             close_gap.style = 'margin-left: 20px;'
             const label = document.createElement('label');
             label.setAttribute('for', close_gap.id);
-            label.textContent = 'Close Modality Gap';
+            label.textContent = 'Close modality gap';
             label.style = 'font-size:15px;';
             div.appendChild(close_gap);
             div.appendChild(label);
+
+            // init cluster checkbox
+            const cluster_checkbox = document.createElement('input');
+            cluster_checkbox.type = 'checkbox';
+            cluster_checkbox.id = el_id + '_cluster'
+            cluster_checkbox.style = 'margin-left: 20px;'
+            const cluster_label = document.createElement('label');
+            cluster_label.setAttribute('for', cluster_checkbox.id);
+            cluster_label.textContent = 'Cluster matrix by similarity';
+            cluster_label.style = 'font-size:15px;';
+            div.appendChild(cluster_checkbox);
+            div.appendChild(cluster_label);
+
 
             // init explorer div
             const explorer_div = document.createElement('div');
@@ -589,10 +693,11 @@
                 if(close_gap.checked){
                     model_name += '_nogap';
                 }
-                clip_explorer_by_model(dataset_name, model_name, explorer_div, prompts_promise, projection_promise, projection_method)
+                clip_explorer_by_model(dataset_name, model_name, explorer_div, prompts_promise, projection_promise, projection_method, do_cluster=cluster_checkbox.checked)
             };
             model_select.onchange = update_explorer;
             close_gap.onchange = update_explorer;
+            cluster_checkbox.onchange = update_explorer;
 
             update_explorer();
 
@@ -617,8 +722,8 @@
 
                 for (const key in models) {
                     const model = models[key];
-                    heatmap_widgets[model] = new SimilarityHeatmapWidget(dataset_name, model, title=model);
-                    document.getElementById(el_id + '-' + Math.floor(key/2)).appendChild(heatmap_widgets[model].heatmap_div)
+                    heatmap_widgets[model] = new SimilarityHeatmapWidget(dataset_name, model, do_cluster=false, title=model);
+                    document.getElementById(el_id + '-' + Math.floor(key/2)).appendChild(heatmap_widgets[model].div)
                     heatmap_widgets[model].heatmap_div.on('plotly_hover', highlight_hover)
                     connect_heatmap_hover(heatmap_widgets[model], hover_widget);
                     
@@ -685,7 +790,7 @@
         <div id="clip-modalitygap-heatmap" style="display: inline-flex;"></div>
         <script>
             const heatmap_widget = new SimilarityHeatmapWidget('MSCOCO-Val_size-100', 'CLIP');
-            document.getElementById('clip-modalitygap-heatmap').appendChild(heatmap_widget.heatmap_div)
+            document.getElementById('clip-modalitygap-heatmap').appendChild(heatmap_widget.div)
 
             mscoco_val_prompts_promise.then(captions => {
                 const hover_widget = new HoverWidget('MSCOCO-Val_size-100', captions);
@@ -922,7 +1027,7 @@
         
         <div id="clip-explorer-diffusiondb" class="l-page-outset"></div>
         <script>
-            dataset_name = 'MSCOCO-Val_filter-any_dog';
+            dataset_name = 'DiffusionDB_size-100';
             const diffusiondb_val_prompts_promise = fetch('./exported_data_checkpoints/' + dataset_name + '/prompts.txt')
                 .then(response => response.text())
                 .then(data => data.split('\n'))

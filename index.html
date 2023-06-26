@@ -18,11 +18,11 @@
 <head>
     <meta charset="utf8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script src="https://distill.pub/template.v1.js"></script>
-    <script src="https://d3js.org/d3.v5.min.js"></script>
-    <script src="plotly-2.24.1.min.js" charset="utf-8"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/katex.min.css" integrity="sha384-3UiQGuEI4TTMaFmGIZumfRPtfKQ3trwQE2JgosJxCnGmQpL/lJdjpcHkaaFwHlcI" crossorigin="anonymous">
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/katex.min.js" integrity="sha384-G0zcxDFp5LWZtDuRMnBkk3EphCK1lhEf4UEyEM693ka574TZGwo4IWwS6QLzM/2t" crossorigin="anonymous"></script>
+    <script src="scripts/template.v1.js"></script>
+    <script src="scripts/d3.v5.min.js"></script>
+    <script src="scripts/plotly-2.24.1.min.js" charset="utf-8"></script>
+    <link rel="stylesheet" href="styles/katex.min.css">
+    <script defer src="scripts/katex.min.js"></script>
 
 
     <style>
@@ -69,10 +69,10 @@
         // have to load it again because distill template somehow overrides plotly css
         window.onload = () => {
             var tag = document.createElement("script");
-            tag.src = "plotly-2.24.1.min.js";
+            tag.src = "./scripts/plotly-2.24.1.min.js";
             document.getElementsByTagName("head")[0].appendChild(tag);
 
-            document.getElementsByTagName('dt-banner')[0].remove(); // this banner showed that the article is under review in distill...
+            console.log(Plotly.color)
         }
 
         // define widgets

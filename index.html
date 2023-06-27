@@ -201,8 +201,8 @@
                 this.scatter_div = document.createElement('div');
                 var trace1 = {
                     name: 'image',
-                    x: [0],
-                    y: [0],
+                    x: Array(100).fill(0),
+                    y: Array(100).fill(0),
                     type: 'scatter',
                     mode: 'markers',
                     hoverinfo: 'text',
@@ -213,8 +213,8 @@
 
                 var trace2 = {
                     name: 'text',
-                    x: [0],
-                    y: [0],
+                    x: Array(100).fill(0),
+                    y: Array(100).fill(0),
                     type: 'scatter',
                     mode: 'markers',
                     hoverinfo: 'text',
@@ -276,10 +276,10 @@
                 //     const idx = data.points[0].pointIndex;
                 //     this_.highlight('text', idx);
                 //     this_.highlight('image', idx);
-                // })
+                // });
                 // this.scatter_div.on('plotly_unhover', function(data){
                 //     this_.highlight('reset', 0);
-                // })
+                // });
             }
 
             get_XY_coordinates(){
@@ -314,6 +314,7 @@
 
             // TODO: when highlighting, the hover events seem to break
             // highlight(mode, idx){
+            //   console.log('highlight')
             //     const coords = this.get_XY_coordinates();
             //     let coords_x = this.scatter_div.data[2].x;
             //     let coords_y = this.scatter_div.data[2].y;
@@ -334,12 +335,8 @@
 
 
         class SimilarityHeatmapWidget{
-            constructor(dataset_name, model_name, do_cluster=false, title='', width=500, height=420){
+            constructor(do_cluster=false, title='', width=500, height=420){
                 this.do_cluster = do_cluster;
-                let margin_top = 30;
-                if(title == ''){
-                    margin_top = 10;
-                }
 
                 const data = Array.from(Array(200), () => Array(200).fill(0));
                 var trace1 = {
@@ -354,17 +351,23 @@
                 var layout = {
                     width: width, 
                     height: height,
-                    margin: {l:50, r:10, t:margin_top, b:25},
-                    title: title
+                    margin: {l:50, r:10, t:10, b:25},
                 }
                 this.heatmap_div = document.createElement('div');
                 Plotly.newPlot(this.heatmap_div, traces, layout);
 
-                this.update_heatmap(dataset_name, model_name);
-
                 this.meta_info_div = document.createElement('div');
+                this.meta_info_div.style.fontSize = '12px';
+                this.meta_info_div.style.marginLeft = '50px';
 
                 this.div = document.createElement('div');
+                if(title !== ''){
+                  const title_el = document.createElement('h4');
+                  title_el.innerHTML = title;
+                  title_el.style.marginLeft = '50px';
+                  title_el.style.marginBottom = '0px';
+                  this.div.appendChild(title_el);
+                }
                 this.div.appendChild(this.meta_info_div);
                 this.div.appendChild(this.heatmap_div);
 
@@ -405,9 +408,11 @@
                 ]
             }
 
-            update_heatmap(dataset_name, model_name){
-                load_meta_info_fn(dataset_name, model_name).then((meta_data) => {
-                  this.meta_info_div.innerHTML = `Modality distance: ${meta_data.gap_distance.toFixed(2)} | Loss: ${meta_data.loss.toFixed(2)}`;
+            async update_heatmap(dataset_name, model_name, show_meta_info=true){
+                return load_meta_info_fn(dataset_name, model_name).then((meta_data) => {
+                  if(show_meta_info){
+                    this.meta_info_div.innerHTML = `Modality distance: ${meta_data.gap_distance.toFixed(2)} | Loss: ${meta_data.loss.toFixed(2)}`;
+                  }
 
                   this.cluster_sort_idcs = meta_data.cluster_sort_idcs;
                   this.cluster_sort_idcs_reverse = meta_data.cluster_sort_idcs_reverse;
@@ -457,12 +462,12 @@
                                 label: {
                                   text: cluster_label, 
                                   textposition: textposition, 
-                                  font: {size: 10, color: 'white'},
+                                  font: {size: 10, color: 'blue'},
                                   padding: Math.log(cluster_size)*10
                                 },
                                 line: {
                                     width: 1,
-                                    color: 'white'
+                                    color: 'blue'
                                 },
                               }
                             );
@@ -496,7 +501,7 @@
 
             update_hoverIdx(idcs){
                 const data = this.heatmap_div.data[0].z;
-                let shapes = this.heatmap_div.layout.shapes.filter((shape) => shape.name !== 'hover_idx');
+                let shapes = this.heatmap_div.layout.shapes?.filter((shape) => shape.name !== 'hover_idx');
                 for(let i = 0; i < idcs.length; i++){
                     const y_idx = idcs[i][0];
                     const x_idx = idcs[i][1];
@@ -580,10 +585,10 @@
         function connect_scatter_heatmap(scatter_widget, heatmap_widget){
             scatter_widget.scatter_div.on('plotly_hover', function(data){
                 const idx = data.points[0].pointIndex;
-                // TODO: for clustered version
-                // inverse_idcs = np.argsort(self.idcs)
-                // heatmap_idx = inverse_idcs[idx]
                 heatmap_idx = idx;
+                if(heatmap_widget.do_cluster){
+                  heatmap_idx = heatmap_widget.cluster_sort_idcs_reverse[idx];
+                }
                 heatmap_widget.update_hoverIdx([
                     [heatmap_idx, data.points[0].data.x.length + heatmap_idx], 
                     [data.points[0].data.x.length + heatmap_idx, heatmap_idx]
@@ -596,9 +601,10 @@
 
             // TODO: when highlighting, the hover events seem to break
             // heatmap_widget.heatmap_div.on('plotly_hover', function(data){
+            //   console.log('hi')
             //     const idx = data.points[0].pointIndex;
-            //     const y_idx = idx[0];
-            //     const x_idx = idx[1];
+            //     let y_idx = idx[0];
+            //     let x_idx = idx[1];
             //     const z_data = data.points[0].data.z;
             //     let mode1 = 'text';
             //     let mode2 = 'text';
@@ -608,8 +614,16 @@
             //     if(y_idx < z_data.length/2){
             //         mode2 = 'image';
             //     }
-            //     scatter_widget.highlight(mode1, x_idx%(z_data.length/2));
-            //     scatter_widget.highlight(mode2, y_idx%(z_data.length/2));
+            //     x_idx = x_idx%(z_data.length/2);
+            //     y_idx = y_idx%(z_data.length/2);
+
+            //     if(heatmap_widget.do_cluster){
+            //       y_idx = heatmap_widget.cluster_sort_idcs[y_idx];
+            //       x_idx = heatmap_widget.cluster_sort_idcs[x_idx];
+            //     }
+
+            //     scatter_widget.highlight(mode1, x_idx);
+            //     scatter_widget.highlight(mode2, y_idx);
             // });
 
             // heatmap_widget.heatmap_div.on('plotly_unhover', function(data){
@@ -623,20 +637,22 @@
                 el = document.getElementById(el);
             }
             projection_promise.then(function(data){ 
-                const heatmap_widget = new SimilarityHeatmapWidget(dataset_name, model_name, do_cluster=do_cluster);
-                el.appendChild(heatmap_widget.div)
+                const heatmap_widget = new SimilarityHeatmapWidget(do_cluster=do_cluster);
+                heatmap_widget.update_heatmap(dataset_name, model_name).then(() => {
+                  el.appendChild(heatmap_widget.div)
 
-                const scatter_widget = new ScatterPlotWidget(data, model_name, selected_method=projection_method);
-                el.appendChild(scatter_widget.div)
+                  const scatter_widget = new ScatterPlotWidget(data, model_name, selected_method=projection_method);
+                  el.appendChild(scatter_widget.div)
 
-                connect_scatter_heatmap(scatter_widget, heatmap_widget);
+                  connect_scatter_heatmap(scatter_widget, heatmap_widget);
 
-                prompts_promise.then(captions => {
-                    const hover_widget = new HoverWidget(dataset_name, captions);
-                    connect_scatter_hover(scatter_widget, hover_widget)
-                    connect_heatmap_hover(heatmap_widget, hover_widget);
-                    el.appendChild(hover_widget.div)
-                    return captions;
+                  prompts_promise.then(captions => {
+                      const hover_widget = new HoverWidget(dataset_name, captions);
+                      connect_scatter_hover(scatter_widget, hover_widget)
+                      connect_heatmap_hover(heatmap_widget, hover_widget);
+                      el.appendChild(hover_widget.div)
+                      return captions;
+                  });
                 });
                 return data;
             });
@@ -653,6 +669,7 @@
                 model_select.appendChild(opt);
             }
             model_select.selectedIndex = 0;
+            model_select.style.marginLeft = '50px';
             const div = document.getElementById(el_id);
             div.appendChild(model_select);
 
@@ -704,7 +721,7 @@
         }
 
         clip_comparer = (models, prompts_promise, dataset_name, el_id) => {
-            prompts_promise.then(captions => {
+            prompts_promise.then(async captions => {
                 let heatmap_widgets = {}
 
                 function highlight_hover(data){
@@ -722,7 +739,8 @@
 
                 for (const key in models) {
                     const model = models[key];
-                    heatmap_widgets[model] = new SimilarityHeatmapWidget(dataset_name, model, do_cluster=false, title=model);
+                    heatmap_widgets[model] = new SimilarityHeatmapWidget(do_cluster=false, title=model);
+                    await heatmap_widgets[model].update_heatmap(dataset_name, model, show_meta_info=false);
                     document.getElementById(el_id + '-' + Math.floor(key/2)).appendChild(heatmap_widgets[model].div)
                     heatmap_widgets[model].heatmap_div.on('plotly_hover', highlight_hover)
                     connect_heatmap_hover(heatmap_widgets[model], hover_widget);
@@ -789,16 +807,19 @@
 
         <div id="clip-modalitygap-heatmap" style="display: inline-flex;"></div>
         <script>
-            const heatmap_widget = new SimilarityHeatmapWidget('MSCOCO-Val_size-100', 'CLIP');
-            document.getElementById('clip-modalitygap-heatmap').appendChild(heatmap_widget.div)
+            const heatmap_widget = new SimilarityHeatmapWidget();
+            heatmap_widget.update_heatmap('MSCOCO-Val_size-100', 'CLIP').then(() =>{
 
-            mscoco_val_prompts_promise.then(captions => {
-                const hover_widget = new HoverWidget('MSCOCO-Val_size-100', captions);
-                connect_heatmap_hover(heatmap_widget, hover_widget);
-                document.getElementById('clip-modalitygap-heatmap').appendChild(hover_widget.div)
+              document.getElementById('clip-modalitygap-heatmap').appendChild(heatmap_widget.div)
 
-                return captions;
-            })
+              mscoco_val_prompts_promise.then(captions => {
+                  const hover_widget = new HoverWidget('MSCOCO-Val_size-100', captions);
+                  connect_heatmap_hover(heatmap_widget, hover_widget);
+                  document.getElementById('clip-modalitygap-heatmap').appendChild(hover_widget.div)
+
+                  return captions;
+              });
+            });
         </script>
 
         <p>So, where does this modality gap come from?</p>
@@ -971,7 +992,7 @@
 
         <div id="cloob-explorer" style="display: flex;" class="l-page-outset"></div>
         <script>
-            clip_explorer_by_model('MSCOCO-Val_size-100', 'CLOOB_LAION400M', "cloob-explorer", mscoco_val_prompts_promise, mscoco_val_projections_promise, 'UMAP')
+            clip_explorer_by_model('MSCOCO-Val_size-100', 'CLOOB', "cloob-explorer", mscoco_val_prompts_promise, mscoco_val_projections_promise, 'UMAP')
         </script>
 
         <p>TODO: analyze which parts of the objective are responsible for closing the modality gap; should mainly be hopfield layers because they somehow also include in-modal relations in their loss?... look into this in more detail and discuss with elisabeth…</p>
@@ -1064,6 +1085,7 @@
                 const img_thumbnails = [];
 
                 const update_augmented_clip_comparer = (id) => {
+                  
                     img_thumbnails.forEach((img) => {
                         img.style.borderColor = 'transparent';
                         img.style.opacity = 0.3;
@@ -1085,6 +1107,7 @@
                     clip_comparer(['CLIP', 'CyCLIP', 'CLOOB', 'CLOOB_LAION400M'], prompts_promise, dataset_name, 'similarity-heatmaps-augmented')
                 }
 
+                document.getElementById('similarity-heatmaps-augmented-picker').innerHTML = '';
                 for (let i = 0; i < 10; i++) {
                     const img = document.createElement('img');
                     img.src = './exported_data_checkpoints/example_images/' + i + '.jpg';

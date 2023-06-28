@@ -191,6 +191,7 @@
                     var opt = new Option(this.projection_methods[key], this.projection_methods[key])
                     this.method_select.appendChild(opt);
                 }
+                console.log(this.projection_methods.findIndex((value)=>value==selected_method))
                 this.method_select.selectedIndex = this.projection_methods.findIndex((value)=>value==selected_method);
                 this.method_select.onchange = () => {
                     this.update_scatter();
@@ -841,7 +842,7 @@
 
         <p>They also experimented with manually reducing the modality gap by moving the embeddings closer together along the gap vector. </p>
         <img class="l-body" src="./exported_data_checkpoints/closethegap-schema.png"/>
-        <p>However, since the modality subspaces trained by CLIP are not symmetric (footnote: Goel et al.<dt-cite key="goel_cyclip_2022"></dt-cite> argue that the CLIP objective does, in fact, symmetrize the spaces in its optimal solution; in practice however this ideal scenario does not happen) to each other, a modification of the embeddings destroys the complex relationship between images and texts that was derived during training. This naturally results in an increasing loss when moving away from the modality gap that was originally trained as shown in the next visualization. On the x-axis, we show the Euclidean distance between the two embedding centers (the black dashed line indicates the original distance), and on the y-axis, we show the loss that results when moving the two embeddings closer together or further away from each other. These values are calculated with the whole 5000 samples MSCOCO validation set.</p>
+        <p>However, since the modality subspaces trained by CLIP are not symmetric<dt-fn>Goel et al.<dt-cite key="goel_cyclip_2022"></dt-cite> argue that the CLIP objective does, in fact, symmetrize the spaces in its optimal solution; in practice however this ideal scenario does not happen.</dt-fn> to each other, a modification of the embeddings destroys the complex relationship between images and texts that was derived during training. This naturally results in an increasing loss when moving away from the modality gap that was originally trained as shown in the next visualization. On the x-axis, we show the Euclidean distance between the two embedding centers (the black dashed line indicates the original distance), and on the y-axis, we show the loss that results when moving the two embeddings closer together or further away from each other. These values are calculated with the whole 5000 samples MSCOCO validation set.</p>
 
         <div id="clip-loss-landscape" style="display: inline-flex;"></div>
         <script>
@@ -1064,8 +1065,8 @@
         <p>As previously demonstrated, we can identify patterns in datasets and subsets of datasets using the similarity heatmap visualizations. Now, we would also like to see if we can find patterns in augmentations of a single data point. For example, we take a single image, generate rotated versions of this image, and use this augmented dataset to compute CLIP embeddings and similarities. The results of this experiment for the three CLIP-like models are shown in the visualization below (note that we have two variants of the CLOOB model: one initialized with the checkpoints as provided by the official CLOOB paper, and the other one was trained on the LAION 400M dataset [cite github repo]). To generate this dataset, we gradually rotate the image by 360 degrees over the course of 100 steps. Note that we only augment the image, but not the text, which results in a completely homogeneous similarity in the in-modal text quadrant of the heatmap and in homogenous stripes along the text dimension in the cross-modal quadrants of the heatmap.</p>
         <p>When looking at the in-modal image similarity quadrant of the heatmap for each model using augmentations of the first image, we can see an interesting pattern emerge: in addition to the bright yellow diagonal axis that corresponds to the similarities of images to themselves, there is also the off-diagonal axis of the matrix sticking out. When hovering along the off-diagonal, we see that the two images along this axis are actually mirrored versions of each other. So it seems like all models have learned to be invariant to the horizontal flip transformation (at least for this image). There is another interesting pattern emerging in the embedding similarities for CLOOB that looks like a checkerboard. When looking into the darker areas of this heatmap in more detail, we can see that the pattern occurs around multiples of 90-degree rotations. This could give insight into which kind of data the model was trained on, or more concretely, which random augmentations were used on the training dataset. For example, in the case of CLOOB, we could assume that the data was randomly rotated up to around 80 degrees. Additionally, the images might also have been horizontally flipped (as indicated by the off-diagonal axis).</p>
         <p>Use the interactions to explore the heatmaps for different images yourself.</p>
-        
-        <div class="l-page">
+        <!-- TODO: evtl rotated und noisy extra -->
+        <div class="l-page"> 
             <select id="augmentation-picker" style="margin:20px;">
                 <option value="Rotated">Rotated</option>
                 <option value="Noisy">Noisy</option>
@@ -1193,12 +1194,27 @@
     </dt-appendix>
 
     <script type="text/bibliography">
+
+        @inproceedings{radford_learning_2021,
+            title = {Learning Transferable Visual Models From Natural Language Supervision},
+            url = {https://proceedings.mlr.press/v139/radford21a.html},
+            language = {en},
+            urldate = {2022-12-30},
+            booktitle = {Proceedings of the 38th International Conference on Machine Learning},
+            publisher = {PMLR},
+            author = {Radford, Alec and Kim, Jong Wook and Hallacy, Chris and Ramesh, Aditya and Goh, Gabriel and Agarwal, Sandhini and Sastry, Girish and Askell, Amanda and Mishkin, Pamela and Clark, Jack and Krueger, Gretchen and Sutskever, Ilya},
+            month = jul,
+            year = {2021},
+            note = {ISSN: 2640-3498},
+            pages = {8748--8763},
+        }
+
         @article{liang_mind_2022,
             title = {Mind the Gap: Understanding the Modality Gap in Multi-modal Contrastive Representation Learning},
             shorttitle = {Mind the Gap},
             url = {http://arxiv.org/abs/2203.02053},
             urldate = {2023-05-15},
-            journal={arXivreprint arXiv:1502.04623},
+            journal={arXivreprint},
             author = {Liang, Weixin and Zhang, Yuhui and Kwon, Yongchan and Yeung, Serena and Zou, James},
             month = oct,
             year = {2022},
@@ -1248,7 +1264,7 @@
         @article{wang_diffusiondb_2022,
             title = {DiffusionDB: A Large-scale Prompt Gallery Dataset for Text-to-Image Generative Models},
             shorttitle = {DiffusionDB},
-            journal={arXivreprint arXiv:1502.04623},
+            journal={arXivreprint},
             url = {http://arxiv.org/abs/2210.14896},
             abstract = {With recent advancements in diffusion models, users can generate high-quality images by writing text prompts in natural language. However, generating images with desired details requires proper prompts, and it is often unclear how a model reacts to different prompts and what the best prompts are. To help researchers tackle these critical challenges, we introduce DiffusionDB, the first large-scale text-to-image prompt dataset. DiffusionDB contains 14 million images generated by Stable Diffusion using prompts and hyperparameters specified by real users. We analyze prompts in the dataset and discuss key properties of these prompts. The unprecedented scale and diversity of this human-actuated dataset provide exciting research opportunities in understanding the interplay between prompts and generative models, detecting deepfakes, and designing human-AI interaction tools to help users more easily use these models. DiffusionDB is publicly available at: https://poloclub.github.io/diffusiondb.},
             urldate = {2023-04-11},
@@ -1258,6 +1274,46 @@
             year = {2022},
         }
 
+
+        @article{girdhar_imagebind_2023,
+            title = {ImageBind: One Embedding Space To Bind Them All},
+            shorttitle = {ImageBind},
+            url = {http://arxiv.org/abs/2305.05665},
+            abstract = {We present ImageBind, an approach to learn a joint embedding across six different modalities - images, text, audio, depth, thermal, and IMU data. We show that all combinations of paired data are not necessary to train such a joint embedding, and only image-paired data is sufficient to bind the modalities together. ImageBind can leverage recent large scale vision-language models, and extends their zero-shot capabilities to new modalities just by using their natural pairing with images. It enables novel emergent applications 'out-of-the-box' including cross-modal retrieval, composing modalities with arithmetic, cross-modal detection and generation. The emergent capabilities improve with the strength of the image encoder and we set a new state-of-the-art on emergent zero-shot recognition tasks across modalities, outperforming specialist supervised models. Finally, we show strong few-shot recognition results outperforming prior work, and that ImageBind serves as a new way to evaluate vision models for visual and non-visual tasks.},
+            urldate = {2023-05-10},
+            publisher = {arXiv},
+            author = {Girdhar, Rohit and El-Nouby, Alaaeldin and Liu, Zhuang and Singh, Mannat and Alwala, Kalyan Vasudev and Joulin, Armand and Misra, Ishan},
+            month = may,
+            year = {2023},
+            journal={arXivreprint},
+        }
+
+
+        @article{lin_microsoft_2015,
+            title = {Microsoft COCO: Common Objects in Context},
+            shorttitle = {Microsoft COCO},
+            url = {http://arxiv.org/abs/1405.0312},
+            urldate = {2023-06-27},
+            publisher = {arXiv},
+            author = {Lin, Tsung-Yi and Maire, Michael and Belongie, Serge and Bourdev, Lubomir and Girshick, Ross and Hays, James and Perona, Pietro and Ramanan, Deva and Zitnick, C. Lawrence and Dollár, Piotr},
+            month = feb,
+            year = {2015},
+            keywords = {Computer Science - Computer Vision and Pattern Recognition},
+            journal={arXivreprint},
+        }
+        
+        @misc{crowson_cloob-training_2023,
+            title = {cloob-training},
+            copyright = {MIT},
+            url = {https://github.com/crowsonkb/cloob-training},
+            abstract = {CLOOB training (JAX) and inference (JAX and PyTorch)},
+            urldate = {2023-06-27},
+            author = {Crowson, Katherine},
+            month = may,
+            year = {2023},
+            note = {original-date: 2022-03-24T22:33:36Z},
+        }
+        
 
         
       </script>

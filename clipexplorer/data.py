@@ -365,6 +365,20 @@ class CustomMSCOCOValImageMapper:
         return len(self.img_infos)
         
     def __getitem__(self, indices):
+        ### indices given as parameter do not directly translate to the indices of the wordnet dataframe because we load n_imgs_per_synset in this loader 
+        ### virtual indices can be in the range of [0, len(self.dataframe) * self.n_imgs_per_synset - 1]
+        ### -> we need to translate these virtual indices to the indices that we need for the wordnet dataframe
+        if type(indices) == int:
+            indices = [indices]
+            
+        if type(indices) == slice:
+            def ifnone(val, default):
+                if val is None:
+                    return default
+                return val
+            indices = list(range(ifnone(indices.start, 0), ifnone(indices.stop, len(self)), ifnone(indices.step, 1)))
+        
+        indices = np.array(indices)
         all_images = []
         for i in indices:
             coco_img = self.img_infos[i]
@@ -376,6 +390,8 @@ class CustomMSCOCOValImageMapper:
 
             all_images.append(Image.open(self.img_folder + coco_img['file_name']).convert("RGB"))
 
+        if len(all_images) == 1:
+            return all_images[0]
         return all_images
     
 

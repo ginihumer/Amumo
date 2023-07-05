@@ -19,7 +19,7 @@
     <meta charset="utf8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="scripts/template.v1.js"></script>
-    <script src="scripts/d3.v5.min.js"></script>
+    <script src="scripts/d3.v7.min.js"></script>
     <script src="scripts/plotly-2.24.1.min.js" charset="utf-8"></script>
     <link rel="stylesheet" href="styles/katex.min.css">
     <script defer src="scripts/katex.min.js"></script>
@@ -35,6 +35,13 @@
 <body>
 
     <script>
+        var interpolate = d3.scaleSequential(d3.interpolatePlasma);
+        var plasma_colors = [];
+        dark = d3.lab(interpolate(0)).l < 50;
+        for (let i = 0; i < 100; ++i) {
+            plasma_colors.push([i/99, d3.rgb(interpolate(i / (99))).hex()]);
+        }
+
         // load data
         const mscoco_val_prompts_promise = fetch('./exported_data_checkpoints/MSCOCO-Val_size-100/prompts.txt')
             .then(response => response.text())
@@ -336,7 +343,7 @@
 
 
         class SimilarityHeatmapWidget{
-            constructor(do_cluster=false, title='', width=500, height=420){
+            constructor(do_cluster=false, title='', width=500, height=420, z_min=null, z_max=null){
                 this.do_cluster = do_cluster;
 
                 const data = Array.from(Array(200), () => Array(200).fill(0));
@@ -344,8 +351,10 @@
                     z: data,
                     type: 'heatmap',
                     hoverinfo: 'text',
-                    colorscale: 'YlOrRd', // TODO: using plasma in python?
-                    reversescale: true
+                    colorscale: plasma_colors, //'Viridis',//'YlOrRd', 
+                    // reversescale: true
+                    zmin: z_min,
+                    zmax: z_max,
                 };
                 var traces = [trace1];
                 
@@ -451,7 +460,7 @@
                           if(cluster_size > 5){
                             let textposition = 'middle right';
                             if(offset < data.length/2/2){
-                              textposition = 'middle right';
+                              textposition = 'middle left';
                             }
                             shapes.push(
                               {
@@ -463,12 +472,12 @@
                                 label: {
                                   text: cluster_label, 
                                   textposition: textposition, 
-                                  font: {size: 10, color: 'blue'},
+                                  font: {size: 10, color: 'white'},
                                   padding: Math.log(cluster_size)*10
                                 },
                                 line: {
                                     width: 1,
-                                    color: 'blue'
+                                    color: 'white'
                                 },
                               }
                             );
@@ -721,7 +730,7 @@
 
         }
 
-        clip_comparer = (models, prompts_promise, dataset_name, el_id) => {
+        clip_comparer = (models, prompts_promise, dataset_name, el_id, z_min=null, z_max=null) => {
             prompts_promise.then(async captions => {
                 let heatmap_widgets = {}
 
@@ -740,7 +749,7 @@
 
                 for (const key in models) {
                     const model = models[key];
-                    heatmap_widgets[model] = new SimilarityHeatmapWidget(do_cluster=false, title=model);
+                    heatmap_widgets[model] = new SimilarityHeatmapWidget(do_cluster=false, title=model, width=500, height=420, z_min=z_min, z_max=z_max);
                     await heatmap_widgets[model].update_heatmap(dataset_name, model, show_meta_info=false);
                     document.getElementById(el_id + '-' + Math.floor(key/2)).appendChild(heatmap_widgets[model].div)
                     heatmap_widgets[model].heatmap_div.on('plotly_hover', highlight_hover)
@@ -887,8 +896,8 @@
                     z: simmilarity_diff,
                     type: 'heatmap',
                     hoverinfo: 'text',
-                    colorscale: 'YlOrRd', // TODO: using plasma in python?
-                    reversescale: true,
+                    colorscale: plasma_colors, //'YlOrRd',
+                    // reversescale: true,
                     zmin: 0.35,
                     zmax: 1.0,
                 };
@@ -1011,7 +1020,7 @@
             <div id="similarity-heatmaps-hover"></div>
         </div>
         <script>
-            clip_comparer(['CLIP', 'CLIP_nogap', 'CyCLIP', 'CyCLIP_nogap', 'CLOOB', 'CLOOB_LAION400M'], mscoco_val_prompts_promise, 'MSCOCO-Val_size-100', 'similarity-heatmaps')
+            clip_comparer(['CLIP', 'CLIP_nogap', 'CyCLIP', 'CyCLIP_nogap', 'CLOOB', 'CLOOB_LAION400M'], mscoco_val_prompts_promise, 'MSCOCO-Val_size-100', 'similarity-heatmaps', z_min=-0.25, z_max=1)
         </script>
 
         <h2>Analyses using the previously introduced concepts</h2>
@@ -1105,7 +1114,7 @@
                     document.getElementById('similarity-heatmaps-augmented-1').innerHTML = '';
                     document.getElementById('similarity-heatmaps-augmented-hover').innerHTML = '';
 
-                    clip_comparer(['CLIP', 'CyCLIP', 'CLOOB', 'CLOOB_LAION400M'], prompts_promise, dataset_name, 'similarity-heatmaps-augmented')
+                    clip_comparer(['CLIP', 'CyCLIP', 'CLOOB', 'CLOOB_LAION400M'], prompts_promise, dataset_name, 'similarity-heatmaps-augmented', z_min=0, z_max=1)
                 }
 
                 document.getElementById('similarity-heatmaps-augmented-picker').innerHTML = '';
@@ -1301,7 +1310,7 @@
             keywords = {Computer Science - Computer Vision and Pattern Recognition},
             journal={arXivreprint},
         }
-        
+
         @misc{crowson_cloob-training_2023,
             title = {cloob-training},
             copyright = {MIT},
@@ -1314,6 +1323,22 @@
             note = {original-date: 2022-03-24T22:33:36Z},
         }
         
+
+        @inproceedings{timme_robustness_2020,
+            address = {Budapest, Hungary},
+            title = {On the Robustness of Convolutional Neural Networks Regarding Transformed Input Images},
+            isbn = {978-989-758-475-6},
+            shorttitle = {On the {Robustness} of {Convolutional} {Neural} {Networks} {Regarding} {Transformed} {Input} {Images}},
+            url = {https://www.scitepress.org/DigitalLibrary/Link.aspx?doi=10.5220/0010107203960403},
+            doi = {10.5220/0010107203960403},
+            language = {en},
+            urldate = {2023-06-30},
+            booktitle = {Proceedings of the 12th {International} {Joint} {Conference} on {Computational} {Intelligence}},
+            publisher = {SCITEPRESS - Science and Technology Publications},
+            author = {Timme, Frederik and Kerdels, Jochen and Peters, Gabriele},
+            year = {2020},
+            pages = {396--403},
+        }
 
         
       </script>

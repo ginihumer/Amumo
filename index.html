@@ -847,7 +847,7 @@
             });
         </script>
 
-        <p>where xi and yi are the normalized image and text embedding vectors.</p>
+        <p>where x<sub>i</sub> and y<sub>i</sub> are the normalized image and text embedding vectors.</p>
 
         <p>They also experimented with manually reducing the modality gap by moving the embeddings closer together along the gap vector. </p>
         <img class="l-body" src="./exported_data_checkpoints/closethegap-schema.png"/>
@@ -874,7 +874,16 @@
         <p>As mentioned previously, the two modalities live on different embedding spaces and the two embeddings also have a different structure (i.e., are not symmetric to each other). Recently published papers propose different versions of CLIP, where they adjusted the objective function of the model to regularize the trained embedding space. We look closer into two promising approaches, namely CyCLIP<dt-cite key="goel_cyclip_2022"></dt-cite> and CLOOB<dt-cite key="furst_cloob_2022"></dt-cite>... [give reasons as to why we decided for these]</p>
 
         <h3>CyCLIP</h3>
-        <p>Goel et al.<dt-cite key="goel_cyclip_2022"></dt-cite> argue that with the objective function on which CLIP is optimized, the image and text embeddings are not interchangeable as currently assumed and used for language-guided image generation. They propose an augmentation of the InfoNCE loss used to optimize CLIP that adds two regularization terms that enforce symmetry of the two embedding spaces; one for in-modal symmetry and one for cross-modal symmetry of the similarities. The visualizations below already hint that the embeddings are symmetric: The in-modal similarity heatmaps of the image and text quadrants seem to look very similar to each other and the modalities in the image-text points in the PCA projection seem to be almost parallel. However, it is also clear that the modality gap is still present.</p>
+        <p>Goel et al.<dt-cite key="goel_cyclip_2022"></dt-cite> argue that with the objective function on which CLIP is optimized, the image and text embeddings are not interchangeable as currently assumed and used for language-guided image generation. They propose an augmentation of the InfoNCE loss used to optimize CLIP that adds two regularization terms that enforce symmetry of the two embedding spaces; one for in-modal symmetry and one for cross-modal symmetry of the similarities.</p>
+            
+        <div id="cyCLIPFormula"></div>
+        <script type="module" type="text/javascript">
+            katex.render(String.raw`L_{CyCLIP} = L_{InfoNCE} + L_I + L_C`, document.getElementById('cyCLIPFormula'), {
+                throwOnError: false
+            });
+        </script>
+
+        <p>The visualizations below already hint that the embeddings are symmetric: The in-modal similarity heatmaps of the image and text quadrants seem to look very similar to each other and the modalities in the image-text points in the PCA projection seem to be almost parallel. However, it is also clear that the modality gap is still present.</p>
 
         <div id="cyclip-modalitygap" style="display: flex;" class="l-page-outset"></div>
         <script>
@@ -1339,6 +1348,20 @@
             year = {2020},
             pages = {396--403},
         }
+
+
+        @article{eckelt_visual_2022,
+            title = {Visual Exploration of Relationships and Structure in Low-Dimensional Embeddings},
+            issn = {1941-0506},
+            doi = {10.1109/TVCG.2022.3156760},
+            journal = {IEEE Transactions on Visualization and Computer Graphics},
+            author = {Eckelt, Klaus and Hinterreiter, Andreas and Adelberger, Patrick and Walchshofer, Conny and Dhanoa, Vaishali and Humer, Christina and Heckmann, Moritz and Steinparz, Christian and Streit, Marc},
+            year = {2022},
+            note = {Conference Name: IEEE Transactions on Visualization and Computer Graphics},
+            keywords = {Visualization, Task analysis, aggregation, comparison, Data visualization, Dimensionality reduction, Layout, layout enrichment, projection, Space exploration, Trajectory, visual analytics, Visual analytics},
+            pages = {1--1},
+        }
+
 
         
       </script>

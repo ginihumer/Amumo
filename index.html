@@ -735,6 +735,7 @@
                 let heatmap_widgets = {}
 
                 function highlight_hover(data){
+                    console.log('highlight hover')
                     for (const key in heatmap_widgets) {
                         if (Object.hasOwnProperty.call(heatmap_widgets, key)) {
                             const element = heatmap_widgets[key];
@@ -745,7 +746,6 @@
                 }
 
                 const hover_widget = new HoverWidget(dataset_name, captions);
-                connect_heatmap_hover(heatmap_widget, hover_widget);
 
                 for (const key in models) {
                     const model = models[key];
@@ -754,7 +754,7 @@
                     document.getElementById(el_id + '-' + Math.floor(key/2)).appendChild(heatmap_widgets[model].div)
                     heatmap_widgets[model].heatmap_div.on('plotly_hover', highlight_hover)
                     connect_heatmap_hover(heatmap_widgets[model], hover_widget);
-                    
+                    // console.log(heatmap_widgets[model].getEventListeners())
                 }
 
                 document.getElementById(el_id + '-hover').appendChild(hover_widget.div)

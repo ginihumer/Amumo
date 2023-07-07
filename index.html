@@ -754,7 +754,6 @@
                     document.getElementById(el_id + '-' + Math.floor(key/2)).appendChild(heatmap_widgets[model].div)
                     heatmap_widgets[model].heatmap_div.on('plotly_hover', highlight_hover)
                     connect_heatmap_hover(heatmap_widgets[model], hover_widget);
-                    // console.log(heatmap_widgets[model].getEventListeners())
                 }
 
                 document.getElementById(el_id + '-hover').appendChild(hover_widget.div)

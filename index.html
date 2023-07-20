@@ -23,7 +23,7 @@
     <script src="scripts/plotly-2.24.1.min.js" charset="utf-8"></script>
     <link rel="stylesheet" href="styles/katex.min.css">
     <script defer src="scripts/katex.min.js"></script>
-
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
 
     <style>
         table{
@@ -762,11 +762,56 @@
             })
         }
 
+        
+        const augmented_heatmap_comparer = (augmentation, el_id) => {
+
+            const img_thumbnails = [];
+
+            const update_augmented_clip_comparer = (id) => {
+            
+                img_thumbnails.forEach((img) => {
+                    img.style.borderColor = 'transparent';
+                    img.style.opacity = 0.3;
+                });
+                img_thumbnails[id].style.borderColor = 'black';
+                img_thumbnails[id].style.opacity = 0.9;
+
+                const dataset_name = augmentation + '-' + id + '_size-100';
+
+                const prompts_promise = fetch('./exported_data_checkpoints/' + dataset_name + '/prompts.txt')
+                    .then(response => response.text())
+                    .then(data => data.split('\n'))
+                    .catch(error => console.error(error));
+
+                document.getElementById(el_id+'-0').innerHTML = '';
+                document.getElementById(el_id+'-1').innerHTML = '';
+                document.getElementById(el_id+'-hover').innerHTML = '';
+
+                clip_comparer(['CLIP', 'CyCLIP', 'CLOOB', 'CLOOB_LAION400M'], prompts_promise, dataset_name, el_id, z_min=0, z_max=1)
+            }
+
+            document.getElementById(el_id+'-picker').innerHTML = '';
+            for (let i = 0; i < 9; i++) {
+                const img = document.createElement('img');
+                img.src = './exported_data_checkpoints/example_images/' + i + '.jpg';
+                img.style.cursor = 'pointer';
+                img.style.border = 'transparent 2px solid';
+                document.getElementById(el_id+'-picker').appendChild(img);
+                img_thumbnails.push(img);
+                img.addEventListener("click", function() {
+                    update_augmented_clip_comparer(i)
+                });
+            }
+
+            update_augmented_clip_comparer(0);
+
+        }
+
     </script>
 
     <script type="text/front-matter">
-        title: "Exploring and Understanding the Latent Space Embeddings of CLIP-like Multi-Modal Models"
-        description: "TODO: Description of the post"
+        title: "Understanding and Comparing Multi-Modal Models"
+        description: "Exploring the Latent Space of CLIP-like Models (CLIP, CyCLIP, CLOOB) Using Inter-Modal Pairs"
         authors:
         - Christina Humer: https://jku-vds-lab.at/persons/humer/
         - Marc Streit: https://marc-streit.com
@@ -778,20 +823,25 @@
     </script>
 
     <dt-article>
-        <h1>CLIP Explorer</h1>
-        <h2>Exploring and Understanding the Latent Space Embeddings of CLIP-like Multi-Modal Models</h2>
+        <h1>Understanding and Comparing Multi-Modal Models</h1>
+        <h2>Exploring the Latent Space of CLIP-like Models (CLIP, CyCLIP, CLOOB) Using Inter-Modal Pairs</h2>
         <dt-byline></dt-byline>
         <p>
-            Contrastive LanguageImage Pre-training (CLIP) and other variations like CyCLIP, or CLOOB are trained on image-text pairs with a contrastive objective. 
-            The goal of contrastive loss objectives is to minimize latent-space distances of data points that have the same underlying meaning. 
-            We refer to the particular cases of contrastive learning that CLIP-like models perform as multi-modal contrastive learning because they use two (or more... refer to the multi modal thing that also trains on audio and video) modes of data: image and text pairs. 
-            More specifically the objective that CLIP is optimized on is a shared embedding space that minimizes the distances between image-text pairs that have the same semantic meaning, while maximizing the distances to all other combinations of texts and images.
+            Contrastive Language Image Pre-training (CLIP)<dt-cite key="radford_learning_2021"></dt-cite> and variations of this approach like CyCLIP<dt-cite key="goel_cyclip_2022"></dt-cite>, or CLOOB<dt-cite key="furst_cloob_2022"></dt-cite> are trained on image-text pairs with a contrastive objective. The goal of contrastive loss objectives is to minimize latent-space distances of data points that have the same underlying meaning. We refer to the particular cases of contrastive learning that CLIP-like models perform as multi-modal contrastive learning because they use two (or more<dt-cite key="girdhar_imagebind_2023"></dt-cite>) modes of data (e.g., images and texts) where each mode uses their own encoder to generate a latent embedding space. More specifically, the objective that CLIP is optimized for minimizes the distances between image-text embeddings of pairs that have the same semantic meaning while maximizing the distances to all other combinations of text and image embeddings. 
         </p>
+        <p>
+            We would expect that such a shared latent space places similar concepts of images and texts close to each other, as demonstrated in the following sketch. However, the reality is a bit more complicated.
+        </p>
+        <img 
+            class="l-body"
+            src="assets/idea_figure.png" 
+            alt="Example of how we imagined a 2-dimensional projection of CLIP's image and text embeddings. Image and text points are shown in one scatter plot and instants that are semantically similar are plotted close together." 
+        >
         <h2>
             CLIP and its Modality Gap
         </h2>
         <p>
-            Despite the clear objective that is supposed to bring texts and images to a shared embedding space there is a phenomenon called "Modality Gap" (reference to paper) which shows us that embeddings of different modalities lie in their own embedding subspaces. The example below shows the Modality Gap between images and texts for a subset of 100 images from MSCOCOs validation set for CLIP embeddings. The image and text embeddings are projected to a 2-dimensional space and visualized in a scatter plot.
+            Despite the clear objective that is supposed to bring texts and images to a shared embedding space there is a phenomenon called "Modality Gap"<dt-cite key="liang_mind_2022"></dt-cite> which describes that embeddings of different modalities lie in their own embedding subspaces. The example below visualizes the Modality Gap between images and texts of CLIP<dt-fn>We use the official CLIP implementation by OpenAI: <a src=’https://github.com/openai/CLIP’>https://github.com/openai/CLIP</a> with the RN50 image encoder.</dt-fn> embeddings for a subset of 100 randomly selected images from MSCOCOs<dt-cite key="lin_microsoft_2015"></dt-cite> validation set. The image and text embeddings are projected to a 2-dimensional space and visualized in a scatter plot. We use a gray line to connect image-text pairs that belong together. 
         </p>
 
         <div id="clip-modalitygap-scatterplot" style="display: inline-flex;"></div>
@@ -811,9 +861,12 @@
             });
         </script>
 
-        <p>The use of dimensionality reduction methods to get a 2-dimensional view of the data shows clearly the separation between the two modalities. However, dimensionality reduction comes hand in hand with a loss of information and possible distortion of data. We propose a different way to visualize the dimensionality gap, using a similarity heatmap. As demonstrated later, we found some interesting things with this visualization, which we could not have found with the scatter plot visualization alone.</p>
-        <p>The similarity heatmap visualized below shows the same subset of 100 image-text pairs as before. However in this case, we show the cosine similarities calculated between all data points. This results in a matrix that shows the in-modal similarities of the 100 image embeddings in the top left quadrant, the in-modal similarities of the 100 text embeddings in the bottom right quadrant and the cross-modal similarities between the 100 image embeddings and 100 text embeddings in the top right and bottom left quadrants. The matrix diagonal axes of each quadrant represents paired data points (i.e., for the in-modal similarities, the diagonal shows the similarities of the image or text embedding to itself, while for the cross-modal similarities, the diagonal shows the matching image-text pairs). The modality gap is immediately visible because the in-modal similarities are much higher overall compared to the cross-modal similarities.</p>
-
+        <p>
+            The use of dimensionality reduction methods to compute a 2-dimensional view of the data clearly shows the separation between the two modalities. However, dimensionality reduction comes hand in hand with a loss of information and possible distortion of data. We propose a different way to visualize the dimensionality gap. Similarity heatmaps are a simple yet effective way of visualizing latent space embeddings that also helped us to better understand the modality gap. Using this visualization also allowed us to gain interesting insights unrelated to the modality gap, which we could not have found with the scatter plot visualization alone.
+        </p>
+        <p>
+            The similarity heatmap below shows the same subset of 100 image-text pairs previously shown in a scatter plot. However, we show the cosine similarities calculated between all image and text embeddings in this case. This results in a matrix with four quadrants: (i) top-left: in-modal similarities of the 100 image embeddings; (ii) bottom-right: in-modal similarities of the 100 text embeddings; (iii) top-right: cross-modal similarities between the 100 image embeddings and the 100 text embeddings; and (iv) bottom-left: a transposed version of the cross-modal image-text similarities. The diagonal axis of each quadrant represents the matching data points (i.e., for the in-modal similarities, the diagonal shows the similarities of the image or text embedding to itself, while for the cross-modal similarities, the diagonal shows the matching image-text pairs). The modality gap is immediately visible: the in-modal similarities are much higher overall compared to the cross-modal similarities.
+        </p>
         <div id="clip-modalitygap-heatmap" style="display: inline-flex;"></div>
         <script>
             const heatmap_widget = new SimilarityHeatmapWidget();
@@ -831,8 +884,11 @@
             });
         </script>
 
-        <p>So, where does this modality gap come from?</p>
-        <p>As analyzed by Liang et al.<dt-cite key="liang_mind_2022"></dt-cite> the modality gap already appears before models are trained (i.e., random weight initialization). The authors also highlight that the gap between modalities persists throughout training, which means that CLIP's objective function is not able to overcome this phenomenon. A reason for that could be that the objective function only trains on the alignment of (non-)matching image-text combinations, but does not contain any regularization terms with regard to the overall layout of the embedding spaces and in-modality alignment<dt-cite key="goel_cyclip_2022"></dt-cite>. Liang et al.<dt-cite key="liang_mind_2022"></dt-cite> also formally define the modality gap as the Euclidean difference between the centers of each modality:</p>
+        <p>Now, where does this modality gap even come from?</p>
+        <p>
+            As analyzed by Liang et al.<dt-cite key="liang_mind_2022"></dt-cite>, the modality gap already appears before models are trained, possibly caused by random weight initialization and different model architectures. The authors also highlight that the gap between modalities persists throughout training, which means that CLIP's objective function cannot overcome this phenomenon. A reason for that could be that the objective function only trains on the alignment of (non-)matching image-text combinations but does not contain any regularization terms with regard to the overall layout of the embedding spaces and in-modality alignment<dt-cite key="goel_cyclip_2022"></dt-cite>. 
+            Liang et al.<dt-cite key="liang_mind_2022"></dt-cite> also formally define the modality gap as the Euclidean difference between the centers of each modality:
+        </p>
 
         <div id="modalityGapFormula"></div>
         <!-- https://katex.org/docs/browser.html -->
@@ -848,9 +904,11 @@
 
         <p>where x<sub>i</sub> and y<sub>i</sub> are the normalized image and text embedding vectors.</p>
 
-        <p>They also experimented with manually reducing the modality gap by moving the embeddings closer together along the gap vector. </p>
+        <p>They also experimented with manually reducing the modality gap by moving the embeddings closer together along the gap vector.</p>
         <img class="l-body" src="./exported_data_checkpoints/closethegap-schema.png"/>
-        <p>However, since the modality subspaces trained by CLIP are not symmetric<dt-fn>Goel et al.<dt-cite key="goel_cyclip_2022"></dt-cite> argue that the CLIP objective does, in fact, symmetrize the spaces in its optimal solution; in practice however this ideal scenario does not happen.</dt-fn> to each other, a modification of the embeddings destroys the complex relationship between images and texts that was derived during training. This naturally results in an increasing loss when moving away from the modality gap that was originally trained as shown in the next visualization. On the x-axis, we show the Euclidean distance between the two embedding centers (the black dashed line indicates the original distance), and on the y-axis, we show the loss that results when moving the two embeddings closer together or further away from each other. These values are calculated with the whole 5000 samples MSCOCO validation set.</p>
+        <p>
+            However, since the modality subspaces trained by CLIP are not symmetric<dt-fn>Goel et al.<dt-cite key="goel_cyclip_2022"></dt-cite> argue that the CLIP objective does, in fact, symmetrize the spaces in its optimal solution; in practice however this ideal scenario does not happen.</dt-fn> to each other, a modification of the embeddings destroys the complex relationship between images and texts that was derived during training. This naturally results in an increasing loss when changing the distance between modalities that was originally trained, as shown in the visualization below. The x-axis shows the Euclidean distance between the two embedding centers (the black dashed line indicates the original distance). The y-axis shows the loss that results when moving the two embeddings closer together or further away from each other. We calculated these values with the whole 5000 samples MSCOCO validation set. It becomes visible that the global minimum of this manual intervention is at the point of the original (trained) modality gap.
+        </p>
 
         <div id="clip-loss-landscape" style="display: inline-flex;"></div>
         <script>
@@ -862,19 +920,24 @@
             });
         </script>
 
-        <p>What do the similarity heatmap and scatter plot look like when we brute force the gap to close? The similarity matrix seems to be more homogeneous (i.e., in-modal similarities and cross-modal similarities are on a similar level) and points in the scatter plot are closer together. However, the scatter plot also shows that the edges between image-text pairs are still very long and that there are a lot of edge crossings between the image-text pairs, which is a qualitative indicator that the embeddings are not really aligned. Furthermore, the text embeddings seem to concentrate more at the center compared to the image embeddings.</p>
+        <p>
+            Now, what do the similarity heatmap and scatter plot look like when we manually close the gap? As shown in the visualization below, the similarity matrix seems more homogeneous (i.e., in-modal similarities and cross-modal similarities are on a similar level), and points in the scatter plot are closer together. However, the scatter plot also shows that the edges between image-text pairs are still long. The many edge crossings between the image-text pairs are also a qualitative indicator that the embeddings are not well aligned. Furthermore, the text embeddings concentrate more on the center compared to the image embeddings.
+        </p>
 
         <div id="clip-nomodalitygap" style="display: flex;" class="l-page-outset"></div>
         <script>
             clip_explorer_by_model('MSCOCO-Val_size-100', 'CLIP_nogap', "clip-nomodalitygap", mscoco_val_prompts_promise, mscoco_val_projections_promise)
         </script>
 
-        <h2>What about other CLIP-like models?</h2>
-        <p>As mentioned previously, the two modalities live on different embedding spaces and the two embeddings also have a different structure (i.e., are not symmetric to each other). Recently published papers propose different versions of CLIP, where they adjusted the objective function of the model to regularize the trained embedding space. We look closer into two promising approaches, namely CyCLIP<dt-cite key="goel_cyclip_2022"></dt-cite> and CLOOB<dt-cite key="furst_cloob_2022"></dt-cite>... [give reasons as to why we decided for these]</p>
+        <h2>What About Other CLIP-Like Models?</h2>
+        <p>
+            As mentioned previously, the two modalities live on different embedding spaces, and the two embeddings vary in structure (i.e., they are not symmetric to each other). Recently published papers propose different versions of CLIP, where the objective function has been adjusted to regularize the trained embedding space. We look closer into two promising approaches, namely CyCLIP<dt-cite key="goel_cyclip_2022"></dt-cite> and CLOOB<dt-cite key="furst_cloob_2022"></dt-cite>.
+        </p>
 
         <h3>CyCLIP</h3>
-        <p>Goel et al.<dt-cite key="goel_cyclip_2022"></dt-cite> argue that with the objective function on which CLIP is optimized, the image and text embeddings are not interchangeable as currently assumed and used for language-guided image generation. They propose an augmentation of the InfoNCE loss used to optimize CLIP that adds two regularization terms that enforce symmetry of the two embedding spaces; one for in-modal symmetry and one for cross-modal symmetry of the similarities.</p>
-            
+        <p>
+            According to Goel et al.<dt-cite key="goel_cyclip_2022"></dt-cite> using CLIP-generated image-text embeddings interchangeably (e.g., for Language-guided image generation) is suboptimal because the embeddings are–in practice–not aligned. They propose an augmentation of the InfoNCE loss used to optimize CLIP that adds two regularization terms that enforce the two embedding spaces to be symmetric: one for in-modal symmetry (LI) and one for cross-modal symmetry (LC) of the similarities. 
+        </p>
         <div id="cyCLIPFormula"></div>
         <script type="module" type="text/javascript">
             katex.render(String.raw`L_{CyCLIP} = L_{InfoNCE} + L_I + L_C`, document.getElementById('cyCLIPFormula'), {
@@ -882,14 +945,18 @@
             });
         </script>
 
-        <p>The visualizations below already hint that the embeddings are symmetric: The in-modal similarity heatmaps of the image and text quadrants seem to look very similar to each other and the modalities in the image-text points in the PCA projection seem to be almost parallel. However, it is also clear that the modality gap is still present.</p>
+        <p>
+            The visualizations below already hint that the embeddings are symmetric: The in-modal similarity heatmaps of the image and text quadrants look  similar, and the modalities in the image-text points in the PCA projection seem almost parallel. However, it is also clear that the modality gap is still present.
+        </p>
 
         <div id="cyclip-modalitygap" style="display: flex;" class="l-page-outset"></div>
         <script>
             clip_explorer_by_model('MSCOCO-Val_size-100', 'CyCLIP', "cyclip-modalitygap", mscoco_val_prompts_promise, mscoco_val_projections_promise)
         </script>
 
-        <p>Let's confirm this with a slight modification of the visualizations. First we calculate the difference between the in-modal similarities of images and texts, which results in a matrix where values approach zero (i.e., the matrix is a blue rectangle).</p>
+        <p>
+            We can confirm this with a slight modification of the similarity heatmap. For this, we calculate the difference between the in-modal similarities of images and texts, which results in a matrix where values approach zero (i.e., the matrix is a blue rectangle).
+        </p>
 
         <div id="cyclip-showsymmetry" style="display: flex;" class="l-page-outset"></div>
         <script>
@@ -933,7 +1000,9 @@
             })
         </script>
 
-        <p>When looking back to Liang et al's<dt-cite key="liang_mind_2022"></dt-cite> experiments that tried to align the embeddings by moving them along the modality gap vector, we saw that this does not work for CLIP embeddings because the space is not symmetrized. For CyCLIP however, the symmetrization is contained in the objective function and we could see in the previous plots that the spaces actually are (more or less) symmetric. Let's look into the loss landscape for different modality distances of CyCLIP embeddings as shown in the visualization below. We can see that the loss landscape looks very different from the CLIP landscape: in the distance interval of [-1.5; 1.5] the loss does not change much, which is another indicator that CyCLIP indeed learns (more or less: the spaces are not perfectly symmetric as shown in the landscape; outside the interval the loss increases... if perfectly symmetric, moving them along the vector should not change the loss at all because always the same points are closest to each other? could also be caused by the unit sphere normalization?) symmetric embedding spaces.</p>
+        <p>
+            When looking back to Liang et al.’s<dt-cite key="liang_mind_2022"></dt-cite> experiments that tried to align the embeddings by moving them along the modality gap vector, we saw that this does not work well for CLIP embeddings because the space is not symmetrized. For CyCLIP, however, the symmetrization is enforced with the objective function, and we could see in the previous plots that the spaces are indeed mostly symmetric. Let's look into the loss landscape for different modality distances of CyCLIP embeddings when moving the embeddings along the gap vector. In the visualization below, we can see that CyCLIP’s loss landscape looks very different from CLIP’s landscape: in the distance interval of [-1.5; 1.5] the loss does not change much, which is another indicator that CyCLIP indeed learns nearly symmetric embedding spaces.<dt-fn>Note that the loss outside the [-1.5; 1.5] interval increases. This could be due to the fact that the spaces are not perfectly symmetric. Another explanation could be that this happens due to  normalizing the embeddings to the unit sphere, but the method proposed for closing the gap is done in Euclidean space.</dt-fn>
+        </p>
 
         <div id="cy-clip-loss-landscape" style="display: flex;" class="l-middle-outset"></div>
         <script>
@@ -949,15 +1018,19 @@
             });
         </script>
 
-        <p>When closing the modality gap the similarity heatmap becomes more homogenous (i.e., the in-modal similarities and cross-modal similarities are similarly strong).</p>
+        <p>
+            Again, when closing the modality gap, the similarity heatmap becomes more homogenous (i.e., the in-modal similarities and cross-modal similarities are similarly strong). Also, the image-text pairs in the scatter plot are closer together, but there are still quite some edge crossings.
+        </p>
 
         <div id="cyclip-nomodalitygap" style="display: flex;" class="l-page-outset"></div>
         <script>
             clip_explorer_by_model('MSCOCO-Val_size-100', 'CyCLIP_nogap', "cyclip-nomodalitygap", mscoco_val_prompts_promise, mscoco_val_projections_promise)
         </script>
 
-        <p>We can also use UMAP or tSNE projection to better utilize the neighborhoods of similar embeddings instead of linearly determining the axes with the highest variance as done in PCA. In case of CyCLIP (scatter plot on the right hand), the use of a neighborhood-based dimensionality reduction technique results in shorter edges and better clustering of similar embeddings. For CLIP (scatter plot on the left hand), edges remain long, and similar images and texts are not clustered together.</p>
-        
+        <p>
+            Alternatively, we can use UMAP or tSNE projection to better utilize the neighborhoods of similar embeddings instead of linearly determining the axes with the highest variance, as done in PCA. In the case of CyCLIP (scatter plot on the right hand), the use of a neighborhood-based dimensionality reduction technique results in shorter edges and better clustering of similar embeddings. For CLIP (scatter plot on the left hand), edges remain long, and similar images and texts are not clustered together. See the Appendix for examples with 5000 samples.
+        </p>
+
         <div id="cy-clip-nogap-umap" style="display: flex;" class="l-page-outset"></div>
         <script>
             mscoco_val_projections_promise.then(function(data){ 
@@ -970,8 +1043,10 @@
             });
         </script>
 
-        <p>Let us summarize how the loss changes for CLIP and CyCLIP when moving the embeddings together along the modality gap vector. For that, we again use the MSCOCO validation dataset of 5000 samples.</p>
-        
+        <p>
+            Let us summarize how the loss changes for CLIP and CyCLIP when moving the embeddings together along the modality gap vector. For that, we again use the entire MSCOCO validation dataset of 5000 samples.
+        </p>
+
         <table>
             <tr>
                 <th>Model</th>
@@ -999,13 +1074,26 @@
             </tr>
         </table>
 
-        <p>This confirms that CyCLIP's loss changes far less than CLIP's loss; it neither gets better nor significantly worse. However, the question arises: Why do we even want to close the modality gap, if we don't gain performance?</p>
-        <p>From a performance optimization point of view, this is a valid question. What's the point of interfering in a well-performing system? On the other hand, the alignment of embedding spaces can become important for other downstream tasks. For example, using image and text embeddings interchangeably, as done in language-guided image generation, relies on the fact that image and text embeddings are aligned with each other and live in the same space. Another aspect is that an aligned embedding space is closer to how humans expect multi-modal models to see the data. Furthermore, closing the modality gap allows us to actually visualize texts and images in the same space, and develop interactive exploration tools that help to understand multi-modal data (e.g., analyzing pairs of human written captions and machine-generated images to find insights into text-to-image generation models like StableDiffusion<ct-cite key="rombach_high-resolution_2022"></ct-cite>).</p>        
-        <p>These example use cases of why closing the modality gap might be helpful should give you an incentive about why the pure "performance optimization" point of view is not the only one. In fact, if we can close the modality gap without significantly losing performance, we have a win-win situation.</p>
-
+        <p>
+            The numbers confirm that CyCLIP's loss changes far less than CLIP's loss when manually closing the gap – it neither gets better nor significantly worse. However, the question arises: 
+        </p>
+        <h3>
+            Why Do We Even Want To Close the Modality Gap, if We Do Not Gain Performance?
+        </h3>
+        <p>
+            From a performance optimization point of view, this is a valid question. What's the point of interfering in a well-performing system? On the other hand, the alignment of embedding spaces can become important for other downstream tasks. For example, using image and text embeddings interchangeably, as done in language-guided image generation, relies on the fact that image and text embeddings are aligned with each other and live in the same space. Another aspect is that an aligned embedding space is closer to how humans expect multi-modal models to see the data. Furthermore, closing the modality gap allows us to actually visualize texts and images in the same space, and develop interactive exploration tools that help to understand multi-modal data (e.g., analyzing pairs of human written captions and machine-generated images to find insights about text-to-image generation models like StableDiffusion<dt-cite key="rombach_high-resolution_2022"></dt-cite>).
+        </p>
+        <p>
+            These example use cases of why closing the modality gap might be helpful should give you an incentive about why the pure "performance optimization" point of view is not the only one. In fact, if we can close the modality gap without significantly losing performance, we have a win-win situation!
+        </p>
 
         <h3>CLOOB</h3>
-        <p>Contrastive Leave One Out Boost (short: CLOOB)<dt-cite key="furst_cloob_2022"></dt-cite> is a variation of CLIP that proposes an alternative objective to train the model. The two components they propose are (i) additional Modern Hopfield Layers and (ii) the InfoLOOB loss instead of the InfoNCE loss as used by CLIP. They argue that their modifications solve CLIP's "explaining away" problem (i.e., focusing on a small subset of features while ignoring other relevant features), and InfoNCE's saturation problem. (See Rumetshofer et al. for more information...) TODO: more info about how exactly the objective looks like?</p>
+        <p>
+            In the previous section, we established a way to manually close the modality gap of CyCLIP embeddings. However, wouldn’t it be better to already close the gap during training and not rely on post-hoc manipulations? While we did not experiment with further modifying (Cy)CLIP’s objective to close the gap during training, we did stumble upon a different learning approach that naturally closes the gap.
+        </p>
+        <p>
+            Contrastive Leave One Out Boost (short: CLOOB)<dt-cite key="furst_cloob_2022"></dt-cite> is a variation of CLIP that proposes an alternative objective to train the model. The two main components of their objective function are (i) Modern Hopfield Layers and (ii) the InfoLOOB loss instead of the InfoNCE loss as used by CLIP. The authors argue that their modifications solve CLIP's "explaining away" problem (i.e., focusing on a small subset of features while ignoring other relevant features), and InfoNCE's saturation problem.<dt-fn>See Rumetshofer et al.<dt-cite key="furst_cloob_2022"></dt-cite> for more information.</dt-fn>
+        </p>
         <p>However, we also observe something else: These modifications of the training objective seem to aid the closure of the modality gap!</p>
 
         <div id="cloob-explorer" style="display: flex;" class="l-page-outset"></div>
@@ -1013,11 +1101,14 @@
             clip_explorer_by_model('MSCOCO-Val_size-100', 'CLOOB', "cloob-explorer", mscoco_val_prompts_promise, mscoco_val_projections_promise, 'UMAP')
         </script>
 
-        <p>TODO: analyze which parts of the objective are responsible for closing the modality gap; should mainly be hopfield layers because they somehow also include in-modal relations in their loss?... look into this in more detail and discuss with elisabeth…</p>
+        <p>
+            We believe that CLOOB’s ability to close the gap during training mainly stems from  the modern hopfield layers that are applied before calculating the InfoLOOB loss. In this step, the batch of image embeddings and text embeddings is used as an associative memory to create a weighted average of embeddings for the current instance. Since this is done for each combination of embedding and associative memory (i.e., each image and each text embedding is associated with the entire batch of image embeddings AND the entire batch of text embeddings). This creates a stronger correlation between the image/text instances to their own modality and the opposite modality.<dt-fn>See this blog post for a detailed explanation of modern hopfield layers: <a src=”https://ml-jku.github.io/hopfield-layers/”>https://ml-jku.github.io/hopfield-layers/</a>.</dt-fn>
+        </p>
 
-        <h3>Summary</h3>
-        <p>The following visualizations give an overview of the similarity heatmap for CLIP and CyCLIP before (left) and after (right) manually removing the modality gap, as well as the similarity heatmap for CLOOB with the checkpoints used in the paper and a CLOOB version that was trained on the LAION 400M dataset.</p>
-
+        <h3>Summary of Modality Gap Analysis</h3>
+        <p>
+            The following visualizations give an overview of the similarity heatmap for CLIP and CyCLIP before (left) and after (right) manually removing the modality gap, as well as the similarity heatmap for CLOOB with the official checkpoints from the paper and a CLOOB version that was trained on the LAION 400M dataset and used a ViT instead of a CNN to encode images<dt-cite key="crowson_cloob-training_2023"></dt-cite>. Note how the overall distribution of similarity values differs between the various embedding spaces. For example, the two CLOOB models seem to discriminate more strictly between matching and non-matching image-text pairs.
+        </p>
 
         <div id="similarity-heatmaps"  class="l-page-outset" style="display: flex;">
             <div>
@@ -1031,9 +1122,14 @@
             clip_comparer(['CLIP', 'CLIP_nogap', 'CyCLIP', 'CyCLIP_nogap', 'CLOOB', 'CLOOB_LAION400M'], mscoco_val_prompts_promise, 'MSCOCO-Val_size-100', 'similarity-heatmaps', z_min=-0.25, z_max=1)
         </script>
 
-        <h2>Analyses using the previously introduced concepts</h2>
-        <p>Using the previously introduced techniques, we can do some further analysis. For example, we can create an interactive CLIP explorer prototype to switch between models, explore the similarity heatmap and scatter plot visualizations, manually close the modality gap, and try various projection methods.</p>
+        <p>
+            The previous sections taught us about the modality gap, where it comes from, and ways to close it. We also gave reasons for why closing the gap might be beneficial and now demonstrate how closing the modality gap can help for the use case of visual analytics. We also introduced a handy new way of visualizing latent space embeddings and utilize this again in the following analyses. Finally, we also want to mention that there is a way to visually close the modality gap (i.e., without actually closing the gap in the embedding space), as described in the Appendix.
+        </p>
 
+        <h2>Converting the Technique into a Tool</h2>
+        <p>
+            Using the previously introduced techniques, we implemented an interactive prototype called “CLIP explorer”. Users can switch between models, explore the similarity heatmap and scatter plot visualizations, manually close the modality gap, and try various projection methods.
+        </p>
 
         <div id="clip-explorer-mscoco" class="l-page-outset"></div>
         <script>
@@ -1041,9 +1137,11 @@
         </script>
 
 
-        <h3>Analyze a filtered subset of the data</h3>
-        <p>We can look into a semantic subset of the data by filtering the captions. The following example shows the visualizations for the subset that contains the substring "dog". We notice that there are some darker lines in the similarity matrix. When hovering over those darker lines, we can see that most of these instances correspond to images and texts about "hot dog's". To make this even more obvious, we can use the "Cluster matrix by similarity" function that reorders the similarity heatmap such that similar lines are grouped together. One cluster that stands out in all three CLIP-like models is the "hot dog" cluster. However, we can also see clusters for "dog and frisbee", "dog and bed", or "dog and car".</p>
-
+        <h3>Identifying Data Subsets</h3>
+        <p>
+            We can look into semantic subsets of data by filtering instances based on their captions. The following example shows the visualizations for the subset that contains the substring "dog". We notice that some lines in the similarity matrix have a darker color. When hovering over those darker lines, we can see that most of these instances correspond to images and texts about "hot dogs" or other images that do not show a dog or where a dog is in an uncommon setting. To make this even more obvious, we can use the "Cluster matrix by similarity" function that reorders the similarity heatmap such that similar lines are grouped together. One cluster that stands out in all three CLIP-like models is the "hot dog" cluster. However, we can also see clusters for "dog and frisbee", "dog and bed", or "dog and car".
+            <!-- clustering could be done differently or made interactive (e.g., allow users to select the number of clusters, or whether they want to cluster by in-modal or cross-modal similarities...) -->
+        </p>
         <div id="clip-explorer-filtered" class="l-page-outset"></div>
         <script>
             let dataset_name = 'MSCOCO-Val_filter-any_dog';
@@ -1058,12 +1156,20 @@
         </script>
 
 
-        <h3>Analyse DiffusionDB dataset</h3>
-        <p>We would like to see what the models’ latent-space embeddings look like for a dataset that is not (entirely) procured by humans. To this end we introduce DiffusionDB<dt-cite key="wang_diffusiondb_2022"></dt-cite>, a collection of human-written captions and images generated from these captions by Stable Diffusion<dt-cite key="rombach_high-resolution_2022"></dt-cite>. We use a subset of 100 samples to qualitatively explore the embedding spaces created by the three CLIP models, we previously introduced. You can use the CLIP explorer prototype below to follow along with the analysis described.</p>
-        <p>With the default settings, we can randomly explore the dataset and get a feeling for the data contained in this subset. We can also investigate instances that are outliers in the similarity heatmap by hovering rows or cells that have particularly large or low similarity values. For example, there are some particularly bright cells scattered in the image in-modal similarity heatmap. Upon hovering, we can see that all of these images are blurry. We know that DiffusionDB added blur filters for images that were detected to show inappropriate content. Interestingly, CLIP seems to create similar latent embeddings for blurry items, causing them to show high similarity in the similarity heatmap.</p>
-        <p>For further analyses, we can choose to "Cluster matrix by similarity" to order the matrix in a way that groups similar rows in the heatmap and investigate the clusters that are emerging. We can see a cluster for "impressionism and crystal" that seems to have homomorphic similarities over all images (i.e., there is a distinct purple line along all images of this cluster). Upon further investigation, we can see that the captions in this cluster are mostly vague texts or single words (e.g., "crystal", "impressionism") that can apply to a lot of images. The same cluster seems to become apparent in the text in-modal similarity heatmap, where all captions within the cluster seem to have high similarity.</p>
-        <p>We now want to close the modality gap so that we can investigate clusters in the 2-dimensional scatter plot. We can either choose to do this by switching to the CLOOB model or using CyCLIP in combination with the "Close modality gap" option. Now you will see that the embeddings are aligned and you can use the interactive scatter plot to investigate clusters. For example, you can try to find the cluster of blurry images, or you can try to find the cluster with instances of "impressionism". Of course, this would be much more fun on a larger scale :)</p>
-        
+        <h3>Analyze DiffusionDB Dataset</h3>
+        <p>
+            We would like to see what the models’ latent-space embeddings look like for a dataset that is not (entirely) procured by humans. To this end, we use DiffusionDB<dt-cite key="wang_diffusiondb_2022"></dt-cite>, a collection of human-written captions and images generated from these captions by Stable Diffusion<dt-cite key="rombach_high-resolution_2022"></dt-cite>. We use a subset of 100 randomly selected samples to qualitatively explore the embedding spaces created by the CLIP models, we previously introduced. You can use the CLIP explorer prototype below to follow along with the analysis described.
+        </p>    
+        <p>
+            With the default settings, we randomly explore the dataset and get a feeling for the data contained in this subset. We can investigate instances that are outliers in the similarity heatmap by hovering rows or cells that have particularly large or low similarity values. For example, there are some particularly bright cells scattered in the image in-modal similarity heatmap. Upon hovering, we see that all of these images are blurry. We know that DiffusionDB added blur filters for images that were detected to show inappropriate content. Interestingly, CLIP seems to create similar latent embeddings for blurry items, causing them to show high similarity in the similarity heatmap.
+        </p>
+        <p>
+            For further analyses, we choose "Cluster matrix by similarity" to order the matrix in a way that groups similar rows in the heatmap and investigate the clusters that are emerging. We can see a cluster for "impressionism and crystal" that seems to have homomorphic similarities over all images (i.e., there is a distinct purple line along all images of this cluster). Upon further investigation, we see that the captions in this cluster are mostly vague texts or single words (e.g., "crystal", "impressionism") that can apply to a lot of images. The same cluster becomes apparent in the text in-modal similarity heatmap, where all captions within the cluster seem to have high similarity.
+        </p>
+        <p>
+            Let’s close the modality gap to investigate clusters in a 2-dimensional scatter plot. We can either do this by switching to the CLOOB model or using CyCLIP in combination with the "Close modality gap" option. We see that the embeddings are aligned and can use the interactive scatter plot to investigate clusters. For example, we can try to find the cluster of blurry images, or we can try to find the cluster with instances of "impressionism". Of course, this would be much more fun on a larger scale :)
+        </p>
+
         <div id="clip-explorer-diffusiondb" class="l-page-outset"></div>
         <script>
             dataset_name = 'DiffusionDB_size-100';
@@ -1078,11 +1184,46 @@
         </script>
 
 
-        <h3>Augmentation analyses</h3>
-        <p>As previously demonstrated, we can identify patterns in datasets and subsets of datasets using the similarity heatmap visualizations. Now, we would also like to see if we can find patterns in augmentations of a single data point. For example, we take a single image, generate rotated versions of this image, and use this augmented dataset to compute CLIP embeddings and similarities. The results of this experiment for the three CLIP-like models are shown in the visualization below (note that we have two variants of the CLOOB model: one initialized with the checkpoints as provided by the official CLOOB paper, and the other one was trained on the LAION 400M dataset [cite github repo]). To generate this dataset, we gradually rotate the image by 360 degrees over the course of 100 steps. Note that we only augment the image, but not the text, which results in a completely homogeneous similarity in the in-modal text quadrant of the heatmap and in homogenous stripes along the text dimension in the cross-modal quadrants of the heatmap.</p>
-        <p>When looking at the in-modal image similarity quadrant of the heatmap for each model using augmentations of the first image, we can see an interesting pattern emerge: in addition to the bright yellow diagonal axis that corresponds to the similarities of images to themselves, there is also the off-diagonal axis of the matrix sticking out. When hovering along the off-diagonal, we see that the two images along this axis are actually mirrored versions of each other. So it seems like all models have learned to be invariant to the horizontal flip transformation (at least for this image). There is another interesting pattern emerging in the embedding similarities for CLOOB that looks like a checkerboard. When looking into the darker areas of this heatmap in more detail, we can see that the pattern occurs around multiples of 90-degree rotations. This could give insight into which kind of data the model was trained on, or more concretely, which random augmentations were used on the training dataset. For example, in the case of CLOOB, we could assume that the data was randomly rotated up to around 80 degrees. Additionally, the images might also have been horizontally flipped (as indicated by the off-diagonal axis).</p>
+        <h3>Augmentation Analyses</h3>
+        <p>
+            As previously demonstrated, we can identify patterns in datasets and subsets of datasets using the similarity heatmap visualizations. Now, we would also like to see if we can use the same techniques to find patterns in augmentations of a single data point. For example, we take a single image, generate rotated versions of this image, and use this augmented dataset to compute CLIP embeddings and similarities. The results of this experiment for the three CLIP-like models are shown in the visualization below (note that we again show two variants of the CLOOB model). To generate this dataset, we gradually rotate a selected image by 360 degrees over the course of 100 steps. Each step results in a “new” image and new data point. Note that we only augment the image, but not the text, which results in a completely homogeneous similarity in the in-modal text quadrant of the heatmap and in homogenous stripes along the text dimension in the cross-modal quadrants of the heatmap.
+        </p>
+        <p>
+            When looking at the in-modal image similarity quadrant of the heatmap for each model using augmentations of the first image, we can see an interesting pattern emerge. In addition to the bright yellow diagonal axis that corresponds to the similarities of images to themselves, there is also the perpendicular off-diagonal axis of the matrix sticking out. When hovering along the off-diagonal, we see that the two images along this axis are actually mirrored versions of each other. It seems like all models are invariant to the horizontal flip transformation for this image. We can also see a checkerboard-like pattern emerge for some images emerging in all models except for the CLOOB_LAION400M.  When looking into the darker areas of this heatmap in more detail, we can see that the pattern occurs around multiples of 90-degree rotations. The fact that this pattern occurs mainly for the three models that use a CNN-based image encoder<dt-fn>Note that CLIP and CLOOB_LAION400M (both 400M instances) were trained on a much larger dataset than CLOOB and CyCLIP, which could also be an indicator for varying robustness.<dt-fn> and not for the one with the vision transformer could be an indicator that the two architectures vary in their ability to learn rotation invariant properties. The checkerboard-like pattern seems to be consistent with findings described by Timme et al.<dt-cite key="timme_robustness_2020"></dt-cite> where they tested the rotation robustness of various CNN classifiers by measuring the accuracy. The accuracy of the CNNs showed local maxima at multiples of 90-degree rotations and was lower in-between those angles. 
+        </p>
+        <p>
+            When looking at the overall distribution of similarity values, we also notice that the ViT-based CLOOB model seems to have more patches of low-similarity values compared to its CNN-based counterparts. This might indicate that ViT’s overall robustness to rotation transformations is lower. In further investigations, we might want to directly compare two versions of CLIP: the current version with the CNN-based image encoder and a version with a ViT-based image encoder, and study the phenomenon on a larger dataset.
+        </p>
         <p>Use the interactions to explore the heatmaps for different images yourself.</p>
-        <!-- TODO: evtl rotated und noisy extra -->
+        
+        <div id="similarity-heatmaps-rotated-picker" class="l-page"></div>
+        <div id="similarity-heatmaps-rotated" class="l-page-outset" style="display: flex;">
+            <div>
+                <div id="similarity-heatmaps-rotated-0" style="display: inline-flex;"></div>
+                <div id="similarity-heatmaps-rotated-1" style="display: inline-flex;"></div>
+            </div>
+            <div id="similarity-heatmaps-rotated-hover"></div>
+        </div>
+        <script>
+            augmented_heatmap_comparer('Rotated', 'similarity-heatmaps-rotated');
+        </script>
+
+        <p>
+            In a second experiment, we analyze the heatmaps for an image to which we add an increasingly higher noise level. When looking at the heatmaps for the first image, it seems like there is a certain level of noise for each model, after which the model cannot seem to recognize the content of the image anymore. All images with a higher level of noise than this threshold seem to look (almost) the same (as indicated by a bright yellow rectangle at the lower-right corner of the in-modal image similarity quadrant).
+        </p>
+        
+        <div id="similarity-heatmaps-noisy-picker" class="l-page"></div>
+        <div id="similarity-heatmaps-noisy" class="l-page-outset" style="display: flex;">
+            <div>
+                <div id="similarity-heatmaps-noisy-0" style="display: inline-flex;"></div>
+                <div id="similarity-heatmaps-noisy-1" style="display: inline-flex;"></div>
+            </div>
+            <div id="similarity-heatmaps-noisy-hover"></div>
+        </div>
+        <script>
+            augmented_heatmap_comparer('Noisy', 'similarity-heatmaps-noisy');
+        </script>
+
         <div class="l-page"> 
             <select id="augmentation-picker" style="margin:20px;">
                 <option value="Rotated">Rotated</option>
@@ -1098,62 +1239,13 @@
             <div id="similarity-heatmaps-augmented-hover"></div>
         </div>
         <script>
-            const augmented_heatmap_comparer = (augmentation) => {
-
-                const img_thumbnails = [];
-
-                const update_augmented_clip_comparer = (id) => {
-                  
-                    img_thumbnails.forEach((img) => {
-                        img.style.borderColor = 'transparent';
-                        img.style.opacity = 0.3;
-                    });
-                    img_thumbnails[id].style.borderColor = 'black';
-                    img_thumbnails[id].style.opacity = 0.9;
-
-                    const dataset_name = augmentation + '-' + id + '_size-100';
-
-                    const prompts_promise = fetch('./exported_data_checkpoints/' + dataset_name + '/prompts.txt')
-                        .then(response => response.text())
-                        .then(data => data.split('\n'))
-                        .catch(error => console.error(error));
-
-                    document.getElementById('similarity-heatmaps-augmented-0').innerHTML = '';
-                    document.getElementById('similarity-heatmaps-augmented-1').innerHTML = '';
-                    document.getElementById('similarity-heatmaps-augmented-hover').innerHTML = '';
-
-                    clip_comparer(['CLIP', 'CyCLIP', 'CLOOB', 'CLOOB_LAION400M'], prompts_promise, dataset_name, 'similarity-heatmaps-augmented', z_min=0, z_max=1)
-                }
-
-                document.getElementById('similarity-heatmaps-augmented-picker').innerHTML = '';
-                for (let i = 0; i < 10; i++) {
-                    const img = document.createElement('img');
-                    img.src = './exported_data_checkpoints/example_images/' + i + '.jpg';
-                    img.style.cursor = 'pointer';
-                    img.style.border = 'transparent 2px solid';
-                    document.getElementById('similarity-heatmaps-augmented-picker').appendChild(img);
-                    img_thumbnails.push(img);
-                    img.addEventListener("click", function() {
-                        update_augmented_clip_comparer(i)
-                    });
-                }
-
-                update_augmented_clip_comparer(0);
-
-            }
-
             const augmentation_picker = document.getElementById('augmentation-picker');
             augmentation_picker.onchange = () => {
-                augmented_heatmap_comparer(augmentation_picker.value);
+                augmented_heatmap_comparer(augmentation_picker.value, 'similarity-heatmaps-augmented');
             }
-            augmented_heatmap_comparer(augmentation_picker.value);
+            augmented_heatmap_comparer(augmentation_picker.value, 'similarity-heatmaps-augmented');
             
         </script>
-
-        <p>In a similar way, we can analyze the heatmaps for an image to which we add an increasingly higher level of noise. When looking at the heatmaps for the first image, it seems like there is a certain level of noise for each model, after which the model cannot seem to recognize the content of the image anymore. All images with a higher level of noise than this threshold seem to look (almost) the same as the image (as indicated by a bright yellow rectangle at the lower-right corner of the in-modal image similarity quadrant).</p>
-        <p>Similarly, for blurry images we see that at a certain point of blurriness, all images look the same to the models and they are unable to map images and texts together.</p>
-        <p>Similarly, for shifted images…</p>
-
 
         <p>conclusion...</p>
 

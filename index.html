@@ -29,7 +29,14 @@
         table{
             text-align: left;
         }
+        /* @media (min-width: 1080px){
+            .l-body, dt-article > div, dt-article > p, dt-article > h2, dt-article > h3, dt-article > h4, dt-article > figure, dt-article > table, dt-article > ol, dt-article > ul, dt-article > dt-byline, dt-article > dt-math, dt-article > dt-code, dt-article section > div, dt-article section > p, dt-article section > h2, dt-article section > h3, dt-article section > h4, dt-article section > figure, dt-article section > table, dt-article section > ol, dt-article section > ul, dt-article section > dt-byline, dt-article section > dt-code {
+                margin-left: calc(50% - 984px / 2);
+                width: 704px;
+            }
+        } */
     </style>
+    
 </head>
 
 <body>
@@ -823,7 +830,7 @@
     </script>
 
     <dt-article>
-        <h1>Understanding and Comparing Multi-Modal Models</h1>
+        <h1>Understanding and Comparing<br>Multi-Modal Models</h1>
         <h2>Exploring the Latent Space of CLIP-like Models (CLIP, CyCLIP, CLOOB) Using Inter-Modal Pairs</h2>
         <dt-byline></dt-byline>
         <p>
@@ -832,11 +839,13 @@
         <p>
             We would expect that such a shared latent space places similar concepts of images and texts close to each other, as demonstrated in the following sketch. However, the reality is a bit more complicated.
         </p>
-        <img 
-            class="l-body"
-            src="assets/idea_figure.png" 
-            alt="Example of how we imagined a 2-dimensional projection of CLIP's image and text embeddings. Image and text points are shown in one scatter plot and instants that are semantically similar are plotted close together." 
-        >
+        <div>
+            <img 
+                src="./assets/idea_figure.png" 
+                style="width: 100%" 
+                alt="Example of how we imagined a 2-dimensional projection of CLIP's image and text embeddings. Image and text points are shown in one scatter plot and instants that are semantically similar are plotted close together." 
+            >
+        </div>
         <h2>
             CLIP and its Modality Gap
         </h2>
@@ -905,7 +914,9 @@
         <p>where x<sub>i</sub> and y<sub>i</sub> are the normalized image and text embedding vectors.</p>
 
         <p>They also experimented with manually reducing the modality gap by moving the embeddings closer together along the gap vector.</p>
-        <img class="l-body" src="./exported_data_checkpoints/closethegap-schema.png"/>
+        <div>
+            <img style="width: 100%" src="./exported_data_checkpoints/closethegap-schema.png"/>
+        </div>
         <p>
             However, since the modality subspaces trained by CLIP are not symmetric<dt-fn>Goel et al.<dt-cite key="goel_cyclip_2022"></dt-cite> argue that the CLIP objective does, in fact, symmetrize the spaces in its optimal solution; in practice however this ideal scenario does not happen.</dt-fn> to each other, a modification of the embeddings destroys the complex relationship between images and texts that was derived during training. This naturally results in an increasing loss when changing the distance between modalities that was originally trained, as shown in the visualization below. The x-axis shows the Euclidean distance between the two embedding centers (the black dashed line indicates the original distance). The y-axis shows the loss that results when moving the two embeddings closer together or further away from each other. We calculated these values with the whole 5000 samples MSCOCO validation set. It becomes visible that the global minimum of this manual intervention is at the point of the original (trained) modality gap.
         </p>
@@ -1286,47 +1297,82 @@
         <p>
             To investigate these assumptions further, we recommend the use of interactive tools that allow exploring large sets of points and clusters in a 2-d space (e.g., the Projection Space Explorer<dt-cite key="eckelt_visual_2022"></dt-cite>).
         </p>
-        
+        <div>
+            <img style="width: 100%" src="./exported_data_checkpoints/cyclip-rm-gap-5000.png"/>
+        </div>
 
         <p>
-            In the previous sections, we learned two ways that can help us close the modality gap: 
+            The following plot shows the same procedure of manually removing the modality gap, but here we used CLIP embeddings instead. This shows again, that manually removing the gap by moving CLIP embeddings on the same plane destroys the trained latent space too much to be useful anymore.
+        </p>
+        <div>
+            <img style="width: 100%" src="./exported_data_checkpoints/clip-rm-gap-5000.png"/>
+        </div>
+
+        
+        <h3>Inherently Removing the Modality Gap</h3>
+        <p>
+            The second method of removing the modality gap utilizes a bi-modal model that was trained with an objective capable of aligning the embedding spaces: CLOOB. In this case, we can directly use the image and text embeddings generated by the model and project it to a 2-d space for visualization. We see a similar result to before: clusters emerge and a lot of inter-cluster connections, but also plenty of intra-cluster connections. There also seems to be a rather large cluster of points with many connections.
+        </p>
+        <div>
+            <img style="width: 100%" src="./exported_data_checkpoints/cloob-rm-gap-5000.png"/>
+        </div>
+
+        <p>
+            In comparison, we also show the results for the same model, but trained with 400M instances of the LAION dataset and a vision transformer architecture used for image embedding instead of a CNN architecture. We can see smaller cluster entities and it seems like connections between clusters are less. To confirm these qualitative findings and be able to compare the methods, we would have to use quantitative measure (e.g., measuring how many intra-cluster connections there are for each method).
+        </p>
+        <div>
+            <img style="width: 100%" src="./exported_data_checkpoints/cloob400M-rm-gap-5000.png"/>
+        </div>
+
+
+        <h2>Visually Closing the Modality Gap</h2>
+
+        <p>
+            In the previous sections, we learned about two ways that can help us close the modality gap: 
             <ol>
                 <li>
-                    post-hoc: post-process embeddings by moving them together along the modality gap vector; this only makes sense if the two embedding spaces are symmetric like in CyCLIP
+                    manually: post-process embeddings by moving them together along the modality gap vector; this only makes sense if the two embedding spaces are symmetric like in CyCLIP
                 </li>
                 <li>
-                    pre-hoc: define the training objective in a way that aids the closing of the gap
+                    inherently: define the training objective in a way that aids the closing of the gap like in CLOOB
                 </li>
             </ol>
         </p>
         <p>
-            Let's also recall the reasons why we would like to close the gap:
+            Let's also recall the reasons for why we would like to close the gap:
             <ol>
                 <li>can have advantages for downstream tasks (e.g., if embeddings from two modalities need to be interchangeable)</li>
-                <li>human expectations of how the embedding space should look like</li>
                 <li>aids the development of multi-modal visual analytics tools</li>
+                <li>human expectations of how the embedding space should look like</li>
             </ol>
         </p>
         <p>
-            <!-- The pre-hoc method, where we adopt a training objective that closes the modality gap, supports all three reasons; the post-hoc only reasons 1 and 3... -->
-            From a visualization point of view, we might not care about the first two reasons, as long as we can visually close the modality gap. By visually closing the gap, we do not change the embeddings or the model, but map them into a shared low-dimensional space. This can be accomplished in several ways: (i) out-of-sample projection, (ii) concatenating image-text embeddings and treat them as one combined embedding. The first method results in a low-dimensional datapoint for each image and each text embedding; the latter two result in a combined low-dimensional for the image-text pairs. The method you would want to choose depends on the goal of the visualization.
+            <!-- The pre-hoc method, where we adopt a training objective that closes the modality gap, supports all three reasons; the post-hoc only reasons 1 and 2... -->
+            From a visualization point of view, we might not care about the other two reasons, as long as we can visually close the modality gap. By visually closing the gap, we do not change the embeddings or the model, but map them into a shared low-dimensional space. This can be accomplished in several ways: (i) out-of-sample projection, (ii) concatenating image-text embeddings and treat them as one combined embedding. The first method results in a low-dimensional datapoint for each image and each text embedding; the second method results in a combined low-dimensional space for the image-text pairs. The method you would want to choose depends on the goal of the visualization.
         </p>
 
-        <h3>Out-of-sample projection</h3>
-        <p>We can first project embeddings of either images or texts using UMAP. This builds a neighborhood graph using in-modal similarities and results in a low-dimensional projection for one modality. We can utilize UMAP's out-of-sample projection to also project the embeddings of the second modality onto the space of the first modality. Since the out-of-sample projection again tries to map each point to the most similar points in the existing low-dimensional space, you can imagine this as using the cross-modal similarities between images and texts. Since this is what CLIP was trained on (i.e., optimizing distances between texts and images), the mapping should visually remove the modality gap.</p>
-        <p>As an example, we take the 5000 sample MSCOCO validation set and first fit and transform the image embeddings. We then transform the text embeddings with the existing UMAP embedding and show the results in a scatter plot. The overall structure seems to align images and texts; while there are a lot of cross-cluster connections that show that image-text pairs are not always close to each other, most of the connections seem to be within clusters. Cross-cluster connections can be indicators of various things. For example, the pairs may not be deemed similar by CLIP, which results in embeddings that are far away from each other in the high-dimensional latent space, which would be reflected in the low-dimensional projection of the embeddings. Another issue might come from the projection method itself. As mentioned previously, projecting data to a low-dimensional space comes with a loss of information that might introduce artifacts. The fact that we use out-of-sample projection might amplify this effect even further. </p>
-        <p>Visual analytics tools can be helpful to gain further insights into the data and why certain pairs seem to be far away from each other. Basic interactions like hover information or selection summaries could already be a good start for further investigation. The rich nature of image and text data also allows for more advanced analytic visualizations; for example, texts can be used to extract labels for clusters that carry rich semantic meaning, or example images could be used to summarize clusters. Visually encoding the high-dimensional similarity of embedding pairs (e.g., as saturation of the lines between pairs) could be a helpful indicator that could show whether point pairs are far apart from each other due to artifacts from the projection or due to CLIP not recognizing them to be similar.</p>
+        <h3>Out-of-Sample Projection</h3>
+        <p>
+            We can first project embeddings of either images or texts using UMAP. This builds a neighborhood graph using in-modal similarities and results in a low-dimensional projection for one modality. We can utilize UMAP's out-of-sample projection to also project the embeddings of the second modality onto the space of the first modality. Since the out-of-sample projection again tries to map each point to the most similar points in the existing low-dimensional space, you can imagine this as using the cross-modal similarities between images and texts. Since this is what CLIP was trained on (i.e., optimizing distances between texts and images), the mapping should visually remove the modality gap.
+        </p>    
+        <p>
+            As an example, we take the 5000 sample MSCOCO validation set and first fit and transform the image embeddings. We then transform the text embeddings with the existing UMAP embedding and show the results in a scatter plot. The overall structure seems to align images and texts; while there are a lot of cross-cluster connections that show that image-text pairs are not always close to each other, most of the connections seem to be within clusters. Cross-cluster connections can be indicators of various things. For example, the pairs may not be deemed similar by CLIP, which results in embeddings that are far away from each other in the high-dimensional latent space, which would be reflected in the low-dimensional projection of the embeddings. Another issue might come from the projection method itself. As mentioned previously, projecting data to a low-dimensional space comes with a loss of information that might introduce artifacts. The fact that we use out-of-sample projection might amplify this effect even further. 
+        </p>
+        <p>
+            Visual analytics tools can be helpful to gain further insights into the data and why certain pairs seem to be far away from each other. Basic interactions like hover information or selection summaries could already be a good start for further investigation. The rich nature of image and text data also allows for more advanced analytic visualizations; for example, texts can be used to extract labels for clusters that carry rich semantic meaning, or example images could be used to summarize clusters. Visually encoding the high-dimensional similarity of embedding pairs (e.g., as saturation of the lines between pairs) could be a helpful indicator that could show whether point pairs are far apart from each other due to artifacts from the projection or due to CLIP not recognizing them to be similar.
+        </p>
 
         <div>
-            <img src="./exported_data_checkpoints/oosExample.png"/>
+            <img style="width: 100%" src="./exported_data_checkpoints/oosExample.png"/>
         </div>
         
 
-        <h3>Concatenating image and text embeddings</h3>
-        <p>For a different kind of visual representation of image-text embedding spaces, we can simply concatenate the embedding vectors and transform them into a combined low-dimensional space. The low-dimensional space can be visualized in a scatter plot and visual analytics approaches can be used to explore the data. Note that with this approach, we only have one low-dimensional data point per image-text pair.</p>
-
+        <h3>Concatenating Image and Text Embeddings</h3>
+        <p>
+            For a different kind of visual representation of image-text embedding spaces, we can simply concatenate the embedding vectors and transform them into a combined low-dimensional space. The low-dimensional space can be visualized in a scatter plot and visual analytics approaches can be used to explore the data. Note that with this approach, we only have one low-dimensional data point per image-text pair.
+        </p>
         <div>
-            <img src="./exported_data_checkpoints/concatExample.png"/>
+            <img style="width: 100%" src="./exported_data_checkpoints/concatExample.png"/>
         </div>
 
 

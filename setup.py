@@ -117,10 +117,10 @@ setup(
     author_email=EMAIL,
     python_requires=REQUIRES_PYTHON,
     url=URL,
-    packages=find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"]), # ['clipexplorer', 'clipexplorer.CLOOB_local'],
+    packages=find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"]), # ['amumo', 'amumo.CLOOB_local'],
     # If your package is a single module, use this instead of 'packages':
-    py_modules=['clipexplorer'],
-    package_data={'clipexplorer': ['CLOOB_local/clip/bpe_simple_vocab_16e6.txt.gz', 'CLOOB_local/cloob_training/pretrained_configs/*.json', 'CLOOB_local/example_configs/*.json', 'CLOOB_local/training/model_configs/*.json']},
+    py_modules=['amumo'],
+    package_data={'amumo': ['CLOOB_local/clip/bpe_simple_vocab_16e6.txt.gz', 'CLOOB_local/cloob_training/pretrained_configs/*.json', 'CLOOB_local/example_configs/*.json', 'CLOOB_local/training/model_configs/*.json']},
     # entry_points={
     #     'console_scripts': ['mycli=mymodule:cli'],
     # },

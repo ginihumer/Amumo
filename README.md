@@ -1,4 +1,4 @@
-# CLIP-explorer
+# Amumo
 python framework for exploring CLIP models
 
 set up conda environment:

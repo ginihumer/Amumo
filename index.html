@@ -832,8 +832,8 @@
     </script>
 
     <dt-article>
-        <h1>Understanding and Comparing<br>Multi-Modal Models</h1>
-        <h2>Exploring the Latent Space of CLIP-like Models (CLIP, CyCLIP, CLOOB) Using Inter-Modal Pairs</h2>
+        <h1 id="title">Understanding and Comparing<br>Multi-Modal Models</h1>
+        <h2 id="subtitle">Exploring the Latent Space of CLIP-like Models (CLIP, CyCLIP, CLOOB) Using Inter-Modal Pairs</h2>
         <dt-byline></dt-byline>
         <p>
             Contrastive Language Image Pre-training (CLIP)<dt-cite key="radford_learning_2021"></dt-cite> and variations of this approach like CyCLIP<dt-cite key="goel_cyclip_2022"></dt-cite>, or CLOOB<dt-cite key="furst_cloob_2022"></dt-cite> are trained on image-text pairs with a contrastive objective. The goal of contrastive loss objectives is to minimize latent-space distances of data points that have the same underlying meaning. We refer to the particular cases of contrastive learning that CLIP-like models perform as multi-modal contrastive learning because they use two (or more<dt-cite key="girdhar_imagebind_2023"></dt-cite>) modes of data (e.g., images and texts) where each mode uses their own encoder to generate a latent embedding space. More specifically, the objective that CLIP is optimized for minimizes the distances between image-text embeddings of pairs that have the same semantic meaning while maximizing the distances to all other combinations of text and image embeddings. 
@@ -848,7 +848,7 @@
                 alt="Example of how we imagined a 2-dimensional projection of CLIP's image and text embeddings. Image and text points are shown in one scatter plot and instants that are semantically similar are plotted close together." 
             >
         </div>
-        <h2>
+        <h2 id="section-modality-gap-clip">
             CLIP and its Modality Gap
         </h2>
         <p>
@@ -942,12 +942,12 @@
             clip_explorer_by_model('MSCOCO-Val_size-100', 'CLIP_nogap', "clip-nomodalitygap", mscoco_val_prompts_promise, mscoco_val_projections_promise)
         </script>
 
-        <h2>What About Other CLIP-Like Models?</h2>
+        <h2 id="section-other-models">What About Other CLIP-Like Models?</h2>
         <p>
             As mentioned previously, the two modalities live on different embedding spaces, and the two embeddings vary in structure (i.e., they are not symmetric to each other). Recently published papers propose different versions of CLIP, where the objective function has been adjusted to regularize the trained embedding space. We look closer into two promising approaches, namely CyCLIP<dt-cite key="goel_cyclip_2022"></dt-cite> and CLOOB<dt-cite key="furst_cloob_2022"></dt-cite>.
         </p>
 
-        <h3>CyCLIP</h3>
+        <h3 id="section-modality-gap-cyclip">CyCLIP</h3>
         <p>
             According to Goel et al.<dt-cite key="goel_cyclip_2022"></dt-cite> using CLIP-generated image-text embeddings interchangeably (e.g., for Language-guided image generation) is suboptimal because the embeddings are–in practice–not aligned. They propose an augmentation of the InfoNCE loss used to optimize CLIP that adds two regularization terms that enforce the two embedding spaces to be symmetric: one for in-modal symmetry (LI) and one for cross-modal symmetry (LC) of the similarities. 
         </p>
@@ -1090,7 +1090,7 @@
         <p>
             The numbers confirm that CyCLIP's loss changes far less than CLIP's loss when manually closing the gap – it neither gets better nor significantly worse. However, the question arises: 
         </p>
-        <h3>
+        <h3 id="section-reason">
             Why Do We Even Want To Close the Modality Gap, if We Do Not Gain Performance?
         </h3>
         <p>
@@ -1100,7 +1100,7 @@
             These example use cases of why closing the modality gap might be helpful should give you an incentive about why the pure "performance optimization" point of view is not the only one. In fact, if we can close the modality gap without significantly losing performance, we have a win-win situation!
         </p>
 
-        <h3>CLOOB</h3>
+        <h3 id="section-modality-gap-cloob">CLOOB</h3>
         <p>
             In the previous section, we established a way to manually close the modality gap of CyCLIP embeddings. However, wouldn’t it be better to already close the gap during training and not rely on post-hoc manipulations? While we did not experiment with further modifying (Cy)CLIP’s objective to close the gap during training, we did stumble upon a different learning approach that naturally closes the gap.
         </p>
@@ -1118,7 +1118,7 @@
             We believe that CLOOB’s ability to close the gap during training mainly stems from  the modern hopfield layers that are applied before calculating the InfoLOOB loss. In this step, the batch of image embeddings and text embeddings is used as an associative memory to create a weighted average of embeddings for the current instance. Since this is done for each combination of embedding and associative memory (i.e., each image and each text embedding is associated with the entire batch of image embeddings AND the entire batch of text embeddings). This creates a stronger correlation between the image/text instances to their own modality and the opposite modality.<dt-fn>See this blog post for a detailed explanation of modern hopfield layers: <a src=”https://ml-jku.github.io/hopfield-layers/”>https://ml-jku.github.io/hopfield-layers/</a>.</dt-fn>
         </p>
 
-        <h3>Summary of Modality Gap Analysis</h3>
+        <h3 id="section-modality-gap-summary">Summary of Modality Gap Analysis</h3>
         <p>
             The following visualizations give an overview of the similarity heatmap for CLIP and CyCLIP before (left) and after (right) manually removing the modality gap, as well as the similarity heatmap for CLOOB with the official checkpoints from the paper and a CLOOB version that was trained on the LAION 400M dataset and used a ViT instead of a CNN to encode images<dt-cite key="crowson_cloob-training_2023"></dt-cite>. Note how the overall distribution of similarity values differs between the various embedding spaces. For example, the two CLOOB models seem to discriminate more strictly between matching and non-matching image-text pairs.
         </p>
@@ -1139,7 +1139,7 @@
             The previous sections taught us about the modality gap, where it comes from, and ways to close it. We also gave reasons for why closing the gap might be beneficial and now demonstrate how closing the modality gap can help for the use case of visual analytics. We also introduced a handy new way of visualizing latent space embeddings and utilize this again in the following analyses. Finally, we also want to mention that there is a way to visually close the modality gap (i.e., without actually closing the gap in the embedding space), as described in the Appendix.
         </p>
 
-        <h2>Converting the Technique into a Tool</h2>
+        <h2 id="section-amumo">Converting the Technique into a Tool</h2>
         <p>
             Using the previously introduced techniques, we implemented an interactive prototype called “Amumo” (Analyze Multi-Modal Models). Users can switch between models, explore the similarity heatmap and scatter plot visualizations, manually close the modality gap, and try various projection methods.
         </p>
@@ -1150,7 +1150,7 @@
         </script>
 
 
-        <h3>Identifying Data Subsets</h3>
+        <h3 id="section-amumo-subsets">Identifying Data Subsets</h3>
         <p>
             We can look into semantic subsets of data by filtering instances based on their captions. The following example shows the visualizations for the subset that contains the substring "dog". We notice that some lines in the similarity matrix have a darker color. When hovering over those darker lines, we can see that most of these instances correspond to images and texts about "hot dogs" or other images that do not show a dog or where a dog is in an uncommon setting. To make this even more obvious, we can use the "Cluster matrix by similarity" function that reorders the similarity heatmap such that similar lines are grouped together. One cluster that stands out in all three CLIP-like models is the "hot dog" cluster. However, we can also see clusters for "dog and frisbee", "dog and bed", or "dog and car".
             <!-- clustering could be done differently or made interactive (e.g., allow users to select the number of clusters, or whether they want to cluster by in-modal or cross-modal similarities...) -->
@@ -1169,7 +1169,7 @@
         </script>
 
 
-        <h3>Analyze DiffusionDB Dataset</h3>
+        <h3 id="section-amumo-diffusiondb">Analyze DiffusionDB Dataset</h3>
         <p>
             We would like to see what the models’ latent-space embeddings look like for a dataset that is not (entirely) procured by humans. To this end, we use DiffusionDB<dt-cite key="wang_diffusiondb_2022"></dt-cite>, a collection of human-written captions and images generated from these captions by Stable Diffusion<dt-cite key="rombach_high-resolution_2022"></dt-cite>. We use a subset of 100 randomly selected samples to qualitatively explore the embedding spaces created by the CLIP models, we previously introduced. You can use the instance of Amumo below to follow along with the analysis described.
         </p>    
@@ -1197,7 +1197,7 @@
         </script>
 
 
-        <h3>Augmentation Analyses</h3>
+        <h3 id="section-amumo-augmentation">Augmentation Analyses</h3>
         <p>
             As previously demonstrated, we can identify patterns in datasets and subsets of datasets using the similarity heatmap visualizations. Now, we would also like to see if we can use the same techniques to find patterns in augmentations of a single data point. For example, we take a single image, generate rotated versions of this image, and use this augmented dataset to compute CLIP embeddings and similarities. The results of this experiment for the three CLIP-like models are shown in the visualization below (note that we again show two variants of the CLOOB model). To generate this dataset, we gradually rotate a selected image by 360 degrees over the course of 100 steps. Each step results in a “new” image and new data point. Note that we only augment the image, but not the text, which results in a completely homogeneous similarity in the in-modal text quadrant of the heatmap and in homogenous stripes along the text dimension in the cross-modal quadrants of the heatmap.
         </p>
@@ -1268,7 +1268,7 @@
             
         </script>
 
-        <h2>Conclusion</h2>
+        <h2 id="section-conclusion">Conclusion</h2>
         <p>
             Throughout this article, we investigated latent embeddings of CLIP-like models. Using scatter plots and similarity heatmaps, we visualized and analyzed the modality gap that naturally occurs for CLIP embeddings. Closing this gap without losing significant performance can be important for downstream tasks like image generation, visual analytics, or human understanding. We showed how to close the gap using CyCLIP in combination with a post-processing method that aligns the embedding spaces and investigated another model (CLOOB) that is able to align the spaces by the nature of its training objective. Finally, we introduced Amumo, an interactive visual prototype that allows users to explore embeddings from bi-modal contrastive learning models to help with understanding of their latent space embeddings. We used Amumo to analyze various (sub-)sets and augmentations of data. We believe that Amumo, and the similarity heatmap in particular, are useful tools to create intuition about bi-modal latent space embeddings. It allows for comparison of bi-modal models (e.g., their robustness to transformations) and can help to formulate hypotheses or ideas about such models. However, we want to stress that the analysis is based on a small subset of data points, and insights must still be verified on a larger scale.
         </p>
@@ -1277,19 +1277,19 @@
 
 
       <dt-appendix>
-        <h2>Acknowledgements</h2>
+        <h2 id="section-acknowledgements">Acknowledgements</h2>
         <p>
             This work was funded by the Austrian Marshall Plan Foundation under the Marshall Plan Scholarship, the Austrian Science Fund under grant number FWF DFH 23--N, and under the Human-Interpretable Machine Learning project (funded by the State of Upper Austria). The project was conducted during a research visit at the MIT-IBM Watson AI Lab in Cambridge, MA.
         <p>
 
-        <h1>Appendix</h1>
-        <h2>Closing the Gap Using a Larger Dataset</h2>
+        <h1 id="section-appendix">Appendix</h1>
+        <h2 id="section-lg-dataset">Closing the Gap Using a Larger Dataset</h2>
         
         <p>
             Amumo - our interactive prototype - is an easy way to explore a small subset of image-text pairs. This can help form intuition about a particular dataset or the model used to map them into a latent space embedding. In addition to the interactive prototype, we also want to showcase the results of the proposed methods for closing the modality gap with a larger dataset. To that end we again used the entire 5000 sample MSCOCO validation dataset and applied the two methods introduced in the article. We then take the aligned embeddings, project them with UMAP, and plot them in a static 2-d scatter plot with lines connecting the matching image-text pairs.
         </p>
 
-        <h3>Manually Removing the Modality Gap</h3>
+        <h3 id="section-lg-dataset-manual">Manually Removing the Modality Gap</h3>
         <p>
             For the first method to remove the modality gap, we need to compute CyCLIP embeddings and manually move the two embedding spaces together. The following scatter plot shows the 2-dimensional projection of these modified embeddings. The plot shows that clusters are forming and a lot of connection lines are within clusters, which means that instances that carry a similar meaning are indeed close together in the latent space embedding. However, there are also a lot of intra-cluster connections. The emergence of these long connections between the clusters can be caused by various factors. 
         </p>
@@ -1311,7 +1311,7 @@
         </div>
 
         
-        <h3>Inherently Removing the Modality Gap</h3>
+        <h3 id="section-lg-dataset-inherent">Inherently Removing the Modality Gap</h3>
         <p>
             The second method of removing the modality gap utilizes a bi-modal model that was trained with an objective capable of aligning the embedding spaces: CLOOB. In this case, we can directly use the image and text embeddings generated by the model and project it to a 2-d space for visualization. We see a similar result to before: clusters emerge and a lot of inter-cluster connections, but also plenty of intra-cluster connections. There also seems to be a rather large cluster of points with many connections.
         </p>
@@ -1327,7 +1327,7 @@
         </div>
 
 
-        <h2>Visually Closing the Modality Gap</h2>
+        <h2 id="section-lg-dataset-visually">Visually Closing the Modality Gap</h2>
 
         <p>
             In the previous sections, we learned about two ways that can help us close the modality gap: 
@@ -1353,7 +1353,7 @@
             From a visualization point of view, we might not care about the other two reasons, as long as we can visually close the modality gap. By visually closing the gap, we do not change the embeddings or the model, but map them into a shared low-dimensional space. This can be accomplished in several ways: (i) out-of-sample projection, (ii) concatenating image-text embeddings and treat them as one combined embedding. The first method results in a low-dimensional datapoint for each image and each text embedding; the second method results in a combined low-dimensional space for the image-text pairs. The method you would want to choose depends on the goal of the visualization.
         </p>
 
-        <h3>Out-of-Sample Projection</h3>
+        <h3 id="section-lg-dataset-oos">Out-of-Sample Projection</h3>
         <p>
             We can first project embeddings of either images or texts using UMAP. This builds a neighborhood graph using in-modal similarities and results in a low-dimensional projection for one modality. We can utilize UMAP's out-of-sample projection to also project the embeddings of the second modality onto the space of the first modality. Since the out-of-sample projection again tries to map each point to the most similar points in the existing low-dimensional space, you can imagine this as using the cross-modal similarities between images and texts. Since this is what CLIP was trained on (i.e., optimizing distances between texts and images), the mapping should visually remove the modality gap.
         </p>    
@@ -1369,7 +1369,7 @@
         </div>
         
 
-        <h3>Concatenating Image and Text Embeddings</h3>
+        <h3 id="section-lg-dataset-concat">Concatenating Image and Text Embeddings</h3>
         <p>
             For a different kind of visual representation of image-text embedding spaces, we can simply concatenate the embedding vectors and transform them into a combined low-dimensional space. The low-dimensional space can be visualized in a scatter plot and visual analytics approaches can be used to explore the data. Note that with this approach, we only have one low-dimensional data point per image-text pair.
         </p>

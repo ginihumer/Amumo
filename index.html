@@ -1128,7 +1128,7 @@
 
         <h2>Converting the Technique into a Tool</h2>
         <p>
-            Using the previously introduced techniques, we implemented an interactive prototype called “CLIP explorer”. Users can switch between models, explore the similarity heatmap and scatter plot visualizations, manually close the modality gap, and try various projection methods.
+            Using the previously introduced techniques, we implemented an interactive prototype called “Amumo” (Analyze Multi-Modal Models). Users can switch between models, explore the similarity heatmap and scatter plot visualizations, manually close the modality gap, and try various projection methods.
         </p>
 
         <div id="clip-explorer-mscoco" class="l-page-outset"></div>
@@ -1158,7 +1158,7 @@
 
         <h3>Analyze DiffusionDB Dataset</h3>
         <p>
-            We would like to see what the models’ latent-space embeddings look like for a dataset that is not (entirely) procured by humans. To this end, we use DiffusionDB<dt-cite key="wang_diffusiondb_2022"></dt-cite>, a collection of human-written captions and images generated from these captions by Stable Diffusion<dt-cite key="rombach_high-resolution_2022"></dt-cite>. We use a subset of 100 randomly selected samples to qualitatively explore the embedding spaces created by the CLIP models, we previously introduced. You can use the CLIP explorer prototype below to follow along with the analysis described.
+            We would like to see what the models’ latent-space embeddings look like for a dataset that is not (entirely) procured by humans. To this end, we use DiffusionDB<dt-cite key="wang_diffusiondb_2022"></dt-cite>, a collection of human-written captions and images generated from these captions by Stable Diffusion<dt-cite key="rombach_high-resolution_2022"></dt-cite>. We use a subset of 100 randomly selected samples to qualitatively explore the embedding spaces created by the CLIP models, we previously introduced. You can use the instance of Amumo below to follow along with the analysis described.
         </p>    
         <p>
             With the default settings, we randomly explore the dataset and get a feeling for the data contained in this subset. We can investigate instances that are outliers in the similarity heatmap by hovering rows or cells that have particularly large or low similarity values. For example, there are some particularly bright cells scattered in the image in-modal similarity heatmap. Upon hovering, we see that all of these images are blurry. We know that DiffusionDB added blur filters for images that were detected to show inappropriate content. Interestingly, CLIP seems to create similar latent embeddings for blurry items, causing them to show high similarity in the similarity heatmap.
@@ -1224,10 +1224,18 @@
             augmented_heatmap_comparer('Noisy', 'similarity-heatmaps-noisy');
         </script>
 
+
+        <p>
+            Similarly, for blurry images, we see that at a certain point of blurriness, all images look the same to the models, and they cannot map images and texts together. You can use the dropdown menu to explore the effects of various augmentations.
+        </p>
+
         <div class="l-page"> 
             <select id="augmentation-picker" style="margin:20px;">
-                <option value="Rotated">Rotated</option>
+                <option value="Blurred">Blurred</option>
+                <option value="HShift">HShift</option>
                 <option value="Noisy">Noisy</option>
+                <option value="Rotated">Rotated</option>
+                <option value="VShift">VShift</option>
             </select>
         </div>
         <div id="similarity-heatmaps-augmented-picker" class="l-page"></div>
@@ -1247,17 +1255,39 @@
             
         </script>
 
-        <p>conclusion...</p>
+        <h2>Conclusion</h2>
+        <p>
+            Throughout this article, we investigated latent embeddings of CLIP-like models. Using scatter plots and similarity heatmaps, we visualized and analyzed the modality gap that naturally occurs for CLIP embeddings. Closing this gap without losing significant performance can be important for downstream tasks like image generation, visual analytics, or human understanding. We showed how to close the gap using CyCLIP in combination with a post-processing method that aligns the embedding spaces and investigated another model (CLOOB) that is able to align the spaces by the nature of its training objective. Finally, we introduced Amumo, an interactive visual prototype that allows users to explore embeddings from bi-modal contrastive learning models to help with understanding of their latent space embeddings. We used Amumo to analyze various (sub-)sets and augmentations of data. We believe that Amumo, and the similarity heatmap in particular, are useful tools to create intuition about bi-modal latent space embeddings. It allows for comparison of bi-modal models (e.g., their robustness to transformations) and can help to formulate hypotheses or ideas about such models. However, we want to stress that the analysis is based on a small subset of data points, and insights must still be verified on a larger scale.
+        </p>
 
     </dt-article>
 
 
       <dt-appendix>
-        <h3>Acknowledgements</h3>
-        <p>TODO<p>
+        <h2>Acknowledgements</h2>
+        <p>
+            This work was funded by the Austrian Marshall Plan Foundation under the Marshall Plan Scholarship, the Austrian Science Fund under grant number FWF DFH 23--N, and under the Human-Interpretable Machine Learning project (funded by the State of Upper Austria). The project was conducted during a research visit at the MIT-IBM Watson AI Lab in Cambridge, MA.
+        <p>
 
         <h1>Appendix</h1>
-        <h2>Visually closing the modality gap</h2>
+        <h2>Closing the Gap Using a Larger Dataset</h2>
+        
+        <p>
+            Amumo - our interactive prototype - is an easy way to explore a small subset of image-text pairs. This can help form intuition about a particular dataset or the model used to map them into a latent space embedding. In addition to the interactive prototype, we also want to showcase the results of the proposed methods for closing the modality gap with a larger dataset. To that end we again used the entire 5000 sample MSCOCO validation dataset and applied the two methods introduced in the article. We then take the aligned embeddings, project them with UMAP, and plot them in a static 2-d scatter plot with lines connecting the matching image-text pairs.
+        </p>
+
+        <h3>Manually Removing the Modality Gap</h3>
+        <p>
+            For the first method to remove the modality gap, we need to compute CyCLIP embeddings and manually move the two embedding spaces together. The following scatter plot shows the 2-dimensional projection of these modified embeddings. The plot shows that clusters are forming and a lot of connection lines are within clusters, which means that instances that carry a similar meaning are indeed close together in the latent space embedding. However, there are also a lot of intra-cluster connections. The emergence of these long connections between the clusters can be caused by various factors. 
+        </p>
+        <p>
+            For example, the manual modification of the latent space might disturb some parts of the latent space. Although CyCLIP does add restrictions to the objective function to facilitate the emergence of symmetric embedding spaces, it is only an approximation and the spaces are not perfectly perpendicular. Another influencing factor might be that the image-text pairs are not perceived as similar by the model and therefore placed in different areas of the embedding space. Finally, there may also be distortions coming from the dimensionality reduction technique we used for creating the 2-d space.
+        </p>
+        <p>
+            To investigate these assumptions further, we recommend the use of interactive tools that allow exploring large sets of points and clusters in a 2-d space (e.g., the Projection Space Explorer<dt-cite key="eckelt_visual_2022"></dt-cite>).
+        </p>
+        
+
         <p>
             In the previous sections, we learned two ways that can help us close the modality gap: 
             <ol>

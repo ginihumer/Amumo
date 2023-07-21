@@ -14,4 +14,4 @@ pip install -e .
 
 
 for package installation:
-pip install git+https://github.com/ginihumer/CLIP-explorer.git
+pip install git+https://github.com/ginihumer/Amumo.git

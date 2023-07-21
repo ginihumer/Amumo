@@ -2,6 +2,7 @@
 ## Exploring the Latent Space of CLIP-like Models (CLIP, CyCLIP, CLOOB) Using Inter-Modal Pairs (Featuring Amumo, Your Friendly Neighborhood Mummy)
 
 <img src="https://github-production-user-asset-6210df.s3.amazonaws.com/45741696/255124758-3a7b6c57-9c1d-4044-b54d-684711622de8.jpg" width="500"/>
+
 Interactive article submitted to the [6th Workshop on Visualization for AI Explainability (VISxAI 2023)](https://visxai.io/): https://jku-vds-lab.at/amumo 
 
 ### Abstract

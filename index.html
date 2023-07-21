@@ -50,24 +50,24 @@
         }
 
         // load data
-        const mscoco_val_prompts_promise = fetch('./exported_data_checkpoints/MSCOCO-Val_size-100/prompts.txt')
+        const mscoco_val_prompts_promise = fetch('./exported_data/MSCOCO-Val_size-100/prompts.txt')
             .then(response => response.text())
             .then(data => data.split('\n'))
             .catch(error => console.error(error));
 
-        const mscoco_val_projections_promise = d3.csv("./exported_data_checkpoints/MSCOCO-Val_size-100/projections.csv");
+        const mscoco_val_projections_promise = d3.csv("./exported_data/MSCOCO-Val_size-100/projections.csv");
         
 
-        const clip_loss_landscape_promise = fetch('./exported_data_checkpoints/MSCOCO-Val_size-5000/CLIP_loss_landscape.json')
+        const clip_loss_landscape_promise = fetch('./exported_data/MSCOCO-Val_size-5000/CLIP_loss_landscape.json')
                 .then(response => response.json())
                 .catch(error => console.error(error));
 
-        const cyclip_loss_landscape_promise = fetch('./exported_data_checkpoints/MSCOCO-Val_size-5000/CyCLIP_loss_landscape.json')
+        const cyclip_loss_landscape_promise = fetch('./exported_data/MSCOCO-Val_size-5000/CyCLIP_loss_landscape.json')
                 .then(response => response.json())
                 .catch(error => console.error(error));
 
         const load_similarities_fn = function(dataset, name){
-            return fetch('./exported_data_checkpoints/' + dataset + '/similarities/' + name + '.csv')
+            return fetch('./exported_data/' + dataset + '/similarities/' + name + '.csv')
                 .then(response => response.text())
                 .then(csvData => {
                     const rows = csvData.split('\n');
@@ -78,7 +78,7 @@
         }
 
         const load_meta_info_fn = function(dataset, name){
-            return fetch('./exported_data_checkpoints/' + dataset + '/similarities/' + name + '_meta_info.json')
+            return fetch('./exported_data/' + dataset + '/similarities/' + name + '_meta_info.json')
                 .then(response => response.json())
                 .catch(error => console.error(error));
         }
@@ -169,7 +169,7 @@
             update(div, type, idx){
                 if(type == 'image'){
                     const img = document.createElement('img');
-                    img.src = './exported_data_checkpoints/'+this.dataset_name+'/images/'+idx+'.jpg';
+                    img.src = './exported_data/'+this.dataset_name+'/images/'+idx+'.jpg';
                     // img.width = this.width;
                     // img.height = this.height;
                     img.style.maxWidth = this.width + 'px';
@@ -785,7 +785,7 @@
 
                 const dataset_name = augmentation + '-' + id + '_size-100';
 
-                const prompts_promise = fetch('./exported_data_checkpoints/' + dataset_name + '/prompts.txt')
+                const prompts_promise = fetch('./exported_data/' + dataset_name + '/prompts.txt')
                     .then(response => response.text())
                     .then(data => data.split('\n'))
                     .catch(error => console.error(error));
@@ -800,7 +800,7 @@
             document.getElementById(el_id+'-picker').innerHTML = '';
             for (let i = 0; i < 9; i++) {
                 const img = document.createElement('img');
-                img.src = './exported_data_checkpoints/example_images/' + i + '.jpg';
+                img.src = './exported_data/example_images/' + i + '.jpg';
                 img.style.cursor = 'pointer';
                 img.style.border = 'transparent 2px solid';
                 document.getElementById(el_id+'-picker').appendChild(img);
@@ -917,7 +917,7 @@
 
         <p>They also experimented with manually reducing the modality gap by moving the embeddings closer together along the gap vector.</p>
         <div>
-            <img style="width: 100%" src="./exported_data_checkpoints/closethegap-schema.png"/>
+            <img style="width: 100%" src="./exported_data/closethegap-schema.png"/>
         </div>
         <p>
             However, since the modality subspaces trained by CLIP are not symmetric<dt-fn>Goel et al.<dt-cite key="goel_cyclip_2022"></dt-cite> argue that the CLIP objective does, in fact, symmetrize the spaces in its optimal solution; in practice however this ideal scenario does not happen.</dt-fn> to each other, a modification of the embeddings destroys the complex relationship between images and texts that was derived during training. This naturally results in an increasing loss when changing the distance between modalities that was originally trained, as shown in the visualization below. The x-axis shows the Euclidean distance between the two embedding centers (the black dashed line indicates the original distance). The y-axis shows the loss that results when moving the two embeddings closer together or further away from each other. We calculated these values with the whole 5000 samples MSCOCO validation set. It becomes visible that the global minimum of this manual intervention is at the point of the original (trained) modality gap.
@@ -1158,12 +1158,12 @@
         <div id="clip-explorer-filtered" class="l-page-outset"></div>
         <script>
             let dataset_name = 'MSCOCO-Val_filter-any_dog';
-            const mscoco_filtered_val_prompts_promise = fetch('./exported_data_checkpoints/' + dataset_name + '/prompts.txt')
+            const mscoco_filtered_val_prompts_promise = fetch('./exported_data/' + dataset_name + '/prompts.txt')
                 .then(response => response.text())
                 .then(data => data.split('\n'))
                 .catch(error => console.error(error));
 
-            const mscoco_filtered_val_projections_promise = d3.csv('./exported_data_checkpoints/' + dataset_name + '/projections.csv');
+            const mscoco_filtered_val_projections_promise = d3.csv('./exported_data/' + dataset_name + '/projections.csv');
             
             clip_explorer_widget(dataset_name, "clip-explorer-filtered", mscoco_filtered_val_prompts_promise, mscoco_filtered_val_projections_promise, 'UMAP')
         </script>
@@ -1186,12 +1186,12 @@
         <div id="clip-explorer-diffusiondb" class="l-page-outset"></div>
         <script>
             dataset_name = 'DiffusionDB_size-100';
-            const diffusiondb_val_prompts_promise = fetch('./exported_data_checkpoints/' + dataset_name + '/prompts.txt')
+            const diffusiondb_val_prompts_promise = fetch('./exported_data/' + dataset_name + '/prompts.txt')
                 .then(response => response.text())
                 .then(data => data.split('\n'))
                 .catch(error => console.error(error));
 
-            const diffusiondb_val_projections_promise = d3.csv('./exported_data_checkpoints/' + dataset_name + '/projections.csv');
+            const diffusiondb_val_projections_promise = d3.csv('./exported_data/' + dataset_name + '/projections.csv');
             
             clip_explorer_widget(dataset_name, "clip-explorer-diffusiondb", diffusiondb_val_prompts_promise, diffusiondb_val_projections_promise, 'UMAP')
         </script>
@@ -1300,14 +1300,14 @@
             To investigate these assumptions further, we recommend the use of interactive tools that allow exploring large sets of points and clusters in a 2-d space (e.g., the Projection Space Explorer<dt-cite key="eckelt_visual_2022"></dt-cite>).
         </p>
         <div>
-            <img style="width: 100%" src="./exported_data_checkpoints/cyclip-rm-gap-5000.png"/>
+            <img style="width: 100%" src="./exported_data/cyclip-rm-gap-5000.png"/>
         </div>
 
         <p>
             The following plot shows the same procedure of manually removing the modality gap, but here we used CLIP embeddings instead. This shows again, that manually removing the gap by moving CLIP embeddings on the same plane destroys the trained latent space too much to be useful anymore.
         </p>
         <div>
-            <img style="width: 100%" src="./exported_data_checkpoints/clip-rm-gap-5000.png"/>
+            <img style="width: 100%" src="./exported_data/clip-rm-gap-5000.png"/>
         </div>
 
         
@@ -1316,14 +1316,14 @@
             The second method of removing the modality gap utilizes a bi-modal model that was trained with an objective capable of aligning the embedding spaces: CLOOB. In this case, we can directly use the image and text embeddings generated by the model and project it to a 2-d space for visualization. We see a similar result to before: clusters emerge and a lot of inter-cluster connections, but also plenty of intra-cluster connections. There also seems to be a rather large cluster of points with many connections.
         </p>
         <div>
-            <img style="width: 100%" src="./exported_data_checkpoints/cloob-rm-gap-5000.png"/>
+            <img style="width: 100%" src="./exported_data/cloob-rm-gap-5000.png"/>
         </div>
 
         <p>
             In comparison, we also show the results for the same model, but trained with 400M instances of the LAION dataset and a vision transformer architecture used for image embedding instead of a CNN architecture. We can see smaller cluster entities and it seems like connections between clusters are less. To confirm these qualitative findings and be able to compare the methods, we would have to use quantitative measure (e.g., measuring how many intra-cluster connections there are for each method).
         </p>
         <div>
-            <img style="width: 100%" src="./exported_data_checkpoints/cloob400M-rm-gap-5000.png"/>
+            <img style="width: 100%" src="./exported_data/cloob400M-rm-gap-5000.png"/>
         </div>
 
 
@@ -1365,7 +1365,7 @@
         </p>
 
         <div>
-            <img style="width: 100%" src="./exported_data_checkpoints/oosExample.png"/>
+            <img style="width: 100%" src="./exported_data/oosExample.png"/>
         </div>
         
 
@@ -1374,7 +1374,7 @@
             For a different kind of visual representation of image-text embedding spaces, we can simply concatenate the embedding vectors and transform them into a combined low-dimensional space. The low-dimensional space can be visualized in a scatter plot and visual analytics approaches can be used to explore the data. Note that with this approach, we only have one low-dimensional data point per image-text pair.
         </p>
         <div>
-            <img style="width: 100%" src="./exported_data_checkpoints/concatExample.png"/>
+            <img style="width: 100%" src="./exported_data/concatExample.png"/>
         </div>
 
 

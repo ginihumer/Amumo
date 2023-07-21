@@ -895,7 +895,7 @@
             });
         </script>
 
-        <p>Now, where does this modality gap even come from?</p>
+        <p><b>Now, where does this modality gap even come from?</b></p>
         <p>
             As analyzed by Liang et al.<dt-cite key="liang_mind_2022"></dt-cite>, the modality gap already appears before models are trained, possibly caused by random weight initialization and different model architectures. The authors also highlight that the gap between modalities persists throughout training, which means that CLIP's objective function cannot overcome this phenomenon. A reason for that could be that the objective function only trains on the alignment of (non-)matching image-text combinations but does not contain any regularization terms with regard to the overall layout of the embedding spaces and in-modality alignment<dt-cite key="goel_cyclip_2022"></dt-cite>. 
             Liang et al.<dt-cite key="liang_mind_2022"></dt-cite> also formally define the modality gap as the Euclidean difference between the centers of each modality:

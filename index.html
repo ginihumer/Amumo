@@ -25,19 +25,7 @@
     <script src="scripts/bootstrap.bundle.min.js" charset="utf-8"></script>
 
     <link href="styles/bootstrap.min.css" rel="stylesheet">
-    <!-- <link rel="stylesheet" href="styles/bootstrap-icons.css"> -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <style>
-        .crossref-notebook {
-            text-decoration: none;
-            border-bottom: none;
-            /* display: none; */
-        }
-        .crossref-notebook:hover {
-            text-decoration: none;
-            border-bottom: none;
-        }
-
         /* title */
         d-title h1,
         d-title p {
@@ -250,7 +238,7 @@
                     ]
                 }
 
-                Plotly.newPlot(this.div, [trace1], layout, {displayModeBar: false});
+                Plotly.newPlot(this.div, [trace1], layout, { displayModeBar: false });
             }
         }
 
@@ -393,7 +381,7 @@
                     },
                     title: title,
                 }
-                Plotly.newPlot(this.scatter_div, traces, layout, {modeBarButtonsToRemove: ['select2d','lasso2d']}); //'pan2d','select2d','lasso2d','resetScale2d','zoomOut2d'
+                Plotly.newPlot(this.scatter_div, traces, layout, { modeBarButtonsToRemove: ['select2d', 'lasso2d'] }); //'pan2d','select2d','lasso2d','resetScale2d','zoomOut2d'
 
                 this.update_scatter();
 
@@ -1710,13 +1698,14 @@
 
         <h2 id="section-reproduce">Reproducibility</h2>
         <p>
-            The data in this interactive article is precomputed...
+            The data in this interactive article is precomputed.
+            Use this <a target="_blank" href="https://github.com/ginihumer/Amumo/blob/main/notebooks/clip_article.ipynb"
+                title="Open computational notebook">computational notebook</a> to reproduce the results shown in the
+            article or as a starting point for your own investigations.
         </p>
-        <a class="crossref-notebook" target="_blank" href="https://github.com/ginihumer/Amumo/blob/main/notebooks/clip_article.ipynb" title="Open computational notebook"><i class="bi bi-link-45deg"></i></a>
-        
         <d-bibliography src="bibliography.bib"></d-bibliography>
 
-        
+
 
         <h1 id="section-appendix">Appendix</h1>
         <h2 id="section-lg-dataset">Closing the Gap Using a Larger Dataset</h2>

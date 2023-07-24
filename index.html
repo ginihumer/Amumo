@@ -993,8 +993,8 @@
 
         <p id="section-introduction">
             Contrastive Language Image Pre-training (CLIP)<d-cite key="radford_learning_2021"></d-cite> and variations
-            of this approach like CyCLIP<d-cite key="goel_cyclip_2022"></d-cite>, or CLOOB<d-cite
-                key="furst_cloob_2022"></d-cite> are trained on image-text pairs with a contrastive objective. The goal
+            of this approach, like CyCLIP<d-cite key="goel_cyclip_2022"></d-cite> or CLOOB<d-cite
+                key="furst_cloob_2022"></d-cite>, are trained on image-text pairs with a contrastive objective. The goal
             of contrastive loss objectives is to minimize latent-space distances of data points that have the same
             underlying meaning. We refer to the particular cases of contrastive learning that CLIP-like models perform
             as multi-modal contrastive learning because they use two (or more<d-cite
@@ -1056,11 +1056,23 @@
         </p>
         <p>
             The similarity heatmap below shows the same subset of 100 image-text pairs previously shown in a scatter
-            plot. However, we show the cosine similarities calculated between all image and text embeddings in this
-            case. This results in a matrix with four quadrants: (i) top-left: in-modal similarities of the 100 image
-            embeddings; (ii) bottom-right: in-modal similarities of the 100 text embeddings; (iii) top-right:
-            cross-modal similarities between the 100 image embeddings and the 100 text embeddings; and (iv) bottom-left:
-            a transposed version of the cross-modal image-text similarities. The diagonal axis of each quadrant
+            plot. However, in this case, we show the cosine similarities calculated between all image and text embeddings. 
+            This results in a matrix with four quadrants: 
+            <ul>
+                <li>
+                    top-left: in-modal similarities of the 100 image embeddings,
+                </li>
+                <li>
+                    bottom-right: in-modal similarities of the 100 text embeddings, 
+                </li>
+                <li>
+                    top-right: cross-modal similarities between the 100 image embeddings and the 100 text embeddings,
+                </li>
+                <li>
+                    bottom-left: a transposed version of the cross-modal image-text similarities. 
+                </li>
+            </ul>
+            The diagonal axis of each quadrant
             represents the matching data points (i.e., for the in-modal similarities, the diagonal shows the
             similarities of the image or text embedding to itself, while for the cross-modal similarities, the diagonal
             shows the matching image-text pairs). The modality gap is immediately visible: the in-modal similarities are
@@ -1156,10 +1168,10 @@
 
         <h2 id="section-other-models">What About Other CLIP-Like Models?</h2>
         <p>
-            As mentioned previously, the two modalities live on different embedding spaces, and the two embeddings vary
+            As mentioned previously, the two modalities (i.e., texts and images) live on different embedding spaces, and the two embeddings vary
             in structure (i.e., they are not symmetric to each other). Recently published papers propose different
             versions of CLIP, where the objective function has been adjusted to regularize the trained embedding space.
-            We look closer into two promising approaches, namely CyCLIP<d-cite key="goel_cyclip_2022"></d-cite> and
+            We look closer into two promising approaches, namely, CyCLIP<d-cite key="goel_cyclip_2022"></d-cite> and
             CLOOB<d-cite key="furst_cloob_2022"></d-cite>.
         </p>
 
@@ -1250,11 +1262,11 @@
             Let's look into the loss landscape for different modality distances of CyCLIP embeddings when moving the
             embeddings along the gap vector. In the visualization below, we can see that CyCLIP’s loss landscape looks
             very different from CLIP’s landscape: in the distance interval of [-1.5; 1.5] the loss does not change much,
-            which is another indicator that CyCLIP indeed learns nearly symmetric embedding spaces.<d-footnote>Note that
+            which is another indicator that CyCLIP indeed learns nearly symmetric embedding spaces<d-footnote>Note that
                 the loss outside the [-1.5; 1.5] interval increases. This could be due to the fact that the spaces are
                 not perfectly symmetric. Another explanation could be that this happens due to normalizing the
                 embeddings to the unit sphere, but the method proposed for closing the gap is done in Euclidean
-                space.</d-footnote>
+                space.</d-footnote>.
         </p>
 
 
@@ -1281,8 +1293,7 @@
 
         <p>
             Again, when closing the modality gap, the similarity heatmap becomes more homogenous (i.e., the in-modal
-            similarities and cross-modal similarities are similarly strong). Also, the image-text pairs in the scatter
-            plot are closer together, but there are still quite some edge crossings.
+            similarities and cross-modal similarities are similarly strong). While the image-text pairs in the scatter plot are closer, there are still quite some edge crossings.
         </p>
         <figure style="grid-column: screen;">
             <div class="container">
@@ -1385,16 +1396,16 @@
             In the previous section, we established a way to manually close the modality gap of CyCLIP embeddings.
             However, wouldn’t it be better to already close the gap during training and not rely on post-hoc
             manipulations? While we did not experiment with further modifying (Cy)CLIP’s objective to close the gap
-            during training, we did stumble upon a different learning approach that naturally closes the gap.
+            during training, we stumbled upon a different learning approach that naturally closes the gap.
         </p>
         <p>
             Contrastive Leave One Out Boost (short: CLOOB)<d-cite key="furst_cloob_2022"></d-cite> is a variation of
             CLIP that proposes an alternative objective to train the model. The two main components of their objective
-            function are (i) Modern Hopfield Layers and (ii) the InfoLOOB loss instead of the InfoNCE loss as used by
+            function are (i) Modern Hopfield Layers and (ii) the InfoLOOB loss instead of the InfoNCE loss used by
             CLIP. The authors argue that their modifications solve CLIP's "explaining away" problem (i.e., focusing on a
-            small subset of features while ignoring other relevant features), and InfoNCE's saturation
-            problem.<d-footnote>See Rumetshofer et al.<d-cite key="furst_cloob_2022"></d-cite> for more
-                information.</d-footnote>
+            small subset of features while ignoring other relevant features) and InfoNCE's saturation
+            problem<d-footnote>See Rumetshofer et al.<d-cite key="furst_cloob_2022"></d-cite> for more
+                information.</d-footnote>.
         </p>
         <p>However, we also observe something else: These modifications of the training objective seem to aid the
             closure of the modality gap!</p>
@@ -1447,7 +1458,7 @@
         <p>
             The previous sections taught us about the modality gap, where it comes from, and ways to close it. We also
             gave reasons for why closing the gap might be beneficial and now demonstrate how closing the modality gap
-            can help for the use case of visual analytics. We also introduced a handy new way of visualizing latent
+            can help with analyzing multi-modal data. We also introduced a handy new way of visualizing latent
             space embeddings and utilize this again in the following analyses. Finally, we also want to mention that
             there is a way to visually close the modality gap (i.e., without actually closing the gap in the embedding
             space), as described in the Appendix.
@@ -1504,7 +1515,7 @@
             procured by humans. To this end, we use DiffusionDB<d-cite key="wang_diffusiondb_2022"></d-cite>, a
             collection of human-written captions and images generated from these captions by Stable Diffusion<d-cite
                 key="rombach_high-resolution_2022"></d-cite>. We use a subset of 100 randomly selected samples to
-            qualitatively explore the embedding spaces created by the CLIP models, we previously introduced. You can use
+            qualitatively explore the embedding spaces created by the CLIP models we previously introduced. You can use
             the instance of Amumo below to follow along with the analysis described.
         </p>
         <p>
@@ -1557,9 +1568,9 @@
             versions of this image, and use this augmented dataset to compute CLIP embeddings and similarities. The
             results of this experiment for the three CLIP-like models are shown in the visualization below (note that we
             again show two variants of the CLOOB model). To generate this dataset, we gradually rotate a selected image
-            by 360 degrees over the course of 100 steps. Each step results in a “new” image and new data point. Note
+            by 360 degrees over the course of 100 steps. Each step results in a “new” image and a new data point. Note
             that we only augment the image, but not the text, which results in a completely homogeneous similarity in
-            the in-modal text quadrant of the heatmap and in homogenous stripes along the text dimension in the
+            the in-modal text quadrant of the heatmap and homogenous stripes along the text dimension in the
             cross-modal quadrants of the heatmap.
         </p>
         <p>
@@ -1711,10 +1722,10 @@
         <h2 id="section-lg-dataset">Closing the Gap Using a Larger Dataset</h2>
 
         <p>
-            Amumo - our interactive prototype - is an easy way to explore a small subset of image-text pairs. This can
+            Amumo - our interactive prototype - is an easy way to explore a small subset of image-text pairs. This analysis can
             help form intuition about a particular dataset or the model used to map them into a latent space embedding.
             In addition to the interactive prototype, we also want to showcase the results of the proposed methods for
-            closing the modality gap with a larger dataset. To that end we again used the entire 5000 sample MSCOCO
+            closing the modality gap with a larger dataset. To that end, we again used the entire 5000 sample MSCOCO
             validation dataset and applied the two methods introduced in the article. We then take the aligned
             embeddings, project them with UMAP, and plot them in a static 2-d scatter plot with lines connecting the
             matching image-text pairs.
@@ -1786,11 +1797,11 @@
             In the previous sections, we learned about two ways that can help us close the modality gap:
         <ol>
             <li>
-                manually: post-process embeddings by moving them together along the modality gap vector; this only makes
-                sense if the two embedding spaces are symmetric like in CyCLIP
+                Manually: post-process embeddings by moving them together along the modality gap vector; this only makes
+                sense if the two embedding spaces are symmetric, like in CyCLIP.
             </li>
             <li>
-                inherently: define the training objective in a way that aids the closing of the gap like in CLOOB
+                Inherently: define the training objective in a way that aids the closing of the gap, like in CLOOB.
             </li>
         </ol>
         </p>
@@ -1800,7 +1811,7 @@
             <li>can have advantages for downstream tasks (e.g., if embeddings from two modalities need to be
                 interchangeable)</li>
             <li>aids the development of multi-modal visual analytics tools</li>
-            <li>human expectations of how the embedding space should look like</li>
+            <li>match human expectations of how the embedding space should look like</li>
         </ol>
         </p>
         <p>
@@ -1808,7 +1819,7 @@
             From a visualization point of view, we might not care about the other two reasons, as long as we can
             visually close the modality gap. By visually closing the gap, we do not change the embeddings or the model,
             but map them into a shared low-dimensional space. This can be accomplished in several ways: (i)
-            out-of-sample projection, (ii) concatenating image-text embeddings and treat them as one combined embedding.
+            out-of-sample projection, (ii) concatenating image-text embeddings and treating them as one combined embedding.
             The first method results in a low-dimensional datapoint for each image and each text embedding; the second
             method results in a combined low-dimensional space for the image-text pairs. The method you would want to
             choose depends on the goal of the visualization.
@@ -1816,7 +1827,7 @@
 
         <h3 id="section-lg-dataset-oos">Out-of-Sample Projection</h3>
         <p>
-            We can first project embeddings of either images or texts using UMAP. This builds a neighborhood graph using
+            We can first project embeddings of either images or texts using UMAP. This projection builds a neighborhood graph using
             in-modal similarities and results in a low-dimensional projection for one modality. We can utilize UMAP's
             out-of-sample projection to also project the embeddings of the second modality onto the space of the first
             modality. Since the out-of-sample projection again tries to map each point to the most similar points in the
@@ -1837,7 +1848,7 @@
             out-of-sample projection might amplify this effect even further.
         </p>
         <p>
-            Visual analytics tools can be helpful to gain further insights into the data and why certain pairs seem to
+            Visual analytics tools can be helpful in gaining further insights into the data and why certain pairs seem to
             be far away from each other. Basic interactions like hover information or selection summaries could already
             be a good start for further investigation. The rich nature of image and text data also allows for more
             advanced analytic visualizations; for example, texts can be used to extract labels for clusters that carry

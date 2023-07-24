@@ -16,20 +16,28 @@
 <!doctype html>
 
 <head>
+    <title>Understanding and Comparing Multi-Modal Models</title>
     <script src="scripts/template.v2.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="utf8">
     <script src="scripts/d3.v7.min.js"></script>
     <script src="scripts/plotly-2.24.1.min.js" charset="utf-8"></script>
     <script src="scripts/bootstrap.bundle.min.js" charset="utf-8"></script>
-    <title>Understanding and Comparing Multi-Modal Models</title>
+
     <link href="styles/bootstrap.min.css" rel="stylesheet">
-    <!-- <style>
-    table{
-        text-align: left;
-    }
-  </style> -->
+    <!-- <link rel="stylesheet" href="styles/bootstrap-icons.css"> -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <style>
+        .crossref-notebook {
+            text-decoration: none;
+            border-bottom: none;
+            /* display: none; */
+        }
+        .crossref-notebook:hover {
+            text-decoration: none;
+            border-bottom: none;
+        }
+
         /* title */
         d-title h1,
         d-title p {
@@ -266,6 +274,7 @@
                 // this.div.style.height = height + 'px';
                 this.div.appendChild(this.div1);
                 this.div.appendChild(this.div2);
+                this.div.style.maxHeight = height + 'px';
             }
 
             update1(type, idx) {
@@ -395,7 +404,6 @@
                 // TODO: when highlighting, the hover events seem to break
                 // const this_ = this;
                 // this.scatter_div.on('plotly_hover', function(data){
-                //     console.log('hover')
                 //     const idx = data.points[0].pointIndex;
                 //     this_.highlight('text', idx);
                 //     this_.highlight('image', idx);
@@ -436,24 +444,24 @@
             }
 
             // TODO: when highlighting, the hover events seem to break
-            highlight(mode, idx){
-              console.log('highlight')
-                const coords = this.get_XY_coordinates();
-                let coords_x = this.scatter_div.data[2].x;
-                let coords_y = this.scatter_div.data[2].y;
-                if(mode == 'image'){
-                    coords_x.push(coords.x_image[idx]);
-                    coords_y.push(coords.y_image[idx]);
-                }else if(mode == 'text'){
-                    coords_x.push(coords.x_text[idx]);
-                    coords_y.push(coords.y_text[idx]);
-                }else{
-                    Plotly.restyle(this.scatter_div, {'x': [[]], 'y': [[]]}, {}, [2])
-                    return;
-                }
+            // highlight(mode, idx){
+            //     console.log('highlight', idx)
+            //     const coords = this.get_XY_coordinates();
+            //     let coords_x = this.scatter_div.data[2].x;
+            //     let coords_y = this.scatter_div.data[2].y;
+            //     if(mode == 'image'){
+            //         coords_x.push(coords.x_image[idx]);
+            //         coords_y.push(coords.y_image[idx]);
+            //     }else if(mode == 'text'){
+            //         coords_x.push(coords.x_text[idx]);
+            //         coords_y.push(coords.y_text[idx]);
+            //     }else{
+            //         Plotly.restyle(this.scatter_div, {'x': [[]], 'y': [[]]}, {}, [2])
+            //         return;
+            //     }
 
-                Plotly.restyle(this.scatter_div, {'x': [coords_x], 'y': [coords_y]}, {}, [2])
-            }
+            //     Plotly.restyle(this.scatter_div, {'x': [coords_x], 'y': [coords_y]}, {}, [2])
+            // }
         }
 
 
@@ -1698,8 +1706,17 @@
             Austrian Science Fund under grant number FWF DFH 23--N, and under the Human-Interpretable Machine Learning
             project (funded by the State of Upper Austria). The project was conducted during a research visit at the
             MIT-IBM Watson AI Lab in Cambridge, MA.
+        </p>
+
+        <h2 id="section-reproduce">Reproducibility</h2>
         <p>
-            <d-bibliography src="bibliography.bib"></d-bibliography>
+            The data in this interactive article is precomputed...
+        </p>
+        <a class="crossref-notebook" target="_blank" href="https://github.com/ginihumer/Amumo/blob/main/notebooks/clip_article.ipynb" title="Open computational notebook"><i class="bi bi-link-45deg"></i></a>
+        
+        <d-bibliography src="bibliography.bib"></d-bibliography>
+
+        
 
         <h1 id="section-appendix">Appendix</h1>
         <h2 id="section-lg-dataset">Closing the Gap Using a Larger Dataset</h2>

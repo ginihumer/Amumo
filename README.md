@@ -31,11 +31,11 @@ pip install git+https://github.com/ginihumer/Amumo.git
 
 <img src="https://github-production-user-asset-6210df.s3.amazonaws.com/45741696/255124758-3a7b6c57-9c1d-4044-b54d-684711622de8.jpg" width="500"/>
 
-Check out the [Interactive article](https://jku-vds-lab.at/amumo) submitted to the [6th Workshop on Visualization for AI Explainability (VISxAI 2023)](https://visxai.io/): https://jku-vds-lab.at/amumo
+Check out the [Interactive article](https://jku-vds-lab.at/amumo) submitted to the [6th Workshop on Visualization for AI Explainability (VISxAI 2023)](https://visxai.io/).
 
-Check out the computational notebook to reproduce the results shown in the article or for using as a starting point for future investigations: https://github.com/ginihumer/Amumo/blob/main/notebooks/clip_article.ipynb 
+Check out the [computational notebook to reproduce the results](https://github.com/ginihumer/Amumo/blob/main/notebooks/clip_article.ipynb) shown in the article or for using as a starting point for future investigations.
 
-Check out the computational notebook for exporting the data used in the interactive article: https://github.com/ginihumer/Amumo/blob/main/notebooks/export_data.ipynb
+Check out the [computational notebook for exporting the data](https://github.com/ginihumer/Amumo/blob/main/notebooks/export_data.ipynb) used in the interactive article.
 
 
 ### Abstract

@@ -507,13 +507,28 @@ class CLIPComparerWidget(widgets.AppLayout):
 
 
     def __init__(self, dataset_name, all_images, all_prompts, models=list(model.available_CLIP_models), close_modality_gap=False):
-        # close_modality_gap: boolean or list of booleans with same length as models that specifies whether or not the modality gap should be closed
         super(CLIPComparerWidget, self).__init__()
+        # close_modality_gap: boolean or list of booleans with same length as models that specifies whether or not the modality gap should be closed
+        ### models... list of strings or instances that inherit from CLIPModelInterface 
+
+        if models is None:
+            models = model.available_CLIP_models
+
+        self.models = {}
+        for m in models:
+            if type(m) == str:
+                self.models[m] = model.get_model(m)
+            elif issubclass(type(m), model.CLIPModelInterface):
+                self.models[m.model_name] = m
+            else:
+                print('skipped', m, 'because it is not string or of type CLIPModelInterface')
+
+        
 
         if type(close_modality_gap) == bool:
-            close_modality_gap = [close_modality_gap] * len(models)
+            close_modality_gap = [close_modality_gap] * len(self.models)
 
-        assert type(close_modality_gap) == list and len(close_modality_gap) == len(models), 'close_modality_gap must be a bool or list of the same length as models'
+        assert type(close_modality_gap) == list and len(close_modality_gap) == len(self.models), 'close_modality_gap must be a bool or list of the same length as models'
         
         self.dataset_name = dataset_name
         self.all_images = np.array(all_images)
@@ -523,9 +538,10 @@ class CLIPComparerWidget(widgets.AppLayout):
         # output widgets
         self.hover_widget = HoverWidget()
 
-        self.heatmap_grid = widgets.GridspecLayout(math.ceil(len(models)/2), 2)
-        for i in range(len(models)):
-            m = models[i]
+        self.heatmap_grid = widgets.GridspecLayout(math.ceil(len(self.models)/2), 2)
+        for i in range(len(self.models.keys())):
+            key = list(self.models.keys())[i]
+            m = self.models[key]
 
             image_embedding_norm, text_embedding_norm, logit_scale = get_embedding(m, self.dataset_name, self.all_images, self.all_prompts)
             if close_modality_gap[i]:
@@ -539,7 +555,7 @@ class CLIPComparerWidget(widgets.AppLayout):
 
             modality_distance = get_modality_distance(image_embedding_norm, text_embedding_norm)
             validation_loss = calculate_val_loss(image_embedding_norm, text_embedding_norm, logit_scale.exp())
-            text_widget = widgets.HTML(value='<h2>' + models[i] + '</h2>' 
+            text_widget = widgets.HTML(value='<h2>' + m.model_name + '</h2>' 
                                        + ' Modality distance: %.2f | Loss: %.2f'%(modality_distance, validation_loss))
 
             self.heatmap_grid[int(i/2), i%2] = widgets.VBox([text_widget, heatmap_widget])

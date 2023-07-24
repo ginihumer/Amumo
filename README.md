@@ -1,11 +1,12 @@
-# Amumo
+# Amumo (Analyze Multi-Modal Models)
 ## Understanding and Comparing Multi-Modal Models
+Amumo is a visual analytics prototype that allows users to explore latent spaces of inter-modal data pairs (in particular pairs of image and text embeddings as they can be retrieved by CLIP-like models).
+It is implemented as a collection of ipywidgets and comes with a set of pre-defined datasets and bi-modal contrastive models like [CLIP](https://proceedings.mlr.press/v139/radford21a.html), [CyCLIP](https://proceedings.neurips.cc/paper_files/paper/2022/file/2cd36d327f33d47b372d4711edd08de0-Paper-Conference.pdf), and [CLOOB](https://proceedings.neurips.cc/paper_files/paper/2022/file/8078e76f913e31b8467e85b4c0f0d22b-Paper-Conference.pdf) to keep the overhead for users as low as possible. Additionally, users can define their own datasets and models to explore. Check out the ["getting started" notebook](https://github.com/ginihumer/Amumo/blob/main/notebooks/getting_started.ipynb) for first steps.
 
 <img src="https://github-production-user-asset-6210df.s3.amazonaws.com/45741696/255124758-3a7b6c57-9c1d-4044-b54d-684711622de8.jpg" width="500"/>
 
-python framework for exploring CLIP models
-
-set up conda environment:
+### Installation
+Set up conda environment with ipywidgets:
 
 ```bash
 conda create -n myenv python=3.9
@@ -14,14 +15,12 @@ pip install ipykernel
 pip install ipywidgets
 ```
 
-
-for local installation:
+Local installation:
 ```bash
 pip install -e .
 ```
 
-
-for package installation:
+Package installation:
 ```bash
 pip install git+https://github.com/ginihumer/Amumo.git
 ```

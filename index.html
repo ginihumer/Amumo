@@ -1401,14 +1401,14 @@
         </p>
         <p>
             Contrastive Leave One Out Boost (short: CLOOB)<d-cite key="furst_cloob_2022"></d-cite> is a variation of
-            CLIP that proposes an alternative objective to train the model. The two main components of their objective
-            function are (i) Modern Hopfield Layers and (ii) the InfoLOOB loss instead of the InfoNCE loss used by
+            CLIP that proposes an alternative objective together with an associative memotry to train the model. The two main components of their method
+            function are (i) modern Hopfield networks and (ii) the InfoLOOB loss instead of the InfoNCE loss used by
             CLIP. The authors argue that their modifications solve CLIP's "explaining away" problem (i.e., focusing on a
             small subset of features while ignoring other relevant features) and InfoNCE's saturation
-            problem<d-footnote>See Rumetshofer et al.<d-cite key="furst_cloob_2022"></d-cite> for more
+            problem<d-footnote>See Fürst et al.<d-cite key="furst_cloob_2022"></d-cite> for more
                 information.</d-footnote>.
         </p>
-        <p>However, we also observe something else: These modifications of the training objective seem to aid the
+        <p>However, we also observe something else: These modifications seem to aid the
             closure of the modality gap!</p>
 
         <figure style="grid-column: screen;">
@@ -1422,15 +1422,16 @@
 
 
         <p>
-            We believe that CLOOB’s ability to close the gap during training mainly stems from the modern hopfield
-            layers that are applied before calculating the InfoLOOB loss. In this step, the batch of image embeddings
+            We believe that CLOOB’s ability to close the gap during training mainly stems from the cross-modality retrieval 
+            applied before calculating the InfoLOOB loss. In this step, the batch of image embeddings
             and text embeddings is used as an associative memory to create a weighted average of embeddings for the
             current instance. Since this is done for each combination of embedding and associative memory (i.e., each
             image and each text embedding is associated with the entire batch of image embeddings AND the entire batch
-            of text embeddings). This creates a stronger correlation between the image/text instances to their own
-            modality and the opposite modality.<d-footnote>See this blog post for a detailed explanation of modern
-                hopfield layers: <a
-                    src=”https://ml-jku.github.io/hopfield-layers/”>https://ml-jku.github.io/hopfield-layers/</a>.</d-footnote>
+            of text embeddings), a stronger correlation between the image/text instances to their own
+            modality and the opposite modality is established. 
+            Other influencing factors on closing the modality gap could be the use of InfoLOOB, or the use of modern Hopfield networks 
+            that generally have a denoising effect<d-footnote>See this blog post for a detailed explanation of 
+                modern hopfield networks: <a src=”https://ml-jku.github.io/hopfield-layers/”>https://ml-jku.github.io/hopfield-layers/</a>.</d-footnote>.
         </p>
 
         <h3 id="section-modality-gap-summary">Summary of Modality Gap Analysis</h3>
@@ -1686,7 +1687,7 @@
             Closing this gap without losing significant performance can be important for downstream tasks like image
             generation, visual analytics, or human understanding. We showed how to close the gap using CyCLIP in
             combination with a post-processing method that aligns the embedding spaces and investigated another model
-            (CLOOB) that is able to align the spaces by the nature of its training objective. Finally, we introduced
+            (CLOOB) that is able to align the spaces during training. Finally, we introduced
             Amumo, an interactive visual prototype that allows users to explore embeddings from bi-modal contrastive
             learning models to help with understanding of their latent space embeddings. We used Amumo to analyze
             various (sub-)sets and augmentations of data. We believe that Amumo, and the similarity heatmap in
@@ -1706,6 +1707,7 @@
             Austrian Science Fund under grant number FWF DFH 23--N, and under the Human-Interpretable Machine Learning
             project (funded by the State of Upper Austria). The project was conducted during a research visit at the
             MIT-IBM Watson AI Lab in Cambridge, MA.
+            We would like to thank Elisabeth Rumetshofer for her feedback on CLOOB and its analysis.
         </p>
 
         <h2 id="section-reproduce">Reproducibility</h2>
@@ -1770,8 +1772,8 @@
 
         <h3 id="section-lg-dataset-inherent">Inherently Removing the Modality Gap</h3>
         <p>
-            The second method of removing the modality gap utilizes a bi-modal model that was trained with an objective
-            capable of aligning the embedding spaces: CLOOB. In this case, we can directly use the image and text
+            The second method of removing the modality gap utilizes a bi-modal model capable of aligning the embedding spaces: CLOOB. 
+            In this case, we can directly use the image and text
             embeddings generated by the model and project it to a 2-d space for visualization. We see a similar result
             to before: clusters emerge and a lot of inter-cluster connections, but also plenty of intra-cluster
             connections. There also seems to be a rather large cluster of points with many connections.
@@ -1802,7 +1804,7 @@
                 sense if the two embedding spaces are symmetric, like in CyCLIP.
             </li>
             <li>
-                Inherently: define the training objective in a way that aids the closing of the gap, like in CLOOB.
+                Inherently: define the model architecture and/or training objective in a way that aids the closing of the gap, like in CLOOB.
             </li>
         </ol>
         </p>

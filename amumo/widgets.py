@@ -15,7 +15,7 @@ import torch
 import math
 
 from . import model
-from .utils import get_textual_label_for_cluster, get_embedding, get_similarity, get_cluster_sorting, get_modality_distance, calculate_val_loss, get_closed_modality_gap, get_modality_gap_normed, l2_norm, get_gap_direction
+from .utils import get_textual_label_for_cluster, get_embedding, get_similarity, get_cluster_sorting, get_modality_distance, calculate_val_loss, get_closed_modality_gap, get_modality_gap_normed, l2_norm, get_gap_direction, get_closed_modality_gap_rotated, get_modality_distance_rotated
 
 
 class SimilarityHeatmapWidget(widgets.VBox):
@@ -429,12 +429,15 @@ class CLIPExplorerWidget(widgets.AppLayout):
 
         if self.close_modality_gap_widget.value:
             image_embedding, text_embedding = get_closed_modality_gap(image_embedding, text_embedding)
+            # image_embedding, text_embedding = get_closed_modality_gap_rotated(image_embedding, text_embedding)
 
         self.scatter_widget.embedding = np.concatenate((image_embedding, text_embedding))
 
         modality_distance = get_modality_distance(image_embedding, text_embedding)
+        # modality_distance = get_modality_distance_rotated(image_embedding, text_embedding)
+        
         validation_loss = calculate_val_loss(image_embedding, text_embedding, logit_scale.exp())
-
+        
         similarity_texts_images, similarity_all = get_similarity(image_embedding, text_embedding)
 
         cluster_labels = []

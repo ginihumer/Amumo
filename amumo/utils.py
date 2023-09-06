@@ -130,6 +130,12 @@ def get_modality_distance(modal1_features, modal2_features):
     # Euclidean distance between mass centers
     return np.linalg.norm(get_modality_gap(modal1_features, modal2_features))
 
+# This rotation approach is not legit... it uses the information that rows in the two modalities belong together
+# import scipy.spatial as spa
+# def get_modality_distance_rotated(modal1_features, modal2_features):
+#     mtx1, mtx2, disparity = spa.procrustes(modal1_features, modal2_features)
+#     return disparity
+
 def calculate_val_loss(image_features_np, text_features_np, logit_scale = 100.0):
 # give two lists of features, calculate loss
 
@@ -150,8 +156,8 @@ def calculate_val_loss(image_features_np, text_features_np, logit_scale = 100.0)
             text_features  = text_features_np[idx*50:(idx+1)*50]      
         
             # cosine similarity as logits
-            logits_per_image = logit_scale * image_features @ text_features.t()
-            logits_per_text = logits_per_image.t()
+            logits_per_image = logit_scale * image_features @ text_features.T
+            logits_per_text = logits_per_image.T
 
             # # symmetric loss function
             labels = torch.arange(BATCH_SIZE,dtype=torch.long)#.cuda()
@@ -179,6 +185,12 @@ def get_closed_modality_gap(modal1_features, modal2_features):
     # TODO: check whether or not to norm
     return l2_norm(modal1_modified), l2_norm(modal2_modified)
 
+# This rotation approach is not legit... it uses the information that rows in the two modalities belong together
+# import scipy.linalg as alg
+# def get_closed_modality_gap_rotated(modal1_features, modal2_features):
+#     R, sca = alg.orthogonal_procrustes(modal1_features, modal2_features)
+#     modal2_features_rot = np.dot(modal2_features, R.T) #* sca
+#     return modal1_features, torch.from_numpy(modal2_features_rot)
 
 def get_gap_direction(image_features_np, text_features_np, pca):
     image_features_np /= np.linalg.norm(image_features_np, axis=-1, keepdims=True) + 1e-12

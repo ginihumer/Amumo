@@ -1009,6 +1009,10 @@
         <figure style="grid-column: text; margin: 1rem 0;">
             <img src="./exported_data/idea_figure.png" style="width:100%;"
                 alt="Example of how we imagined a 2-dimensional projection of CLIP's image and text embeddings. Image and text points are shown in one scatter plot and instants that are semantically similar are plotted close together.">
+            
+            <figcaption style="text-align: center; margin-left: 10%; width: 80%;">
+                Example of how we imagined a two-dimensional projection of CLIP's image and text embeddings.
+            </figcaption>
         </figure>
 
         <h2 id="section-modality-gap-clip">
@@ -1057,7 +1061,7 @@
         </p>
         <p>
             The similarity heatmap below shows the same subset of 100 image-text pairs previously shown in a scatter
-            plot. However, in this case, we show the cosine similarities calculated between all image and text embeddings. 
+            plot. However, in this case, we show the cosine similarities<d-footnote>Note that the cosine similarity can yield values between [-1; 1].</d-footnote> calculated between all image and text embeddings. 
             This results in a matrix with four quadrants: 
             <ul>
                 <li>
@@ -1122,6 +1126,9 @@
 
         <figure style="grid-column: text; margin: 1rem 0;">
             <img style="width: 100%" src="./exported_data/closethegap-schema.png" />
+            <figcaption style="text-align: center; margin-left: 10%; width: 80%;">
+                Manually reducing the modality gap by moving the embeddings closer together along the gap vector.
+            </figcaption>
         </figure>
         <p>
             However, since the modality subspaces trained by CLIP are not symmetric<d-footnote>Goel et al.<d-cite
@@ -1131,7 +1138,7 @@
             derived during training. This naturally results in an increasing loss when changing the distance between
             modalities that was originally trained, as shown in the visualization below. The x-axis shows the Euclidean
             distance between the two embedding centers (the black dashed line indicates the original distance). The
-            y-axis shows the loss that results when moving the two embeddings closer together or further away from each
+            y-axis shows the contrastive loss that results when moving the two embeddings closer together or further away from each
             other. We calculated these values with the whole 5000 samples MSCOCO validation set. It becomes visible that
             the global minimum of this manual intervention is at the point of the original (trained) modality gap.
         </p>
@@ -1152,9 +1159,9 @@
             Now, what do the similarity heatmap and scatter plot look like when we manually close the gap? As shown in
             the visualization below, the similarity matrix seems more homogeneous (i.e., in-modal similarities and
             cross-modal similarities are on a similar level), and points in the scatter plot are closer together.
-            However, the scatter plot also shows that the edges between image-text pairs are still long. The many edge
-            crossings between the image-text pairs are also a qualitative indicator that the embeddings are not well
-            aligned. Furthermore, the text embeddings concentrate more on the center compared to the image embeddings.
+            However, the scatter plot also shows that the edges between image-text pairs are still long, and the text embeddings concentrate more on the center compared to the image embeddings.
+            <!-- The many edge crossings between the image-text pairs are also a qualitative indicator that the embeddings are not well -->
+            <!-- aligned. Furthermore, the text embeddings concentrate more on the center compared to the image embeddings. -->
         </p>
 
 
@@ -1294,7 +1301,8 @@
 
         <p>
             Again, when closing the modality gap, the similarity heatmap becomes more homogenous (i.e., the in-modal
-            similarities and cross-modal similarities are similarly strong). While the image-text pairs in the scatter plot are closer, there are still quite some edge crossings.
+            similarities and cross-modal similarities are similarly strong). The image-text pairs in the scatter plot are closer, but still scattered.
+            <!-- While the image-text pairs in the scatter plot are closer, there are still quite some edge crossings. -->
         </p>
         <figure style="grid-column: screen;">
             <div class="container">
@@ -1401,7 +1409,7 @@
         </p>
         <p>
             Contrastive Leave One Out Boost (short: CLOOB)<d-cite key="furst_cloob_2022"></d-cite> is a variation of
-            CLIP that proposes an alternative objective together with an associative memotry to train the model. The two main components of their method
+            CLIP that proposes an alternative objective together with an associative memory to train the model. The two main components of their method
             function are (i) modern Hopfield networks and (ii) the InfoLOOB loss instead of the InfoNCE loss used by
             CLIP. The authors argue that their modifications solve CLIP's "explaining away" problem (i.e., focusing on a
             small subset of features while ignoring other relevant features) and InfoNCE's saturation
@@ -1514,7 +1522,7 @@
         <h3 id="section-amumo-diffusiondb">Analyze DiffusionDB Dataset</h3>
         <p>
             We would like to see what the models’ latent-space embeddings look like for a dataset that is not (entirely)
-            procured by humans. To this end, we use DiffusionDB<d-cite key="wang_diffusiondb_2022"></d-cite>, a
+            procured by humans. To this end, we use DiffusionDB<d-cite key="wang_diffusiondb_2023"></d-cite>, a
             collection of human-written captions and images generated from these captions by Stable Diffusion<d-cite
                 key="rombach_high-resolution_2022"></d-cite>. We use a subset of 100 randomly selected samples to
             qualitatively explore the embedding spaces created by the CLIP models we previously introduced. You can use

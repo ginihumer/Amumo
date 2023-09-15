@@ -12,7 +12,7 @@ You can use Amumo to interactively explore bi-modal datasets...
 
 ... or compare various bi-modal models.
 
-<img src="https://github.com/ginihumer/Amumo/assets/45741696/339a98a7-90b4-4a28-a287-2aca35f19a85" height="400"/>
+<img src="https://github.com/ginihumer/Amumo/assets/45741696/55681796-5124-4af9-b317-353f40b49605" height="400"/>
 
 
 ### Installation

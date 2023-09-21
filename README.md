@@ -8,7 +8,7 @@ It is implemented as a collection of ipywidgets and comes with a set of pre-defi
 ### Examples
 You can use Amumo to interactively explore bi-modal datasets...
 
-<img src="https://github.com/ginihumer/Amumo/assets/45741696/d5bcf266-7e1a-4fd7-af09-2bbc0a5ab2ed" height="400"/>
+<img src="https://github.com/ginihumer/Amumo/assets/45741696/d5bcf266-7e1a-4fd7-af09-2bbc0a5ab2ed"/>
 
 ... or compare various bi-modal models.
 

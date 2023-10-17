@@ -15,7 +15,7 @@ import torch
 import math
 
 from . import model
-from .utils import get_textual_label_for_cluster, get_embedding, get_similarity, get_cluster_sorting, get_modality_distance, calculate_val_loss, get_closed_modality_gap, get_modality_gap_normed, l2_norm, get_gap_direction, get_closed_modality_gap_rotated, get_modality_distance_rotated
+from .utils import get_textual_label_for_cluster, get_embedding, get_similarity, get_cluster_sorting, get_modality_distance, calculate_val_loss, get_closed_modality_gap, get_modality_gap_normed, l2_norm, get_gap_direction
 
 
 class SimilarityHeatmapWidget(widgets.VBox):
@@ -331,13 +331,318 @@ class ScatterPlotWidget(widgets.VBox):
         print(change)
 
 
+class SimilarityHeatmapClusteringWidget(widgets.VBox):
+    
+    embedding = traitlets.Any().tag(sync=True)
+    value = traitlets.Any(np.zeros((6,6))).tag(sync=True)
+    cluster = traitlets.Any().tag(sync=True)
+
+    hover_idx = traitlets.List([]).tag(sync=True)
+
+
+    def __init__(self, zmin=None, zmax=None, cluster_label_data=None, hover_callback=None):
+        super(SimilarityHeatmapClusteringWidget, self).__init__()
+
+        self.cluster_label_data = cluster_label_data
+        self.size = 6
+        self.hover_callback = hover_callback
+
+        self.cluster_similarity_matrix_widget = widgets.Checkbox(
+            value=False,
+            description='Cluster matrix by similarity',
+            disabled=False,
+            indent=False
+        )
+        
+        self.fig_widget = go.FigureWidget(data=[go.Heatmap(z=self.value, zmin=zmin, zmax=zmax)])
+        self.heatmap = self.fig_widget.data[0]
+        self.heatmap.hoverinfo = "text"
+        self.fig_widget.update_layout(width=500, height=420,
+            xaxis = dict(
+                tickmode = 'array',
+                tickvals = [len(self.value)/4, 3*len(self.value)/4],
+                ticktext = ['Image', 'Text']
+            ),
+            yaxis = dict(
+                tickmode = 'array',
+                tickvals = [len(self.value)/4, 3*len(self.value)/4],
+                ticktext = ['Image', 'Text']
+            ),
+            margin=dict(l=10, r=10, t=10, b=10),
+        )
+        self.fig_widget.update_yaxes(autorange='reversed', fixedrange=False)
+        self.fig_widget.update_xaxes(fixedrange=False)
+        self.fig_widget.layout.shapes = self._get_matrix_gridlines()
+
+        self.heatmap.on_hover(self._hover_fn)
+        
+        self.cluster_similarity_matrix_widget.observe(self.onUpdateEmbedding, names='value')
+
+        self.children = [self.cluster_similarity_matrix_widget, widgets.HBox([self.fig_widget])]
+
+
+
+    def _hover_fn(self, trace, points, state):
+        x_idx = points.xs[0]
+        y_idx = points.ys[0]
+            
+        # show hover lines in similarity heatmap
+        self.hover_idx = [(x_idx, y_idx)]
+
+        # extract original x and y index and modalities for x and y; then call the callback function
+        if self.hover_callback is not None:
+            x_modality = 'modality2'
+            if x_idx < len(self.idcs):
+                x_modality = 'modality1'
+
+            y_modality = 'modality2'
+            if y_idx < len(self.idcs):
+                y_modality = 'modality1'
+
+            x_idx = self.idcs[x_idx%len(self.idcs)]
+            y_idx = self.idcs[y_idx%len(self.idcs)]
+            self.hover_callback(x_idx, y_idx, x_modality, y_modality)
+
+    def _get_matrix_gridlines(self):
+        return [
+            go.layout.Shape(type='line', x0=len(self.value)/2-0.5, y0=0-0.5, x1=len(self.value)/2-0.5, y1=len(self.value)-0.5, line=dict(color="black", width=1)),
+            go.layout.Shape(type='line', y0=len(self.value)/2-0.5, x0=0-0.5, y1=len(self.value)/2-0.5, x1=len(self.value)-0.5, line=dict(color="black", width=1))
+        ]
+
+
+    @traitlets.observe("embedding")
+    def onUpdateEmbedding(self, change):
+        modality1_embedding = self.embedding[:int(len(self.embedding)/2),:]
+        modality2_embedding = self.embedding[int(len(self.embedding)/2):,:]
+        similarity_cross_modal, similarity_all = get_similarity(torch.from_numpy(modality1_embedding), torch.from_numpy(modality2_embedding))
+
+        self.size=len(modality1_embedding)
+        
+        cluster_labels = []
+        cluster_sizes = []
+
+        if self.cluster_similarity_matrix_widget.value:
+            self.idcs, clusters, clusters_unsorted = get_cluster_sorting(similarity_cross_modal)
+            for c in set(clusters):
+                cluster_size = np.count_nonzero(clusters==c)
+                cluster_label = ""
+                if self.cluster_label_data is not None:
+                    cluster_label = self.cluster_label_data.getMinSummary(np.where(clusters_unsorted==c)[0])
+                cluster_labels.append(cluster_label)
+                cluster_sizes.append(cluster_size)
+        else:
+            self.idcs = np.arange(self.size) # TODO: use reverse idcs to get original order for interaction with other widgets
+
+        # with heatmap_widget.batch_update():
+        matrix_sort_idcs = np.concatenate([self.idcs, self.idcs+self.size], axis=0) # need to do double index because we combined images and texts
+        self.value = similarity_all[matrix_sort_idcs, :][:, matrix_sort_idcs]
+        self.cluster = (cluster_labels, cluster_sizes)
+
+        
+
+    @traitlets.validate("value")
+    def _validate_value(self, proposal):
+        # print("TODO: validate value")
+        return proposal.value
+
+    @traitlets.observe("value")
+    def onUpdateValue(self, change):
+        self.fig_widget.data[0].z = self.value
+        self.fig_widget.layout.shapes = self._get_matrix_gridlines()
+
+        self.fig_widget.update_layout(
+            xaxis = dict(tickvals = [len(self.value)/4, 3*len(self.value)/4]),
+            yaxis = dict(tickvals = [len(self.value)/4, 3*len(self.value)/4])
+        )
+
+
+    # @traitlets.validate("cluster")
+    # def _validate_cluster(self, proposal):
+        # takes a list of cluster labels + sizes
+    #     print("TODO: validate cluster")
+    #     return proposal.value
+
+    @traitlets.observe("cluster")
+    def onUpdateCluster(self, change):
+        cluster_shapes = self._get_matrix_gridlines()
+        labels, sizes = self.cluster
+        offset = 0-0.5 # -0.5 because heatmap rectangles are drawn around [-0.5, 0.5]
+        for (cluster_label, cluster_size) in zip(labels, sizes):
+            if cluster_size > 5:
+                textposition = 'middle left' if offset < len(self.value)/2/2 else 'middle right'
+
+                # see https://plotly.com/python/shapes/
+                cluster_shapes += [go.layout.Shape(
+                    type='rect', 
+                    x0=len(self.value)/2+offset, 
+                    y0=offset, 
+                    x1=len(self.value)/2+offset+cluster_size, 
+                    y1=offset+cluster_size, 
+                    label=dict(text=cluster_label, textposition=textposition, font=dict(size=10, color="white"), padding=np.log(cluster_size)*10), 
+                    line=dict(width=1, color='white')
+                )]
+
+            offset += cluster_size
+            
+        self.fig_widget.layout.shapes = cluster_shapes
+
+
+    @traitlets.observe("hover_idx")
+    def onUpdateHoverIdx(self, change):
+        shapes = [sh for sh in self.fig_widget.layout.shapes if sh.name != 'hover_idx' and sh.name != 'hover_idx']
+
+        for (x_idx, y_idx) in self.hover_idx:
+            if x_idx >= 0 and x_idx < len(self.value):
+                shapes.append(go.layout.Shape(name='hover_idx', type='line', x0=x_idx, y0=0-0.5, x1=x_idx, y1=len(self.value)-0.5, line=dict(color="grey", width=1)))
+            if y_idx >= 0 and y_idx < len(self.value):
+                shapes.append(go.layout.Shape(name='hover_idx', type='line', y0=y_idx, x0=0-0.5, y1=y_idx, x1=len(self.value)-0.5, line=dict(color="grey", width=1)))
+        
+        self.fig_widget.layout.shapes = shapes
+
+
 
 class CLIPExplorerWidget(widgets.AppLayout):
-    idcs = traitlets.Any().tag(sync=True)
+    # idcs = traitlets.Any().tag(sync=True)
 
     def __init__(self, dataset_name, all_images, all_prompts, models=None):
         ### models... list of strings or instances that inherit from CLIPModelInterface 
         super(CLIPExplorerWidget, self).__init__()
+
+        if models is None:
+            models = model.available_CLIP_models
+
+        self.models = {}
+        for m in models:
+            if type(m) == str:
+                self.models[m] = model.get_model(m)
+            elif issubclass(type(m), model.CLIPModelInterface):
+                self.models[m.model_name] = m
+            else:
+                print('skipped', m, 'because it is not string or of type CLIPModelInterface')
+
+        
+        self.dataset_name = dataset_name
+        self.all_images = np.array(all_images)
+        self.all_prompts = np.array(all_prompts)
+        self.size = len(all_images)
+
+        # ui select widgets
+        self.model_select_widget = widgets.Dropdown(
+            description='Model: ',
+            value=list(self.models.keys())[0],
+            options=list(self.models.keys()),
+        )
+
+        self.close_modality_gap_widget = widgets.Checkbox(
+            value=False,
+            description='Close modality gap',
+            disabled=False,
+            indent=False
+        )
+
+        # output widgets
+        self.hover_widget = HoverWidget()
+
+        m = self.models[self.model_select_widget.value]
+        image_embedding_norm, text_embedding_norm, logit_scale = get_embedding(m, self.dataset_name, self.all_images, self.all_prompts)
+        self.scatter_widget = ScatterPlotWidget()
+        self.scatter_widget.embedding = np.concatenate((image_embedding_norm, text_embedding_norm))
+
+        modality_distance = get_modality_distance(image_embedding_norm, text_embedding_norm)
+        validation_loss = calculate_val_loss(image_embedding_norm, text_embedding_norm, logit_scale.exp())
+        self.log_widget = widgets.Output()
+        with self.log_widget:
+            print('Modality distance: %.2f | Loss: %.2f'%(modality_distance, validation_loss))
+
+        self.heatmap_widget = SimilarityHeatmapClusteringWidget(cluster_label_data=all_prompts, hover_callback=self.heatmap_hover_fn)
+        self.heatmap_widget.embedding = np.concatenate((image_embedding_norm, text_embedding_norm))
+        
+
+        # callback functions
+        self.model_select_widget.observe(self.model_changed, names="value")
+        self.close_modality_gap_widget.observe(self.model_changed, names='value')
+        self.scatter_widget.scatter_image.on_hover(self.scatter_hover_fn)
+        self.scatter_widget.scatter_text.on_hover(self.scatter_hover_fn)
+        self.scatter_widget.scatter_image.on_unhover(self.scatter_unhover_fn)
+        self.scatter_widget.scatter_text.on_unhover(self.scatter_unhover_fn)
+
+        # display everyting
+        self.header = widgets.VBox([widgets.HBox([self.model_select_widget, self.close_modality_gap_widget]),self.log_widget])
+        self.header.layout.height = '80px'
+        vis_widgets = widgets.HBox([self.heatmap_widget, self.scatter_widget])
+        self.center = vis_widgets
+        self.right_sidebar = self.hover_widget
+        self.height = '700px'
+
+
+    def model_changed(self, change):
+
+        self.log_widget.clear_output()
+        with self.log_widget:
+            print("loading...")
+
+        m = self.models[self.model_select_widget.value]
+        image_embedding, text_embedding, logit_scale = get_embedding(m, self.dataset_name, self.all_images, self.all_prompts)
+
+        if self.close_modality_gap_widget.value:
+            image_embedding, text_embedding = get_closed_modality_gap(image_embedding, text_embedding)
+            # image_embedding, text_embedding = get_closed_modality_gap_rotated(image_embedding, text_embedding)
+
+        self.scatter_widget.embedding = np.concatenate((image_embedding, text_embedding))
+        self.heatmap_widget.embedding = np.concatenate((image_embedding, text_embedding))
+
+        modality_distance = get_modality_distance(image_embedding, text_embedding)
+        # modality_distance = get_modality_distance_rotated(image_embedding, text_embedding)
+        
+        validation_loss = calculate_val_loss(image_embedding, text_embedding, logit_scale.exp())
+
+        self.log_widget.clear_output()
+        with self.log_widget:
+            print('Modality distance: %.2f | Loss: %.2f'%(modality_distance, validation_loss))
+
+
+    def heatmap_hover_fn(self, x_idx, y_idx, x_modality, y_modality):
+        # show hover images/texts
+        if x_modality == "modality1":
+            output_img = io.BytesIO()
+            self.all_images[x_idx].resize((300,300)).save(output_img, format='JPEG')
+            self.hover_widget.valueX = output_img
+        else:
+            self.hover_widget.valueX = self.all_prompts[x_idx]
+        
+        if y_modality == "modality1":
+            output_img = io.BytesIO()
+            self.all_images[y_idx].resize((300,300)).save(output_img, format='JPEG')
+            self.hover_widget.valueY = output_img
+        else:
+            self.hover_widget.valueY = self.all_prompts[y_idx]
+
+    def scatter_hover_fn(self, trace, points, state):
+        if len(points.point_inds) < 1:
+            return
+        idx = points.point_inds[0]
+        # print(trace.name, idx) # image vs text trace
+
+        self.hover_widget.valueX = self.all_prompts[idx]
+
+        output_img = io.BytesIO()
+        self.all_images[idx].resize((300,300)).save(output_img, format='JPEG')
+        self.hover_widget.valueY = output_img
+        
+        inverse_idcs = np.argsort(self.heatmap_widget.idcs)
+        heatmap_idx = inverse_idcs[idx]
+        self.heatmap_widget.hover_idx = [(heatmap_idx, self.size + heatmap_idx), (self.size + heatmap_idx, heatmap_idx)]
+
+
+    def scatter_unhover_fn(self, trace, points, state):
+        self.heatmap_widget.hover_idx = []
+
+class CLIPExplorerWidget_Old(widgets.AppLayout):
+    idcs = traitlets.Any().tag(sync=True)
+
+    def __init__(self, dataset_name, all_images, all_prompts, models=None):
+        ### models... list of strings or instances that inherit from CLIPModelInterface 
+        super(CLIPExplorerWidget_Old, self).__init__()
 
         if models is None:
             models = model.available_CLIP_models
@@ -520,9 +825,15 @@ class CLIPComparerWidget(widgets.AppLayout):
         self.models = {}
         for m in models:
             if type(m) == str:
-                self.models[m] = model.get_model(m)
+                modifier = ''
+                if m in self.models.keys():
+                    modifier = '_%i'%m.__hash__()
+                self.models[m+modifier] = model.get_model(m)
             elif issubclass(type(m), model.CLIPModelInterface):
-                self.models[m.model_name] = m
+                modifier = ''
+                if m.model_name in self.models.keys():
+                    modifier = '_%i'%m.__hash__()
+                self.models[m.model_name+modifier] = m
             else:
                 print('skipped', m, 'because it is not string or of type CLIPModelInterface')
 
@@ -530,7 +841,7 @@ class CLIPComparerWidget(widgets.AppLayout):
 
         if type(close_modality_gap) == bool:
             close_modality_gap = [close_modality_gap] * len(self.models)
-
+        print(type(close_modality_gap) == list, close_modality_gap, self.models)
         assert type(close_modality_gap) == list and len(close_modality_gap) == len(self.models), 'close_modality_gap must be a bool or list of the same length as models'
         
         self.dataset_name = dataset_name

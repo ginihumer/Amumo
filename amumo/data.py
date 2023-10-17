@@ -13,6 +13,49 @@ from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 import io
 import urllib
+from .utils import get_textual_label_for_cluster
+# ---------Data Types (Modalities)---------
+
+class DataTypeInterface:
+    name = "DataTypeInterface"
+
+    def __init__(self, data) -> None:
+        self.data = data
+
+    def getMinSummary(self, ids):
+        # returns a minimal summary of a set of instances; e.g. text: top 2 n-grams
+        return None
+    
+    def getSummary(self, ids):
+        # returns a summary of a set of instances; e.g. text: all n-grams with count; image: n prototypes
+        return None
+    
+    def __len__(self):
+        return len(self.data)
+        
+    def __getitem__(self, indices):
+        # returns the selected item(s)
+        return self.data[indices]
+    
+
+class ImageType(DataTypeInterface):
+    name = "ImageType"
+
+    def __init__(self, data) -> None:
+        super().__init__(data)
+
+class TextType(DataTypeInterface):
+    name = "TextType"
+
+    def __init__(self, data) -> None:
+        super().__init__(data)
+
+    def getMinSummary(self, ids):
+        # retrieve top 2 n-grams
+        return get_textual_label_for_cluster(ids, self.data)
+
+
+# ---------Datasets---------
 
 
 class DatasetInterface:
@@ -22,7 +65,6 @@ class DatasetInterface:
         self.path = path
         self.seed = seed
         self.batch_size = batch_size
-        pass
 
     def get_data(self):
         
@@ -32,7 +74,9 @@ class DatasetInterface:
         # create a random batch
         batch_idcs = self._get_random_subsample(len(self.all_images))
 
-        return self.all_images[batch_idcs], self.all_prompts[batch_idcs]
+        images = ImageType(self.all_images[batch_idcs])
+        texts = TextType(self.all_prompts[batch_idcs])
+        return images, texts
 
     def _get_random_subsample(self, arr_len):
         if self.batch_size is None:
@@ -57,7 +101,10 @@ class DatasetInterface:
         # create a random batch
         batch_idcs = self._get_random_subsample(len(subset_ids))
         subset_ids = subset_ids[batch_idcs]
-        return self.all_images[subset_ids], self.all_prompts[subset_ids]
+        
+        images = ImageType(self.all_images[subset_ids])
+        texts = TextType(self.all_prompts[subset_ids])
+        return images, texts
     
 
 
@@ -78,7 +125,9 @@ class Conceptual12M_Dataset(DatasetInterface):
         batch_idcs = self._get_random_subsample(self.dataset.num_rows)
         batched_dataset = self.dataset.select(batch_idcs)
 
-        return CustomConceptual12MMapper(batched_dataset, 'image'), CustomConceptual12MMapper(batched_dataset, 'caption')
+        images = ImageType(CustomConceptual12MMapper(batched_dataset, 'image'))
+        texts = TextType(CustomConceptual12MMapper(batched_dataset, 'caption'))
+        return images, texts
 
     def get_filtered_data(self, filter_list, method=any):
         # filter_list: a list of strings that are used for filtering
@@ -91,7 +140,9 @@ class Conceptual12M_Dataset(DatasetInterface):
         batch_idcs = self._get_random_subsample(subset.num_rows)
         batched_dataset = subset.select(batch_idcs)
 
-        return CustomConceptual12MMapper(batched_dataset, 'image'), CustomConceptual12MMapper(batched_dataset, 'caption')
+        images = ImageType(CustomConceptual12MMapper(batched_dataset, 'image'))
+        texts = TextType(CustomConceptual12MMapper(batched_dataset, 'caption'))
+        return images, texts
 
 
 

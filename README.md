@@ -35,6 +35,12 @@ Package installation:
 pip install git+https://github.com/ginihumer/Amumo.git
 ```
 
+Or you can create the conda environment from the .yml file:
+```bash
+conda env create -f environment.yml
+```
+
+
 # Understanding and Comparing Multi-Modal Models
 ## Exploring the Latent Space of CLIP-like Models (CLIP, CyCLIP, CLOOB) Using Inter-Modal Pairs (Featuring Amumo, Your Friendly Neighborhood Mummy)
 

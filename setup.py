@@ -31,12 +31,12 @@ REQUIRED = [
     'plotly',
     'ipywidgets==8.0.6',
     'ipykernel==6.23.1',
-    'scikit-learn',
-    'openTSNE',
-    'umap-learn',
+    'scikit-learn==1.3.0',
+    'openTSNE==1.0.0',
+    'umap-learn==0.5.3',
     'numpy==1.23.5',
-    'pycocotools',
-    'transformers'
+    'pycocotools==2.0.6',
+    'transformers==4.31.0',
 ]
 
 # What packages are optional?

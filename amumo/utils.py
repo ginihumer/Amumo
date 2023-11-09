@@ -114,6 +114,7 @@ def get_textual_label_for_cluster(emb_ids, all_prompts, k=2):
 
 
 
+
 ###### Modality gap as defined in https://openreview.net/pdf?id=S7Evzt9uit3 ######
 
 def l2_norm(x):

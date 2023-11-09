@@ -814,7 +814,7 @@ class CLIPExplorerWidget_Old(widgets.AppLayout):
 class CLIPComparerWidget(widgets.AppLayout):
 
 
-    def __init__(self, dataset_name, all_images, all_prompts, models=list(model.available_CLIP_models), close_modality_gap=False):
+    def __init__(self, dataset_name, all_images, all_prompts, models=list(model.available_CLIP_models), close_modality_gap=False, zmin=None, zmax=None):
         super(CLIPComparerWidget, self).__init__()
         # close_modality_gap: boolean or list of booleans with same length as models that specifies whether or not the modality gap should be closed
         ### models... list of strings or instances that inherit from CLIPModelInterface 
@@ -862,7 +862,7 @@ class CLIPComparerWidget(widgets.AppLayout):
                 image_embedding_norm, text_embedding_norm = get_closed_modality_gap(image_embedding_norm, text_embedding_norm)
 
             _, similarity_all = get_similarity(image_embedding_norm, text_embedding_norm)
-            heatmap_widget = SimilarityHeatmapWidget()#(zmin=0, zmax=1)
+            heatmap_widget = SimilarityHeatmapWidget(zmin=zmin, zmax=zmax)
             heatmap_widget.value = similarity_all
             heatmap_widget.heatmap.on_hover(self.hover_fn)
             # heatmap_widget.layout = widgets.Layout(height='500px', width='auto')

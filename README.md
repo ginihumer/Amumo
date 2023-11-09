@@ -56,3 +56,15 @@ Check out the [computational notebook to reproduce the results](https://github.c
 Check out the [computational notebook for exporting the data](https://github.com/ginihumer/Amumo/blob/main/notebooks/export_data.ipynb) used in the interactive article.
 
 
+## How to cite?
+
+You may cite Amumo using the following bibtex:
+
+```bibtex
+@software{humer2023amumo,
+  author = {Humer, Christina and Streit, Marc and Strobelt, Hendrik},
+  title = {{Amumo (Analyze Multi-Modal Models)}},
+  url = {https://github.com/ginihumer/Amumo},
+  year = {2023}
+}
+```

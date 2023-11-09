@@ -30,6 +30,9 @@ class DataTypeInterface:
         # returns a summary of a set of instances; e.g. text: all n-grams with count; image: n prototypes
         return None
     
+    def getVisItem(self, id):
+        pass
+    
     def __len__(self):
         return len(self.data)
         
@@ -39,13 +42,18 @@ class DataTypeInterface:
     
 
 class ImageType(DataTypeInterface):
-    name = "ImageType"
+    name = "Image"
 
     def __init__(self, data) -> None:
         super().__init__(data)
 
+    def getVisItem(self, idx):
+        output_img = io.BytesIO()
+        self.data[idx].resize((300,300)).save(output_img, format='JPEG')
+        return output_img
+
 class TextType(DataTypeInterface):
-    name = "TextType"
+    name = "Text"
 
     def __init__(self, data) -> None:
         super().__init__(data)
@@ -54,12 +62,16 @@ class TextType(DataTypeInterface):
         # retrieve top 2 n-grams
         return get_textual_label_for_cluster(ids, self.data)
 
+    def getVisItem(self, idx):
+        return self.data[idx]
 
 # ---------Datasets---------
 
 
 class DatasetInterface:
     name = 'DatasetInterface'
+    MODE1_Type = ImageType
+    MODE2_Type = TextType
 
     def __init__(self, path, seed=31415, batch_size = 100) -> None:
         self.path = path
@@ -74,8 +86,8 @@ class DatasetInterface:
         # create a random batch
         batch_idcs = self._get_random_subsample(len(self.all_images))
 
-        images = ImageType(self.all_images[batch_idcs])
-        texts = TextType(self.all_prompts[batch_idcs])
+        images = self.MODE1_Type(self.all_images[batch_idcs])
+        texts = self.MODE2_Type(self.all_prompts[batch_idcs])
         return images, texts
 
     def _get_random_subsample(self, arr_len):
@@ -102,8 +114,8 @@ class DatasetInterface:
         batch_idcs = self._get_random_subsample(len(subset_ids))
         subset_ids = subset_ids[batch_idcs]
         
-        images = ImageType(self.all_images[subset_ids])
-        texts = TextType(self.all_prompts[subset_ids])
+        images = self.MODE1_Type(self.all_images[subset_ids])
+        texts = self.MODE2_Type(self.all_prompts[subset_ids])
         return images, texts
     
 

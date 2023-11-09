@@ -176,7 +176,7 @@ class ScatterPlotWidget(widgets.VBox):
     embedding = traitlets.Any().tag(sync=True)
     cluster = traitlets.Any().tag(sync=True)
 
-    def __init__(self, seed=31415):
+    def __init__(self, seed=31415, modality1_label='Image', modality2_label='Text'):
         super(ScatterPlotWidget, self).__init__()
 
         self.seed=seed
@@ -219,8 +219,8 @@ class ScatterPlotWidget(widgets.VBox):
 
 
         self.fig_widget = go.FigureWidget()
-        self.fig_widget.add_trace(go.Scatter(name = 'image', x=[0,1,2,3], y=[0,1,2,3], mode="markers", marker_color='blue'))
-        self.fig_widget.add_trace(go.Scatter(name = 'text', x=[3,2,1,0], y=[0,1,2,3], mode="markers", marker_color='orange'))
+        self.fig_widget.add_trace(go.Scatter(name = modality1_label, x=[0,1,2,3], y=[0,1,2,3], mode="markers", marker_color='blue'))
+        self.fig_widget.add_trace(go.Scatter(name = modality2_label, x=[3,2,1,0], y=[0,1,2,3], mode="markers", marker_color='orange'))
         self.fig_widget.update_layout(width=400, 
                                       height=300, 
                                       margin=dict(l=10, r=10, t=10, b=10),
@@ -340,7 +340,7 @@ class SimilarityHeatmapClusteringWidget(widgets.VBox):
     hover_idx = traitlets.List([]).tag(sync=True)
 
 
-    def __init__(self, zmin=None, zmax=None, cluster_label_data=None, hover_callback=None):
+    def __init__(self, zmin=None, zmax=None, cluster_label_data=None, modality1_label='Image', modality2_label='Text', hover_callback=None):
         super(SimilarityHeatmapClusteringWidget, self).__init__()
 
         self.cluster_label_data = cluster_label_data
@@ -361,12 +361,12 @@ class SimilarityHeatmapClusteringWidget(widgets.VBox):
             xaxis = dict(
                 tickmode = 'array',
                 tickvals = [len(self.value)/4, 3*len(self.value)/4],
-                ticktext = ['Image', 'Text']
+                ticktext = [modality1_label, modality2_label]
             ),
             yaxis = dict(
                 tickmode = 'array',
                 tickvals = [len(self.value)/4, 3*len(self.value)/4],
-                ticktext = ['Image', 'Text']
+                ticktext = [modality1_label, modality2_label]
             ),
             margin=dict(l=10, r=10, t=10, b=10),
         )
@@ -522,8 +522,10 @@ class CLIPExplorerWidget(widgets.AppLayout):
 
         
         self.dataset_name = dataset_name
-        self.all_images = np.array(all_images)
-        self.all_prompts = np.array(all_prompts)
+        self.all_images = all_images
+        self.all_prompts = all_prompts
+        # self.all_images = np.array(all_images)
+        # self.all_prompts = np.array(all_prompts)
         self.size = len(all_images)
 
         # ui select widgets
@@ -545,7 +547,7 @@ class CLIPExplorerWidget(widgets.AppLayout):
 
         m = self.models[self.model_select_widget.value]
         image_embedding_norm, text_embedding_norm, logit_scale = get_embedding(m, self.dataset_name, self.all_images, self.all_prompts)
-        self.scatter_widget = ScatterPlotWidget()
+        self.scatter_widget = ScatterPlotWidget(modality1_label=all_images.name, modality2_label=all_prompts.name)
         self.scatter_widget.embedding = np.concatenate((image_embedding_norm, text_embedding_norm))
 
         modality_distance = get_modality_distance(image_embedding_norm, text_embedding_norm)
@@ -554,7 +556,7 @@ class CLIPExplorerWidget(widgets.AppLayout):
         with self.log_widget:
             print('Modality distance: %.2f | Loss: %.2f'%(modality_distance, validation_loss))
 
-        self.heatmap_widget = SimilarityHeatmapClusteringWidget(cluster_label_data=all_prompts, hover_callback=self.heatmap_hover_fn)
+        self.heatmap_widget = SimilarityHeatmapClusteringWidget(cluster_label_data=all_prompts, hover_callback=self.heatmap_hover_fn, modality1_label=all_images.name, modality2_label=all_prompts.name)
         self.heatmap_widget.embedding = np.concatenate((image_embedding_norm, text_embedding_norm))
         
 
@@ -604,18 +606,14 @@ class CLIPExplorerWidget(widgets.AppLayout):
     def heatmap_hover_fn(self, x_idx, y_idx, x_modality, y_modality):
         # show hover images/texts
         if x_modality == "modality1":
-            output_img = io.BytesIO()
-            self.all_images[x_idx].resize((300,300)).save(output_img, format='JPEG')
-            self.hover_widget.valueX = output_img
+            self.hover_widget.valueX = self.all_images.getVisItem(x_idx)
         else:
-            self.hover_widget.valueX = self.all_prompts[x_idx]
+            self.hover_widget.valueX = self.all_prompts.getVisItem(x_idx)
         
         if y_modality == "modality1":
-            output_img = io.BytesIO()
-            self.all_images[y_idx].resize((300,300)).save(output_img, format='JPEG')
-            self.hover_widget.valueY = output_img
+            self.hover_widget.valueY = self.all_images.getVisItem(y_idx)
         else:
-            self.hover_widget.valueY = self.all_prompts[y_idx]
+            self.hover_widget.valueY = self.all_prompts.getVisItem(y_idx)
 
     def scatter_hover_fn(self, trace, points, state):
         if len(points.point_inds) < 1:
@@ -623,11 +621,9 @@ class CLIPExplorerWidget(widgets.AppLayout):
         idx = points.point_inds[0]
         # print(trace.name, idx) # image vs text trace
 
-        self.hover_widget.valueX = self.all_prompts[idx]
+        self.hover_widget.valueX = self.all_prompts.getVisItem(idx)
 
-        output_img = io.BytesIO()
-        self.all_images[idx].resize((300,300)).save(output_img, format='JPEG')
-        self.hover_widget.valueY = output_img
+        self.hover_widget.valueY = self.all_images.getVisItem(idx)
         
         inverse_idcs = np.argsort(self.heatmap_widget.idcs)
         heatmap_idx = inverse_idcs[idx]

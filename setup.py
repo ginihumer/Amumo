@@ -18,7 +18,7 @@ DESCRIPTION = 'Explore CLIP-alike models in your computational notebook.'
 URL = 'https://github.com/ginihumer/Amumo'
 EMAIL = 'ginihumer96@yahoo.de'
 AUTHOR = 'Gin'
-REQUIRES_PYTHON = '>=3.9.16'
+REQUIRES_PYTHON = '>=3.9.7'
 VERSION = '0.1.35'
 
 # What packages are required for this module to be executed?

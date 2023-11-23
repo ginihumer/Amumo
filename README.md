@@ -40,7 +40,19 @@ Or you can create the conda environment from the .yml file:
 conda env create -f environment.yml
 ```
 
+## Troubleshooting
 
+### SSL Certificate Verification Error
+If you encounter an SSL certificate verification error, such as 'CERTIFICATE_VERIFY_FAILED,' while installing or running Amumo, it might be due to your system's SSL configuration. Here are a few steps you can take to address this issue: 
+- Try updating your SSL certificate bundle
+  ```bash
+  pip install --upgrade certifi
+  ```
+- Try disabling SSL verification temporarily for your Python script.
+  ```python
+  import ssl
+  ssl._create_default_https_context = ssl._create_unverified_context
+  ```
 # Understanding and Comparing Multi-Modal Models
 ## Exploring the Latent Space of CLIP-like Models (CLIP, CyCLIP, CLOOB) Using Inter-Modal Pairs (Featuring Amumo, Your Friendly Neighborhood Mummy)
 

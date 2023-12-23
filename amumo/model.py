@@ -11,6 +11,7 @@ from torchvision import transforms
 import requests
 from tqdm import tqdm
 from transformers import AutoProcessor, BlipModel
+import amumo.utils as ut
 
 class CLIPModelInterface:
     available_models = []
@@ -53,7 +54,34 @@ def checkpoint_download_helper(url, name):
                     progress_bar.update(len(data))
 
     return checkpoint
-    
+
+
+class PrecalculatedModel(CLIPModelInterface):
+    model_name = 'precalculated'
+
+    def __init__(self, name, dataset_name, modality1_features, modality2_features, logit_scale=torch.tensor(0)) -> None:
+        # this class is a workaround for precalculated features
+        # it just saves the features as cached files so that the "encode_image" and "encode_text" methods are not called
+        self.available_models = [name]
+        super().__init__(name, device='cpu')
+        self.logit_scale = logit_scale
+        self.modality1_features = modality1_features
+        self.modality2_features = modality2_features
+        self.process_precalculated_features(dataset_name)
+
+    def process_precalculated_features(self, dataset_name):
+        data_prefix = dataset_name + '_' + self.model_name + '_' + self.name
+        data_prefix = data_prefix.replace('/', '-')
+        np.savetxt(ut.data_checkpoint_dir + data_prefix + '_image-embedding.csv', self.modality1_features.cpu(),
+                   delimiter=',')
+        np.savetxt(ut.data_checkpoint_dir + data_prefix + '_text-embedding.csv', self.modality2_features.cpu(),
+                   delimiter=',')
+
+    def encode_image(self, images):
+        raise NotImplementedError("this cannot be done for precalculated features -> use cached features")
+
+    def encode_text(self, texts):
+        raise NotImplementedError("this cannot be done for precalculated features -> use cached features")
 
 class CLIPModel(CLIPModelInterface):
     available_models = clip.available_models()

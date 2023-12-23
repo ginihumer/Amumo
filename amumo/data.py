@@ -197,7 +197,8 @@ class CLOOMDataset_Dataset(DatasetInterface):
             im = reshape_image(image)
             all_images.append(im)
 
-        self.all_images = np.array(all_images)
+        self.all_images = np.empty(len(all_images), dtype=object)
+        self.all_images[:] = all_images
 
 
 class Conceptual12M_Dataset(DatasetInterface):

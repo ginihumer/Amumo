@@ -1,5 +1,4 @@
-from .model import get_model
-from . import model
+import amumo.model as amumo_model
 import scipy.cluster.hierarchy as sch
 from sklearn.feature_extraction.text import CountVectorizer
 import os
@@ -21,8 +20,8 @@ def get_embedding(model_name, dataset_name, all_images, all_prompts, batch_size=
     batch_size = min(len(all_images), batch_size)
 
     if type(model_name) == str:
-        clip_model = get_model(model_name, device=device)
-    elif issubclass(type(model_name), model.CLIPModelInterface):
+        clip_model = amumo_model.get_model(model_name, device=device)
+    elif issubclass(type(model_name), amumo_model.CLIPModelInterface):
         clip_model = model_name
     else:
         print('model_name must either be a string or of type CLIPModelInterface')

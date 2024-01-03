@@ -21,6 +21,10 @@ class CLIPModelInterface:
         assert name in self.available_models, 'choose one of ' + str(self.available_models)
         self.name=name
         self.device = device
+        self.encoding_functions = {
+            "image": self.encode_image,
+            "text": self.encode_text
+        }
     
     def encode_image(self, images):
         """Encode a batch of images to a CLIP embedding space"""

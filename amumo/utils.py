@@ -1,5 +1,5 @@
 from .model import get_model
-from . import model
+from . import model as am_model
 import scipy.cluster.hierarchy as sch
 from sklearn.feature_extraction.text import CountVectorizer
 import os
@@ -15,13 +15,53 @@ data_checkpoint_dir = 'data_checkpoints/'
 if not os.path.exists(data_checkpoint_dir):
     os.makedirs(data_checkpoint_dir)
 
+def get_embeddings_per_modality(model, dataset_name, all_data, batch_size = 500):
+    batch_size = min(len(all_data[list(all_data.keys())[0]]), batch_size)
 
+    if type(model) == str:
+        clip_model = get_model(model, device=device)
+    elif issubclass(type(model), am_model.CLIPModelInterface):
+        clip_model = model
+    else:
+        print('model_name must either be a string or of type CLIPModelInterface')
+
+    data_prefix = dataset_name + '_' + clip_model.model_name + '_' + clip_model.name
+    data_prefix = data_prefix.replace('/','-')
+
+    all_features = {}
+
+    for modality in all_data.keys():
+        if not os.path.exists(data_checkpoint_dir + data_prefix + '_' + modality + '-embedding.csv'):
+            all_data_of_modality = all_data[modality]
+            with torch.no_grad():
+                batch_features = []
+                for i in range(int(len(all_data_of_modality)/batch_size)):
+                    print("batch", i+1, "of", int(len(all_data_of_modality)/batch_size))
+                    batch = all_data_of_modality[i*batch_size:(i+1)*batch_size]
+                    # check if model is able to encode this modality
+                    if clip_model.encoding_functions[modality] is None:
+                        print('no encoding function for', modality)
+                        break
+                    batch_features.append(clip_model.encoding_functions[modality](batch).float().cpu())
+                    
+                features = torch.cat(batch_features, dim=0)
+
+            np.savetxt(data_checkpoint_dir + data_prefix + '_' + modality + '-embedding.csv', features.cpu(), delimiter = ',')
+        else:
+            print('found cached embeddings for', data_prefix, modality)
+            features = torch.from_numpy(np.genfromtxt(data_checkpoint_dir + data_prefix + '_' + modality + '-embedding.csv', delimiter=","))
+
+        all_features[modality] = features/features.norm(dim=-1, keepdim=True)
+
+    return all_features, clip_model.logit_scale
+
+# deprecated; use "get_embeddings_per_modality" instead
 def get_embedding(model_name, dataset_name, all_images, all_prompts, batch_size = 500):
     batch_size = min(len(all_images), batch_size)
 
     if type(model_name) == str:
         clip_model = get_model(model_name, device=device)
-    elif issubclass(type(model_name), model.CLIPModelInterface):
+    elif issubclass(type(model_name), am_model.CLIPModelInterface):
         clip_model = model_name
     else:
         print('model_name must either be a string or of type CLIPModelInterface')

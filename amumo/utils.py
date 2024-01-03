@@ -49,7 +49,7 @@ def get_embeddings_per_modality(model, dataset_name, all_data, batch_size = 500)
             np.savetxt(data_checkpoint_dir + data_prefix + '_' + modality + '-embedding.csv', features.cpu(), delimiter = ',')
         else:
             print('found cached embeddings for', data_prefix, modality)
-            features = torch.from_numpy(np.genfromtxt(data_checkpoint_dir + data_prefix + '_' + modality + '-embedding.csv', delimiter=","))
+        features = torch.from_numpy(np.genfromtxt(data_checkpoint_dir + data_prefix + '_' + modality + '-embedding.csv', delimiter=","))
 
         all_features[modality] = features/features.norm(dim=-1, keepdim=True)
 

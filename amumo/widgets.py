@@ -539,9 +539,19 @@ class SimilarityHeatmapClusteringWidget(widgets.VBox):
 
 
 class CLIPExplorerWidget(widgets.AppLayout):
-    def __init__(self, dataset_name, all_data, models=None):
+    def __init__(self, dataset_name, all_images=None, all_prompts=None, all_data=None, models=None):
+        # using "all_images" and "all_prompts" is deprecated; use the "all_data" dict instead; e.g. {"image": all_images, "text": all_prompts}
         ### models... list of strings or instances that inherit from CLIPModelInterface 
         super(CLIPExplorerWidget, self).__init__()
+        
+        # for backwards compatibility
+        if all_data is None:
+            all_data = {}
+            print('WARNING: using all_images and all_prompts is deprecated; use the "all_data" dict instead; e.g. {"image": all_images, "text": all_prompts}')
+            if all_images is not None:
+                all_data["image"] = all_images
+            if all_prompts is not None:
+                all_data["text"] = all_prompts
 
         if models is None:
             models = am_model.available_CLIP_models
@@ -594,10 +604,10 @@ class CLIPExplorerWidget(widgets.AppLayout):
         modality2_data = self.all_data[self.modality2_select_widget.value]
 
         # output widgets
-        self.hover_widget = am_widgets.HoverWidget()
+        self.hover_widget = HoverWidget()
 
         self.embeddings, self.logit_scale = get_embeddings_per_modality(m, self.dataset_name, self.all_data)
-        self.scatter_widget = am_widgets.ScatterPlotWidget(modality1_label=modality1_data.name, modality2_label=modality2_data.name)
+        self.scatter_widget = ScatterPlotWidget(modality1_label=modality1_data.name, modality2_label=modality2_data.name)
         embedding_modality1 = self.embeddings[self.modality1_select_widget.value]
         embedding_modality2 = self.embeddings[self.modality2_select_widget.value]
         self.scatter_widget.embedding = np.concatenate((embedding_modality1, embedding_modality2))
@@ -608,7 +618,7 @@ class CLIPExplorerWidget(widgets.AppLayout):
         with self.log_widget:
             print('Modality distance: %.2f | Loss: %.2f'%(modality_distance, validation_loss))
 
-        self.heatmap_widget = am_widgets.SimilarityHeatmapClusteringWidget(
+        self.heatmap_widget = SimilarityHeatmapClusteringWidget(
             cluster_label_data=modality1_data, 
             hover_callback=self.heatmap_hover_fn, 
             modality1_label=modality1_data.name, 
@@ -649,6 +659,7 @@ class CLIPExplorerWidget(widgets.AppLayout):
         self.modality2_select_widget.options = list(self.available_modalities)
 
         self.embeddings, self.logit_scale = get_embeddings_per_modality(m, self.dataset_name, self.all_data)
+        self.modality_changed(change)
 
 
     def modality_changed(self, change):

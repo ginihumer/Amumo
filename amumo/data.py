@@ -19,7 +19,7 @@ import io
 
 
 # ---------Data Types (Modalities)---------
-xdd = "jo"
+
 class DataTypeInterface:
     name = "DataTypeInterface"
 

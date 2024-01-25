@@ -598,8 +598,8 @@ class CLIPExplorerWidget(widgets.AppLayout):
 
     def update_heatmap(self, change):
         # get x and y axis ranges
-        x_range = self.x_range_slider.value
-        y_range = self.y_range_slider.value
+        x_range = self.heatmap_widget.x_range_slider.value
+        y_range = self.heatmap_widget.y_range_slider.value
 
         # filter data based on the visible points after zooming
         visible_points = np.s_[x_range[0]:x_range[1], y_range[0]:y_range[1]]

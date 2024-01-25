@@ -1,7 +1,7 @@
 # ipywidgets meets plotly: https://plotly.com/python/figurewidget-app/
 
 import traitlets
-from ipywidgets import widgets
+from ipywidgets import widgets, FloatRangeSlider
 import plotly.graph_objects as go
 import io
 from PIL import Image
@@ -372,6 +372,22 @@ class SimilarityHeatmapClusteringWidget(widgets.VBox):
         self.fig_widget.update_xaxes(fixedrange=False)
         self.fig_widget.layout.shapes = self._get_matrix_gridlines()
 
+        self.x_range_slider = FloatRangeSlider(
+            description='X-axis Range:',
+            min=0,
+            max=len(self.value),
+            value=(0, len(self.value)),
+            continuous_update=False
+        )
+
+        self.y_range_slider = FloatRangeSlider(
+            description='Y-axis Range:',
+            min=0,
+            max=len(self.value),
+            value=(0, len(self.value)),
+            continuous_update=False
+        )
+
         self.heatmap.on_hover(self._hover_fn)
 
         self.cluster_similarity_matrix_widget.observe(self.onUpdateEmbedding, names='value')
@@ -558,9 +574,12 @@ class CLIPExplorerWidget(widgets.AppLayout):
                                                                 hover_callback=self.heatmap_hover_fn,
                                                                 modality1_label=all_images.name,
                                                                 modality2_label=all_prompts.name)
+
         self.heatmap_widget.embedding = np.concatenate((image_embedding_norm, text_embedding_norm))
 
         # callback functions
+        self.heatmap_widget.x_range_slider.observe(self.update_heatmap, names='value')
+        self.heatmap_widget.y_range_slider.observe(self.update_heatmap, names='value')
         self.model_select_widget.observe(self.model_changed, names="value")
         self.close_modality_gap_widget.observe(self.model_changed, names='value')
         self.scatter_widget.scatter_image.on_hover(self.scatter_hover_fn)
@@ -576,6 +595,24 @@ class CLIPExplorerWidget(widgets.AppLayout):
         self.center = vis_widgets
         self.right_sidebar = self.hover_widget
         self.height = '700px'
+
+    def update_heatmap(self, change):
+        # get x and y axis ranges
+        x_range = self.x_range_slider.value
+        y_range = self.y_range_slider.value
+
+        # filter data based on the visible points after zooming
+        visible_points = np.s_[x_range[0]:x_range[1], y_range[0]:y_range[1]]
+
+        # update heatmap with the embeddings of the visible points
+        image_embedding_norm, text_embedding_norm, logit_scale = get_embedding(
+            self.models[self.model_select_widget.value],
+            self.dataset_name,
+            self.all_images[visible_points],  # update with visible points
+            self.all_prompts[visible_points]  # update with visible points
+        )
+
+        self.heatmap_widget.embedding = np.concatenate((image_embedding_norm, text_embedding_norm))
 
     def model_changed(self, change):
 

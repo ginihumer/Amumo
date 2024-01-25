@@ -19,7 +19,7 @@ import io
 
 
 # ---------Data Types (Modalities)---------
-
+xdd = "jo"
 class DataTypeInterface:
     name = "DataTypeInterface"
 
@@ -315,7 +315,7 @@ class DiffusionDB_Dataset(DatasetInterface):
 
     def __init__(self, path, seed=31415, batch_size=100):
         super().__init__(path, seed, batch_size)
-        dataset = load_dataset('poloclub/diffusiondb', path)
+        dataset = load_dataset('poloclub/diffusiondb', path, trust_remote_code=True)
 
         self.all_images = CustomDiffusionDBMapper(dataset["train"], "image")
         self.all_prompts = CustomDiffusionDBMapper(dataset["train"], "prompt")

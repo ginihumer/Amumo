@@ -239,100 +239,105 @@ class CLOOB_LAION400M_Model(CLIPModelInterface):
         return self.model.text_encoder(text_tokens).float().cpu()
 
 
-class ImageBind_Model(CLIPModelInterface):
+try:
     # pip install git+https://github.com/facebookresearch/ImageBind
     # pip install soundfile
     from imagebind.models.imagebind_model import ModalityType
     from imagebind.models import imagebind_model as ImageBindModel
     from imagebind import data as ImageBindData
-    available_models = ['huge']
-    model_name = 'ImageBind'
 
-    def __init__(self, name='huge', device='cpu', bpe_path=".assets/bpe_simple_vocab_16e6.txt.gz") -> None:
-        super().__init__(name, device)
-        self.ImageBindData.BPE_PATH = bpe_path # download from: https://github.com/facebookresearch/ImageBind/tree/main/bpe
+    class ImageBind_Model(CLIPModelInterface):
+        available_models = ['huge']
+        model_name = 'ImageBind'
 
-        # Instantiate model
-        self.model = self.ImageBindModel.imagebind_huge(pretrained=True)
-        self.model.eval()
-        self.model.to(device)
+        def __init__(self, name='huge', device='cpu', bpe_path=".assets/bpe_simple_vocab_16e6.txt.gz") -> None:
+            super().__init__(name, device)
+            ImageBindData.BPE_PATH = bpe_path # download from: https://github.com/facebookresearch/ImageBind/tree/main/bpe
 
-        self.image_preprocess = transforms.Compose([
-            transforms.Resize(
-                224, interpolation=transforms.InterpolationMode.BICUBIC
-            ),
-            transforms.CenterCrop(224),
-        ])
+            # Instantiate model
+            self.model = ImageBindModel.imagebind_huge(pretrained=True)
+            self.model.eval()
+            self.model.to(device)
 
-        # self.logit_scale = self.model.logit_scale # TODO
-        self.encoding_functions = {
-            "image": self.encode_image,
-            "text": self.encode_text,
-            # "audio": ...
-            # "video": ...
-            "thermal": self.encode_thermal,
-            "depth": self.encode_depth,
-            # "imu": ...
-        }
+            self.image_preprocess = transforms.Compose([
+                transforms.Resize(
+                    224, interpolation=transforms.InterpolationMode.BICUBIC
+                ),
+                transforms.CenterCrop(224),
+            ])
 
-    
-    
-    def encode_depth(self, depths):
-        # TODO: how to normalize?
-        # normalize = transforms.Normalize(
-        #             mean=(0.48145466),
-        #             std=(0.26862954),
-        #         )
-        normalize = lambda x : x
-    
-        depths = [normalize(self.image_preprocess(depth)) for depth in depths]
-        input = torch.tensor(np.stack(depths)).to(self.device)
-    
-        inputs = {
-            self.ModalityType.DEPTH: input,
-        }
-        return self.model(inputs)[self.ModalityType.DEPTH].float().cpu()
-    
-    def encode_thermal(self, thermals):
-        # TODO: how to normalize?
-        transform_thermal = transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Normalize(
-                mean=(0.45),
-                std=(0.26),
-            )
-        ])
-    
-        thermals = [transform_thermal(self.image_preprocess(thermal)) for thermal in thermals]
-        input = torch.tensor(np.stack(thermals)).to(self.device)
-    
-        inputs = {
-            self.ModalityType.THERMAL: input,
-        }
-        return self.model(inputs)[self.ModalityType.THERMAL].float().cpu()
+            # self.logit_scale = self.model.logit_scale # TODO
+            self.encoding_functions = {
+                "image": self.encode_image,
+                "text": self.encode_text,
+                # "audio": ...
+                # "video": ...
+                "thermal": self.encode_thermal,
+                "depth": self.encode_depth,
+                # "imu": ...
+            }
+
         
-    def encode_image(self, images):
         
-        transform_imgs = transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Normalize(
-                mean=(0.48145466, 0.4578275, 0.40821073),
-                std=(0.26862954, 0.26130258, 0.27577711),
-            )
-        ])
-        images = [transform_imgs(self.image_preprocess(i.convert("RGB"))) for i in images]
-        image_input = torch.tensor(np.stack(images)).to(self.device)
-        inputs = {
-            self.ModalityType.VISION: image_input,
-        }
-        return self.model(inputs)[self.ModalityType.VISION].float().cpu()
+        def encode_depth(self, depths):
+            # TODO: how to normalize?
+            # normalize = transforms.Normalize(
+            #             mean=(0.48145466),
+            #             std=(0.26862954),
+            #         )
+            normalize = lambda x : x
+        
+            depths = [normalize(self.image_preprocess(depth)) for depth in depths]
+            input = torch.tensor(np.stack(depths)).to(self.device)
+        
+            inputs = {
+                ModalityType.DEPTH: input,
+            }
+            return self.model(inputs)[ModalityType.DEPTH].float().cpu()
+        
+        def encode_thermal(self, thermals):
+            # TODO: how to normalize?
+            transform_thermal = transforms.Compose([
+                transforms.ToTensor(),
+                transforms.Normalize(
+                    mean=(0.45),
+                    std=(0.26),
+                )
+            ])
+        
+            thermals = [transform_thermal(self.image_preprocess(thermal)) for thermal in thermals]
+            input = torch.tensor(np.stack(thermals)).to(self.device)
+        
+            inputs = {
+                ModalityType.THERMAL: input,
+            }
+            return self.model(inputs)[ModalityType.THERMAL].float().cpu()
+            
+        def encode_image(self, images):
+            
+            transform_imgs = transforms.Compose([
+                transforms.ToTensor(),
+                transforms.Normalize(
+                    mean=(0.48145466, 0.4578275, 0.40821073),
+                    std=(0.26862954, 0.26130258, 0.27577711),
+                )
+            ])
+            images = [transform_imgs(self.image_preprocess(i.convert("RGB"))) for i in images]
+            image_input = torch.tensor(np.stack(images)).to(self.device)
+            inputs = {
+                ModalityType.VISION: image_input,
+            }
+            return self.model(inputs)[ModalityType.VISION].float().cpu()
 
-    def encode_text(self, texts):
-        text_tokens = self.ImageBindData.load_and_transform_text(texts, self.device)
-        inputs = {
-            self.ModalityType.TEXT: text_tokens,
-        }
-        return self.model(inputs)[self.ModalityType.TEXT].float().cpu()
+        def encode_text(self, texts):
+            text_tokens = ImageBindData.load_and_transform_text(texts, self.device)
+            inputs = {
+                ModalityType.TEXT: text_tokens,
+            }
+            return self.model(inputs)[ModalityType.TEXT].float().cpu()
+
+except ImportError:
+    print("ImageBind not installed. If you want to use it, please install it with 'pip install git+https://github.com/facebookresearch/ImageBind.")
 
 
 available_CLIP_models = {

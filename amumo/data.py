@@ -1,13 +1,8 @@
 # from img2dataset import download
 import os        
-import webdataset as wds
-from datasets import load_dataset
-from datasets.utils.file_utils import get_datasets_user_agent
 import torch
 import numpy as np
-import torchvision.transforms as transforms
 from PIL import Image, ImageFilter
-from pycocotools.coco import COCO
 import requests
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
@@ -127,6 +122,12 @@ class Conceptual12M_Dataset(DatasetInterface):
 
     def __init__(self, path='', seed=31415, batch_size = 100):
         super().__init__(path, seed, batch_size)
+        
+        try:
+            from datasets import load_dataset
+        except ImportError:
+            print("To support Conceptual12M dataset, please install 'datasets': 'pip install datasets'.")
+        
         self.dataset = load_dataset("conceptual_12m")['train']
 
     def get_data(self):
@@ -166,6 +167,11 @@ class MSCOCO_Val_Dataset(DatasetInterface):
 
     def __init__(self, path, seed=31415, batch_size = 100):
         super().__init__(path, seed, batch_size)
+        
+        try:
+            from pycocotools.coco import COCO
+        except ImportError:
+            print("To support MSCOCO_Val dataset, please install 'pycocotools': 'pip install pycocotools'.")
 
         self.annotation_file = '%s/captions_val2017.json'%(path)
         self.img_folder = '%s/%s/'%(path, self.name)
@@ -201,6 +207,10 @@ class MSCOCO_Dataset(DatasetInterface):
         self.output_name = 'bench'
 
         # self.download_dataset()
+        try:
+            import webdataset as wds
+        except ImportError:
+            print("To support MSCOCO dataset, please install 'webdataset': 'pip install webdataset'.")
 
         # https://webdataset.github.io/webdataset/gettingstarted/
         url = "file:" + self.path + self.output_name + "/{00000..00591}.tar" # http://storage.googleapis.com/nvdata-openimages/openimages-train-000000.tar"
@@ -237,6 +247,12 @@ class DiffusionDB_Dataset(DatasetInterface):
 
     def __init__(self, path, seed=31415, batch_size = 100):
         super().__init__(path, seed, batch_size)
+        
+        try:
+            from datasets import load_dataset
+        except ImportError:
+            print("To support DiffusionDB dataset, please install 'datasets': 'pip install datasets'.")
+
         dataset = load_dataset('poloclub/diffusiondb', path)
 
         self.all_images = CustomDiffusionDBMapper(dataset["train"], "image")
@@ -245,8 +261,16 @@ class DiffusionDB_Dataset(DatasetInterface):
 class RandomAugmentation_Dataset(DatasetInterface):
     name='Augmented'
 
-    def __init__(self, image, prompt, transform=transforms.Compose([transforms.RandomRotation(degrees=90)]), seed=31415, batch_size=100) -> None:
+    def __init__(self, image, prompt, transform=None, seed=31415, batch_size=100) -> None:
         super().__init__("", seed, batch_size)
+        
+        try:
+            import torchvision.transforms as transforms
+        except ImportError:
+            print("To support RandomAugmentation dataset, please install 'torchvision': 'pip install torchvision'.")
+
+        if transform is None:
+            transform = transforms.Compose([transforms.RandomRotation(degrees=90)])
 
         images = []
         for i in range(self.batch_size):
@@ -360,6 +384,8 @@ def get_dataset(dataset_name, path):
 # ---------Custom Data Mappers---------
 
 def fetch_single_image(image_url, timeout=None, retries=0):
+    
+    from datasets.utils.file_utils import get_datasets_user_agent
     for _ in range(retries + 1):
         try:
             request = urllib.request.Request(

@@ -19,15 +19,11 @@ URL = 'https://github.com/ginihumer/Amumo'
 EMAIL = 'ginihumer96@yahoo.de'
 AUTHOR = 'Gin'
 REQUIRES_PYTHON = '>=3.9.7'
-VERSION = '0.1.37'
+VERSION = '0.1.38'
 
 # What packages are required for this module to be executed?
 # TODO: update the required packages
 REQUIRED = [
-    'clip @ git+https://github.com/openai/CLIP.git@a9b1bf5920416aaeaec965c25dd9e8f98c864f16',
-    'open-clip-torch==2.20.0',
-    'datasets==2.12.0',
-    'webdataset==0.2.48',
     'plotly',
     'ipywidgets==8.0.6',
     'ipykernel==6.23.1',
@@ -35,13 +31,51 @@ REQUIRED = [
     'openTSNE==1.0.0',
     'umap-learn==0.5.3',
     'numpy==1.23.5',
-    'pycocotools==2.0.6',
+    'torch==2.2.0',
+    'pillow==10.2.0',
+    'requests',
+]
+
+CLIP_REQUIRE = [
+    'clip @ git+https://github.com/openai/CLIP.git@a9b1bf5920416aaeaec965c25dd9e8f98c864f16',
+]
+OPEN_CLIP_REQUIRE = [
+    'open-clip-torch==2.20.0',
+]
+CLOOB_REQUIRE = CLIP_REQUIRE + ['torchvision']
+CLOOME_REQUIRE = CLOOB_REQUIRE
+
+BLIP_REQUIRE = [
     'transformers==4.31.0',
+    'wrapt',
+    'termcolor'
+]
+IMAGEBIND_REQUIRE = [
+    'imagebind @ git+https://github.com/facebookresearch/ImageBind@c6a47d6dc2b53eced51d398c181d57049ca59286',
+    'soundfile==0.12.1',
+    'torchvision',
+    'flatbuffers'
+]
+DIFFUSION_DB_REQUIRE = [
+    'datasets==2.14.6',
+]
+MSCOCO_REQUIRE = [
+    'webdataset==0.2.48',
+    'pycocotools==2.0.6',
 ]
 
 # What packages are optional?
 EXTRAS = {
-    # 'fancy feature': ['django'],
+    'clip': CLIP_REQUIRE,
+    'open-clip': OPEN_CLIP_REQUIRE,
+    'cloob': CLOOB_REQUIRE,
+    'cloome': CLOOME_REQUIRE,
+    'blip': BLIP_REQUIRE,
+    'imagebind': IMAGEBIND_REQUIRE,
+    'diffusion-db': DIFFUSION_DB_REQUIRE,
+    'mscoco': MSCOCO_REQUIRE,
+    # dependencies used in the analysis for the VISxAI article: https://github.com/ginihumer/Amumo/blob/main/notebooks/clip_article.ipynb
+    'visxai': CLOOB_REQUIRE + OPEN_CLIP_REQUIRE + DIFFUSION_DB_REQUIRE + MSCOCO_REQUIRE
 }
 
 # The rest you shouldn't have to touch too much :)

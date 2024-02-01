@@ -32,12 +32,17 @@ pip install -e .
 
 Package installation:
 ```bash
-pip install git+https://github.com/ginihumer/Amumo.git
+pip install "amumo @ git+https://github.com/ginihumer/Amumo.git"
 ```
 
 Or you can create the conda environment from the .yml file:
 ```bash
 conda env create -f environment.yml
+```
+
+If you want to install the requirements for the [interactive VISxAI article](https://jku-vds-lab.at/amumo) you can install them as follows:
+```bash
+pip install "amumo[visxai] @ git+https://github.com/ginihumer/Amumo.git"
 ```
 
 ### Troubleshooting

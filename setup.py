@@ -19,7 +19,7 @@ URL = 'https://github.com/ginihumer/Amumo'
 EMAIL = 'ginihumer96@yahoo.de'
 AUTHOR = 'Gin'
 REQUIRES_PYTHON = '>=3.9.7'
-VERSION = '0.1.39'
+VERSION = '0.1.40'
 
 # What packages are required for this module to be executed?
 # TODO: update the required packages
@@ -28,12 +28,16 @@ REQUIRED = [
     'ipywidgets==8.0.6',
     'ipykernel==6.23.1',
     'scikit-learn==1.3.0',
-    'openTSNE==1.0.0',
     'umap-learn==0.5.3',
     'numpy==1.23.5',
     'torch==2.2.0',
     'pillow==10.2.0',
     'requests',
+]
+
+
+TSNE_REQUIRE = [
+    'openTSNE==1.0.0',
 ]
 
 CLIP_REQUIRE = [
@@ -74,8 +78,9 @@ EXTRAS = {
     'imagebind': IMAGEBIND_REQUIRE,
     'diffusion-db': DIFFUSION_DB_REQUIRE,
     'mscoco': MSCOCO_REQUIRE,
+    'tsne': TSNE_REQUIRE,
     # dependencies used in the analysis for the VISxAI article: https://github.com/ginihumer/Amumo/blob/main/notebooks/clip_article.ipynb
-    'visxai': CLOOB_REQUIRE + OPEN_CLIP_REQUIRE + DIFFUSION_DB_REQUIRE + MSCOCO_REQUIRE
+    'visxai': CLOOB_REQUIRE + OPEN_CLIP_REQUIRE + DIFFUSION_DB_REQUIRE + MSCOCO_REQUIRE + TSNE_REQUIRE
 }
 
 # The rest you shouldn't have to touch too much :)

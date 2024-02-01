@@ -7,9 +7,6 @@ import io
 from PIL import Image
 import numpy as np
 
-from sklearn.decomposition import PCA
-from openTSNE import TSNE
-from umap import UMAP
 import torch
 
 import math
@@ -165,11 +162,18 @@ class HoverWidget(widgets.VBox):
 
 
 
+from sklearn.decomposition import PCA
+from umap import UMAP
 available_projection_methods = {
     'PCA': {'module': PCA, 'OOS':False}, # OOS: flag to signal whether or not out of sample is possible
-    'TSNE': {'module': TSNE, 'OOS':False},
     'UMAP': {'module': UMAP, 'OOS':True},
 }
+try: 
+    from openTSNE import TSNE
+    available_projection_methods["TSNE"] = {'module': TSNE, 'OOS':False}
+except ImportError:
+    print("To support TSNE dataset, please install 'openTSNE': 'pip install openTSNE'.")
+
 
 class ScatterPlotWidget(widgets.VBox):
     
@@ -242,7 +246,7 @@ class ScatterPlotWidget(widgets.VBox):
 
         self.select_projection_method = widgets.Dropdown(
             description='Method: ',
-            value='PCA',
+            value='UMAP',
             options=list(available_projection_methods),
         )
         self.select_projection_method.observe(self._update_projection_method, 'value')

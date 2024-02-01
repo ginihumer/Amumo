@@ -1,16 +1,10 @@
-import clip
-import open_clip
+
 import numpy as np
 import torch
 import os
 import json
-from .CLOOB_local.clip import clip as cloob
-from .CLOOB_local.clip.model import CLIPGeneral
-from .CLOOB_local.cloob_training import model_pt, pretrained
-from torchvision import transforms
 import requests
 from tqdm import tqdm
-from transformers import AutoProcessor, BlipModel
 
 class CLIPModelInterface:
     available_models = []
@@ -58,13 +52,18 @@ def checkpoint_download_helper(url, name):
 
     return checkpoint
     
-
 class CLIPModel(CLIPModelInterface):
-    available_models = clip.available_models()
     model_name = 'CLIP'
 
     def __init__(self, name='RN50', device='cpu') -> None:
+        try:
+            import clip
+        except ImportError:
+            print("To support CLIP model, please install 'clip': 'pip install git+https://github.com/openai/CLIP.git'.")
+        self.available_models = clip.available_models()
         super().__init__(name, device)
+
+        self.tokenize = clip.tokenize
         self.model, self.preprocess = clip.load(name, device=device)
         self.model.eval()
         self.logit_scale = self.model.logit_scale
@@ -78,17 +77,23 @@ class CLIPModel(CLIPModelInterface):
         return self.model.encode_image(image_input).float().cpu()
 
     def encode_text(self, texts):
-        text_tokens = clip.tokenize(texts, truncate = True).to(self.device)
+        text_tokens = self.tokenize(texts, truncate = True).to(self.device)
         return self.model.encode_text(text_tokens).float().cpu()
+        
 
 
 
 class OpenCLIPModel(CLIPModelInterface):
-    available_models = open_clip.list_openai_models()
     model_name = 'OpenCLIP'
 
     def __init__(self, name='RN50', device='cpu', dataset='openai') -> None:
+        try:
+            import open_clip
+        except ImportError:
+            print("To support OpenCLIP model, please install 'openclip': 'pip install open-clip-torch==2.20.0'.")
+        self.available_models = open_clip.list_openai_models()
         super().__init__(name, device)
+
         self.model, _, self.preprocess = open_clip.create_model_and_transforms(name, pretrained=dataset, device=self.device)
         self.tokenize = open_clip.get_tokenizer(name)
         self.model.eval()
@@ -110,6 +115,12 @@ class BLIPModel(CLIPModelInterface):
 
     def __init__(self, name='Vit-B', device='cpu') -> None:
         super().__init__(name, device)
+        
+        try:
+            from transformers import AutoProcessor, BlipModel
+        except ImportError:
+            print("To support BLIP model, please install 'transformers': 'pip install transformers==4.31.0'.")
+
         self.model = BlipModel.from_pretrained("Salesforce/blip-image-captioning-base").to(device)
         self.preprocess = AutoProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
 
@@ -123,6 +134,8 @@ class BLIPModel(CLIPModelInterface):
     def encode_text(self, texts):
         tokens = self.preprocess(text=list(texts), padding=True, truncation=True, return_tensors="pt").to(self.device)
         return self.model.get_text_features(**tokens).float().cpu()
+        
+
 
 
 class CyCLIPModel(CLIPModel):
@@ -134,7 +147,13 @@ class CyCLIPModel(CLIPModel):
 
     def __init__(self, name='RN50', device='cpu') -> None:
         super().__init__(name, device)
+        
+        try:
+            import clip
+        except ImportError:
+            print("To support CyCLIP model, please install 'clip': 'pip install git+https://github.com/openai/CLIP.git'.")
 
+        self.tokenize = clip.tokenize
         checkpoint = checkpoint_download_helper(self.checkpoints['cyclip-3M.pt'],'cyclip-3M.pt') # 'i-cyclip.pt', 'c-cyclip.pt'
 
         state_dict = torch.load(checkpoint, map_location = device)["state_dict"]
@@ -150,7 +169,7 @@ class CyCLIPModel(CLIPModel):
         return self.model.encode_image(image_input).float().cpu()
 
     def encode_text(self, texts):
-        text_tokens = clip.tokenize(texts, truncate = True).to(self.device)
+        text_tokens = self.tokenize(texts, truncate = True).to(self.device)
         return self.model.encode_text(text_tokens).float().cpu()
 
 
@@ -160,6 +179,9 @@ class PyramidCLIP(CLIPModelInterface): # TODO
 
     def __init__(self, name='RN50', device='cpu', checkpoints_dir='checkpoints') -> None:
         print("not implemented")
+
+
+
 
 class CLOOB_Model(CLIPModelInterface):
     available_models = ['RN50', 'RN50x4']
@@ -172,6 +194,13 @@ class CLOOB_Model(CLIPModelInterface):
     def __init__(self, name='RN50', device='cpu') -> None:
         super().__init__(name, device)
 
+        try:
+            from .CLOOB_local.clip import clip as cloob
+            from .CLOOB_local.clip.model import CLIPGeneral
+        except ImportError:
+            print("To support CLOOB model, please install 'clip': 'pip install git+https://github.com/openai/CLIP.git'.")
+
+        self.tokenize = cloob.tokenize
         ckpt_name = 'cloob_' + name.lower() + '_yfcc_epoch_28.pt' # cloob_rn50x4_yfcc_epoch_28.pt
         checkpoint_path = checkpoint_download_helper(self.checkpoints[ckpt_name], ckpt_name)
         checkpoint = torch.load(checkpoint_path, map_location=device)
@@ -201,8 +230,10 @@ class CLOOB_Model(CLIPModelInterface):
         return self.model.encode_image(image_input).float().cpu()
 
     def encode_text(self, texts):
-        text_tokens = cloob.tokenize(texts).to(self.device)
+        text_tokens = self.tokenize(texts).to(self.device)
         return self.model.encode_text(text_tokens).float().cpu()
+
+
 
 class CLOOB_LAION400M_Model(CLIPModelInterface):
     available_models = ['ViT-B/16']
@@ -210,6 +241,11 @@ class CLOOB_LAION400M_Model(CLIPModelInterface):
 
     def __init__(self, name='ViT-B/16', device='cpu') -> None:
         super().__init__(name, device)
+        try:
+            from torchvision import transforms
+            from .CLOOB_local.cloob_training import model_pt, pretrained
+        except ImportError:
+            print("To support CLOOB_LAION400M model, please install 'torchvision': 'pip install torchvision'.")
         
         # ['cloob_laion_400m_vit_b_16_16_epochs', 'cloob_laion_400m_vit_b_16_32_epochs']
         config = pretrained.get_config('cloob_laion_400m_vit_b_16_16_epochs')
@@ -239,121 +275,126 @@ class CLOOB_LAION400M_Model(CLIPModelInterface):
         return self.model.text_encoder(text_tokens).float().cpu()
 
 
-try:
-    # pip install git+https://github.com/facebookresearch/ImageBind
-    # pip install soundfile
-    from imagebind.models.imagebind_model import ModalityType
-    from imagebind.models import imagebind_model as ImageBindModel
-    from imagebind import data as ImageBindData
 
-    class ImageBind_Model(CLIPModelInterface):
-        available_models = ['huge']
-        model_name = 'ImageBind'
+class ImageBind_Model(CLIPModelInterface):
+    available_models = ['huge']
+    model_name = 'ImageBind'
 
-        def __init__(self, name='huge', device='cpu', bpe_path=".assets/bpe_simple_vocab_16e6.txt.gz") -> None:
-            super().__init__(name, device)
-            ImageBindData.BPE_PATH = bpe_path # download from: https://github.com/facebookresearch/ImageBind/tree/main/bpe
+    def __init__(self, name='huge', device='cpu', bpe_path=".assets/bpe_simple_vocab_16e6.txt.gz") -> None:
+        super().__init__(name, device)
+        try:
+            # pip install git+https://github.com/facebookresearch/ImageBind
+            # pip install soundfile
+            from imagebind.models import imagebind_model as ImageBindModel
+            from imagebind import data as ImageBindData
+            from torchvision import transforms
+        except ImportError:
+            print("To support ImageBind model, please install 'ImageBind', 'soundfile', and 'torchvision': 'pip install git+https://github.com/facebookresearch/ImageBind', 'pip install soundfile' and 'pip install torchvision'.")
 
-            # Instantiate model
-            self.model = ImageBindModel.imagebind_huge(pretrained=True)
-            self.model.eval()
-            self.model.to(device)
 
-            self.image_preprocess = transforms.Compose([
-                transforms.Resize(
-                    224, interpolation=transforms.InterpolationMode.BICUBIC
-                ),
-                transforms.CenterCrop(224),
-            ])
+        ImageBindData.BPE_PATH = bpe_path # download from: https://github.com/facebookresearch/ImageBind/tree/main/bpe
 
-            # self.logit_scale = self.model.logit_scale # TODO
-            self.encoding_functions = {
-                "image": self.encode_image,
-                "text": self.encode_text,
-                # "audio": ...
-                # "video": ...
-                "thermal": self.encode_thermal,
-                "depth": self.encode_depth,
-                # "imu": ...
-            }
+        # Instantiate model
+        self.model = ImageBindModel.imagebind_huge(pretrained=True)
+        self.model.eval()
+        self.model.to(device)
 
+        self.image_preprocess = transforms.Compose([
+            transforms.Resize(
+                224, interpolation=transforms.InterpolationMode.BICUBIC
+            ),
+            transforms.CenterCrop(224),
+        ])
+
+        # self.logit_scale = self.model.logit_scale # TODO
+        self.encoding_functions = {
+            "image": self.encode_image,
+            "text": self.encode_text,
+            # "audio": ...
+            # "video": ...
+            "thermal": self.encode_thermal,
+            "depth": self.encode_depth,
+            # "imu": ...
+        }
+
+    
+    
+    def encode_depth(self, depths):
+        from imagebind.models.imagebind_model import ModalityType
+        # TODO: how to normalize?
+        # normalize = transforms.Normalize(
+        #             mean=(0.48145466),
+        #             std=(0.26862954),
+        #         )
+        normalize = lambda x : x
+    
+        depths = [normalize(self.image_preprocess(depth)) for depth in depths]
+        input = torch.tensor(np.stack(depths)).to(self.device)
+    
+        inputs = {
+            ModalityType.DEPTH: input,
+        }
+        return self.model(inputs)[ModalityType.DEPTH].float().cpu()
+    
+    def encode_thermal(self, thermals):
+        from imagebind.models.imagebind_model import ModalityType
+        import transforms
+        # TODO: how to normalize?
+        transform_thermal = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize(
+                mean=(0.45),
+                std=(0.26),
+            )
+        ])
+    
+        thermals = [transform_thermal(self.image_preprocess(thermal)) for thermal in thermals]
+        input = torch.tensor(np.stack(thermals)).to(self.device)
+    
+        inputs = {
+            ModalityType.THERMAL: input,
+        }
+        return self.model(inputs)[ModalityType.THERMAL].float().cpu()
         
+    def encode_image(self, images):
+        from imagebind.models.imagebind_model import ModalityType
+        from torchvision import transforms
         
-        def encode_depth(self, depths):
-            # TODO: how to normalize?
-            # normalize = transforms.Normalize(
-            #             mean=(0.48145466),
-            #             std=(0.26862954),
-            #         )
-            normalize = lambda x : x
-        
-            depths = [normalize(self.image_preprocess(depth)) for depth in depths]
-            input = torch.tensor(np.stack(depths)).to(self.device)
-        
-            inputs = {
-                ModalityType.DEPTH: input,
-            }
-            return self.model(inputs)[ModalityType.DEPTH].float().cpu()
-        
-        def encode_thermal(self, thermals):
-            # TODO: how to normalize?
-            transform_thermal = transforms.Compose([
-                transforms.ToTensor(),
-                transforms.Normalize(
-                    mean=(0.45),
-                    std=(0.26),
-                )
-            ])
-        
-            thermals = [transform_thermal(self.image_preprocess(thermal)) for thermal in thermals]
-            input = torch.tensor(np.stack(thermals)).to(self.device)
-        
-            inputs = {
-                ModalityType.THERMAL: input,
-            }
-            return self.model(inputs)[ModalityType.THERMAL].float().cpu()
-            
-        def encode_image(self, images):
-            
-            transform_imgs = transforms.Compose([
-                transforms.ToTensor(),
-                transforms.Normalize(
-                    mean=(0.48145466, 0.4578275, 0.40821073),
-                    std=(0.26862954, 0.26130258, 0.27577711),
-                )
-            ])
-            images = [transform_imgs(self.image_preprocess(i.convert("RGB"))) for i in images]
-            image_input = torch.tensor(np.stack(images)).to(self.device)
-            inputs = {
-                ModalityType.VISION: image_input,
-            }
-            return self.model(inputs)[ModalityType.VISION].float().cpu()
+        transform_imgs = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize(
+                mean=(0.48145466, 0.4578275, 0.40821073),
+                std=(0.26862954, 0.26130258, 0.27577711),
+            )
+        ])
+        images = [transform_imgs(self.image_preprocess(i.convert("RGB"))) for i in images]
+        image_input = torch.tensor(np.stack(images)).to(self.device)
+        inputs = {
+            ModalityType.VISION: image_input,
+        }
+        return self.model(inputs)[ModalityType.VISION].float().cpu()
 
-        def encode_text(self, texts):
-            text_tokens = ImageBindData.load_and_transform_text(texts, self.device)
-            inputs = {
-                ModalityType.TEXT: text_tokens,
-            }
-            return self.model(inputs)[ModalityType.TEXT].float().cpu()
+    def encode_text(self, texts):
+        from imagebind.models.imagebind_model import ModalityType
+        from imagebind import data as ImageBindData
+        text_tokens = ImageBindData.load_and_transform_text(texts, self.device)
+        inputs = {
+            ModalityType.TEXT: text_tokens,
+        }
+        return self.model(inputs)[ModalityType.TEXT].float().cpu()
 
-except ImportError:
-    print("ImageBind not installed. If you want to use it, please install it with 'pip install git+https://github.com/facebookresearch/ImageBind.")
 
 
 available_CLIP_models = {
         'CLIP': CLIPModel,
-        'OpenCLIP': OpenCLIPModel,
+        # 'OpenCLIP': OpenCLIPModel,
         # 'BLIP': BLIPModel,
-        'CyCLIP': CyCLIPModel,
+        # 'CyCLIP': CyCLIPModel,
         # 'PyramidCLIP': PyramidCLIP,
-        'CLOOB': CLOOB_Model,
-        'CLOOB_LAION400M': CLOOB_LAION400M_Model
+        # 'CLOOB': CLOOB_Model,
+        # 'CLOOB_LAION400M': CLOOB_LAION400M_Model
     }
 
 def get_model(clip_name='CLIP', image_encoder_name=None, device="cpu"):
     assert clip_name in available_CLIP_models, 'choose one of ' + str(list(available_CLIP_models))
-    if image_encoder_name is None:
-        image_encoder_name = available_CLIP_models[clip_name].available_models[0]
-    assert image_encoder_name in available_CLIP_models[clip_name].available_models, 'choose one of ' + str(available_CLIP_models[clip_name].available_models)
-
-    return available_CLIP_models[clip_name](image_encoder_name, device=device)
+    return available_CLIP_models[clip_name](device=device)

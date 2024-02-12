@@ -55,9 +55,10 @@ BLIP_REQUIRE = [
     'termcolor'
 ]
 IMAGEBIND_REQUIRE = [
-    'imagebind @ git+https://github.com/facebookresearch/ImageBind@c6a47d6dc2b53eced51d398c181d57049ca59286',
     'soundfile==0.12.1',
+    'imagebind @ git+https://github.com/facebookresearch/ImageBind@c6a47d6dc2b53eced51d398c181d57049ca59286',
     'torchvision',
+    'torchaudio',
     'flatbuffers'
 ]
 DIFFUSION_DB_REQUIRE = [

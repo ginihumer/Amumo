@@ -12,6 +12,7 @@ import torch
 import math
 
 from . import model as am_model
+from . import data as am_data
 from .utils import get_embeddings_per_modality, get_textual_label_for_cluster, get_embedding, get_similarity, get_cluster_sorting, get_modality_distance, calculate_val_loss, get_closed_modality_gap, get_modality_gap_normed, l2_norm, get_gap_direction
 
 
@@ -135,8 +136,10 @@ class HoverWidget(widgets.VBox):
                             'valueY': widgets.Image(value=output_dummy_img.getvalue(), width=0)} #, height=0)}
         self.txt_widgets = {'valueX': widgets.HTML(value='', layout=widgets.Layout(width="%ipx"%self.width)), 
                             'valueY': widgets.HTML(value='', layout=widgets.Layout(width="%ipx"%self.width)), }
-        
-        self.children = [widgets.VBox(list(self.txt_widgets.values())), widgets.VBox(list(self.img_widgets.values()))]
+        self.wav_widgets = {'valueX': widgets.Audio(autoplay=True, layout=widgets.Layout(width="0px", height="0px")),
+                            'valueY': widgets.Audio(autoplay=True, layout=widgets.Layout(width="0px", height="0px"))}
+
+        self.children = [widgets.VBox(list(self.wav_widgets.values())), widgets.VBox(list(self.txt_widgets.values())), widgets.VBox(list(self.img_widgets.values()))]
 
         self.layout = widgets.Layout(width="%ipx"%(self.width+10), height="inherit")
 
@@ -145,20 +148,60 @@ class HoverWidget(widgets.VBox):
     def _validate_value(self, proposal):
         # print("TODO: validate value1")
         return proposal.value
+    
+    def set_text(self, name, value):
+        cur_img_widget = self.img_widgets[name]
+        cur_txt_widget = self.txt_widgets[name]
+        cur_wav_widget = self.wav_widgets[name]
+
+        cur_txt_widget.value = "<div style='word-wrap: break-word;'>{}</div>".format(value)
+        cur_img_widget.width = 0
+        # cur_img_widget.height = 0
+        cur_wav_widget.value = b'RIFF$\xe2\x04\x00WAVEfmt'
+        cur_wav_widget.layout = widgets.Layout(width="0px", height="0px")
+
+    def set_img(self, name, value):
+        cur_img_widget = self.img_widgets[name]
+        cur_txt_widget = self.txt_widgets[name]
+        cur_wav_widget = self.wav_widgets[name]
+
+        cur_img_widget.value = value
+        cur_img_widget.width = self.width
+        # cur_img_widget.height = self.width
+        cur_txt_widget.value = ""
+        cur_wav_widget.value = b'RIFF$\xe2\x04\x00WAVEfmt'
+        cur_wav_widget.layout = widgets.Layout(width="0px", height="0px")
+
+    def set_wav(self, name, value):
+        cur_img_widget = self.img_widgets[name]
+        cur_txt_widget = self.txt_widgets[name]
+        cur_wav_widget = self.wav_widgets[name]
+
+        cur_img_widget.width = 0
+        cur_txt_widget.value = ""
+        cur_wav_widget.value = value
+        cur_wav_widget.layout = widgets.Layout(width="%ipx"%self.width, height="20px")
+
 
     @traitlets.observe("valueX", "valueY")
     def onUpdateValue(self, change):
-        cur_img_widget = self.img_widgets[change.name]
-        cur_txt_widget = self.txt_widgets[change.name]
         if type(change.new) is io.BytesIO:
-            cur_img_widget.value = change.new.getvalue()
-            cur_img_widget.width = self.width
-            # cur_img_widget.height = self.width
-            cur_txt_widget.value = ""
+            self.set_img(change.name, change.new.getvalue())
+
+        elif type(change.new) is dict:
+            if "displayType" in change.new:
+                if change.new["displayType"] == am_data.DisplayTypes.IMAGE:
+                    self.set_img(change.name, change.new["value"])
+                elif change.new["displayType"] == am_data.DisplayTypes.AUDIO:
+                    self.set_wav(change.name, change.new["value"])
+                else:
+                    self.set_text(change.name, change.new["value"])
+
+            elif "value" in change.new:
+                self.set_text(change.name, change.new["value"])
         else:
-            cur_txt_widget.value = "<div style='word-wrap: break-word;'>{}</div>".format(change.new)
-            cur_img_widget.width = 0
-            # cur_img_widget.height = 0
+            self.set_text(change.name, change.new)
+        
 
 
 

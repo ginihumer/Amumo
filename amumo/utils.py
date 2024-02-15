@@ -51,7 +51,7 @@ def get_embeddings_per_modality(model, dataset_name, all_data, batch_size = 500)
             print('found cached embeddings for', data_prefix, modality)
         features = torch.from_numpy(np.genfromtxt(data_checkpoint_dir + data_prefix + '_' + modality + '-embedding.csv', delimiter=","))
 
-        all_features[modality] = features/features.norm(dim=-1, keepdim=True)
+        all_features[modality] = np.array(features/features.norm(dim=-1, keepdim=True))
 
     return all_features, clip_model.logit_scale
 
@@ -97,7 +97,18 @@ def get_embedding(model_name, dataset_name, all_images, all_prompts, batch_size 
 
     return image_features/image_features.norm(dim=-1, keepdim=True), text_features/text_features.norm(dim=-1, keepdim=True), clip_model.logit_scale
 
+def get_similarities_all(features_norm):
+    # features_norm: dictionary of normalized embedding features; all embeddings must have the same shape
+    features_norm = [torch.from_numpy(emb) for emb in list(features_norm.values())]
+    features_norm = torch.cat(features_norm, dim = 0)
 
+    similarity_features = features_norm.cpu().numpy() @ features_norm.cpu().numpy().T
+    return similarity_features
+
+def get_similarities(image_features_norm, text_features_norm):
+    return text_features_norm.cpu().numpy() @ image_features_norm.cpu().numpy().T # text x image 
+
+# deprecated; use "get_similarities_all" and "get_similarities" instead
 def get_similarity(image_features_norm, text_features_norm):
     # similarity between images and texts
     similarity = text_features_norm.cpu().numpy() @ image_features_norm.cpu().numpy().T # text x image 

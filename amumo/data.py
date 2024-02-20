@@ -67,6 +67,23 @@ class TextType(DataTypeInterface):
 
     def getVisItem(self, idx):
         return {"displayType": DisplayTypes.TEXT, "value": self.data[idx]}
+    
+
+
+class AudioType(DataTypeInterface):
+    name = "Audio"
+
+    def __init__(self, data, sample_rate) -> None:
+        super().__init__(data)
+        self.sample_rate = sample_rate
+    
+    def getVisItem(self, idx):
+        import soundfile as sf
+        buffer = io.BytesIO()
+        sf.write(buffer, self.data[idx][0], self.sample_rate, format="wav")
+        audio_bytes = buffer.getvalue() # wav bytes
+        return {"displayType": DisplayTypes.AUDIO, "value": audio_bytes}
+
 
 # ---------Datasets---------
 

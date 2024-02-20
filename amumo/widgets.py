@@ -184,7 +184,7 @@ class HoverWidget(widgets.VBox):
     #     cur_txt_widget.value = ""
     #     cur_wav_widget.value = value
     #     cur_wav_widget.layout = widgets.Layout(width="%ipx"%self.width, height="20px")
-
+    # TODO: make more efficient
     def add_txt(self, value):
         self.children = self.children + (widgets.HTML(value="<div style='word-wrap: break-word;'>{}</div>".format(value), layout=widgets.Layout(width="%ipx"%self.width)),)
 
@@ -241,7 +241,7 @@ class ScatterPlotWidget(widgets.VBox):
     # modality1_label = traitlets.Unicode().tag(sync=True)
     # modality2_label = traitlets.Unicode().tag(sync=True)
 
-    mark_colors = ["#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00", "#ffff33", "#a65628", "#f781bf", "#999999"]
+    mark_colors = ["#ff7f00", "#377eb8", "#4daf4a", "#e41a1c", "#984ea3", "#ffff33", "#a65628", "#f781bf", "#999999"]
 
     def __init__(self, seed=31415, modality1_label='Image', modality2_label='Text', hover_callback=None, unhover_callback=None):
         super(ScatterPlotWidget, self).__init__()

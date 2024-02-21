@@ -9,7 +9,15 @@ from functools import partial
 import io
 import urllib
 from .utils import get_textual_label_for_cluster
+from types import SimpleNamespace
 # ---------Data Types (Modalities)---------
+
+DisplayTypes = SimpleNamespace(
+    IMAGE="img",
+    TEXT="txt",
+    AUDIO="wav",
+)
+
 
 class DataTypeInterface:
     name = "DataTypeInterface"
@@ -45,7 +53,7 @@ class ImageType(DataTypeInterface):
     def getVisItem(self, idx):
         output_img = io.BytesIO()
         self.data[idx].resize((300,300)).save(output_img, format='JPEG')
-        return output_img
+        return {"displayType": DisplayTypes.IMAGE, "value": output_img.getvalue()}
 
 class TextType(DataTypeInterface):
     name = "Text"
@@ -58,7 +66,24 @@ class TextType(DataTypeInterface):
         return get_textual_label_for_cluster(ids, self.data)
 
     def getVisItem(self, idx):
-        return self.data[idx]
+        return {"displayType": DisplayTypes.TEXT, "value": self.data[idx]}
+    
+
+
+class AudioType(DataTypeInterface):
+    name = "Audio"
+
+    def __init__(self, data, sample_rate) -> None:
+        super().__init__(data)
+        self.sample_rate = sample_rate
+    
+    def getVisItem(self, idx):
+        import soundfile as sf
+        buffer = io.BytesIO()
+        sf.write(buffer, self.data[idx][0], self.sample_rate, format="wav")
+        audio_bytes = buffer.getvalue() # wav bytes
+        return {"displayType": DisplayTypes.AUDIO, "value": audio_bytes}
+
 
 # ---------Datasets---------
 
@@ -76,7 +101,9 @@ class DatasetInterface:
     def get_data(self):
         
         if self.batch_size is None:
-            return self.all_images, self.all_prompts
+            images = self.MODE1_Type(self.all_images)
+            texts = self.MODE2_Type(self.all_prompts)
+            return images, texts
 
         # create a random batch
         batch_idcs = self._get_random_subsample(len(self.all_images))

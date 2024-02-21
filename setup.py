@@ -19,7 +19,7 @@ URL = 'https://github.com/ginihumer/Amumo'
 EMAIL = 'ginihumer96@yahoo.de'
 AUTHOR = 'Gin'
 REQUIRES_PYTHON = '>=3.9.7'
-VERSION = '0.1.40'
+VERSION = '0.2.0'
 
 # What packages are required for this module to be executed?
 # TODO: update the required packages
@@ -55,9 +55,10 @@ BLIP_REQUIRE = [
     'termcolor'
 ]
 IMAGEBIND_REQUIRE = [
-    'imagebind @ git+https://github.com/facebookresearch/ImageBind@c6a47d6dc2b53eced51d398c181d57049ca59286',
     'soundfile==0.12.1',
+    'imagebind @ git+https://github.com/facebookresearch/ImageBind@c6a47d6dc2b53eced51d398c181d57049ca59286',
     'torchvision',
+    'torchaudio',
     'flatbuffers'
 ]
 DIFFUSION_DB_REQUIRE = [

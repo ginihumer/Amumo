@@ -310,7 +310,7 @@ class ImageBind_Model(CLIPModelInterface):
         self.encoding_functions = {
             "image": self.encode_image,
             "text": self.encode_text,
-            # "audio": ...
+            "audio": self.encode_audio,
             # "video": ...
             "thermal": self.encode_thermal,
             "depth": self.encode_depth,
@@ -318,6 +318,54 @@ class ImageBind_Model(CLIPModelInterface):
         }
 
     
+    def encode_audio(self, audios):
+        from imagebind.models.imagebind_model import ModalityType
+        from imagebind import data as ib_data
+        from torchvision import transforms
+        
+        num_mel_bins=128
+        target_length=204
+        sample_rate=16000
+        clip_duration=2
+        clips_per_video=3
+        mean=-4.268
+        std=9.138
+
+        audio_outputs = []
+        clip_sampler = ib_data.ConstantClipsPerVideoSampler(
+            clip_duration=clip_duration, clips_per_video=clips_per_video
+        )
+
+        for waveform in audios:
+
+            all_clips_timepoints = ib_data.get_clip_timepoints(
+                clip_sampler, waveform.size(1) / sample_rate
+            )
+            all_clips = []
+            for clip_timepoints in all_clips_timepoints:
+                waveform_clip = waveform[
+                    :,
+                    int(clip_timepoints[0] * sample_rate) : int(
+                        clip_timepoints[1] * sample_rate
+                    ),
+                ]
+                waveform_melspec = ib_data.waveform2melspec(
+                    waveform_clip, sample_rate, num_mel_bins, target_length
+                )
+                all_clips.append(waveform_melspec)
+
+            normalize = transforms.Normalize(mean=mean, std=std)
+            all_clips = [normalize(ac).to(self.device) for ac in all_clips]
+
+            all_clips = torch.stack(all_clips, dim=0)
+            audio_outputs.append(all_clips)
+
+        audios = torch.tensor(np.stack(audio_outputs)).to(self.device)
+    
+        inputs = {
+            ModalityType.AUDIO: audios,
+        }
+        return self.model(inputs)[ModalityType.AUDIO].float().cpu()
     
     def encode_depth(self, depths):
         from imagebind.models.imagebind_model import ModalityType

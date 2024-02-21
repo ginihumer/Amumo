@@ -45,30 +45,6 @@ If you want to install the requirements for the [interactive VISxAI article](htt
 pip install "amumo[visxai] @ git+https://github.com/ginihumer/Amumo.git"
 ```
 
-### Troubleshooting
-
-#### SSL Certificate Verification Error
-If you encounter an SSL certificate verification error, such as 'CERTIFICATE_VERIFY_FAILED,' while installing or running Amumo, it might be due to your system's SSL configuration. Here are a few steps you can take to address this issue: 
-- Try updating your SSL certificate bundle
-  ```bash
-  pip install --upgrade certifi
-  ```
-- Try disabling SSL verification temporarily for your Python script.
-  ```python
-  import ssl
-  ssl._create_default_https_context = ssl._create_unverified_context
-  ```
-  
-#### Pycocotools Installation Error
-If you encounter installation issues specifically related to `pycocotools`, especially when working with VS Code, follow these steps to resolve them:
-1. **Prerequisites**: Ensure that you have the necessary prerequisites installed on your system:
-   - On Windows, install the Visual C++ Build Tools/ Visual Studio Code. You can download them from [Visual Studio Downloads](https://visualstudio.microsoft.com/downloads/).
-   - For Linux systems, make sure you have `gcc` and `make` installed. You can install them using your package manager (e.g., `sudo apt install build-essential` for Ubuntu).
-
-2. **Python Wheels**: Consider installing `pycocotools` using precompiled Python wheels instead of attempting to build from source:
-   ```bash
-   pip install cython
-   pip install "git+https://github.com/philferriere/cocoapi.git#egg=pycocotools&subdirectory=PythonAPI"
 
 # Understanding and Comparing Multi-Modal Models
 ## Exploring the Latent Space of CLIP-like Models (CLIP, CyCLIP, CLOOB) Using Inter-Modal Pairs (Featuring Amumo, Your Friendly Neighborhood Mummy)
@@ -97,3 +73,30 @@ You may cite Amumo using the following bibtex:
   year = {2023}
 }
 ```
+
+
+### Troubleshooting
+Special thanks to [Hussein Aly](https://github.com/Hussein-Aly) for adding this section.
+
+#### SSL Certificate Verification Error
+If you encounter an SSL certificate verification error, such as 'CERTIFICATE_VERIFY_FAILED,' while installing or running Amumo, it might be due to your system's SSL configuration. Here are a few steps you can take to address this issue: 
+- Try updating your SSL certificate bundle
+  ```bash
+  pip install --upgrade certifi
+  ```
+- Try disabling SSL verification temporarily for your Python script.
+  ```python
+  import ssl
+  ssl._create_default_https_context = ssl._create_unverified_context
+  ```
+  
+#### Pycocotools Installation Error
+If you encounter installation issues specifically related to `pycocotools`, especially when working with VS Code, follow these steps to resolve them:
+1. **Prerequisites**: Ensure that you have the necessary prerequisites installed on your system:
+   - On Windows, install the Visual C++ Build Tools/ Visual Studio Code. You can download them from [Visual Studio Downloads](https://visualstudio.microsoft.com/downloads/).
+   - For Linux systems, make sure you have `gcc` and `make` installed. You can install them using your package manager (e.g., `sudo apt install build-essential` for Ubuntu).
+
+2. **Python Wheels**: Consider installing `pycocotools` using precompiled Python wheels instead of attempting to build from source:
+   ```bash
+   pip install cython
+   pip install "git+https://github.com/philferriere/cocoapi.git#egg=pycocotools&subdirectory=PythonAPI"

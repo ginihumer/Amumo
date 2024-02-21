@@ -238,9 +238,6 @@ class ScatterPlotWidget(widgets.VBox):
     embedding = traitlets.Any().tag(sync=True)
     cluster = traitlets.Any().tag(sync=True)
     hover_idcs = traitlets.Any().tag(sync=True)
-    # modality1_label = traitlets.Unicode().tag(sync=True)
-    # modality2_label = traitlets.Unicode().tag(sync=True)
-
     mark_colors = ["#ff7f00", "#377eb8", "#4daf4a", "#e41a1c", "#984ea3", "#ffff33", "#a65628", "#f781bf", "#999999"]
 
     def __init__(self, seed=31415, modality1_label='Image', modality2_label='Text', hover_callback=None, unhover_callback=None):
@@ -288,8 +285,6 @@ class ScatterPlotWidget(widgets.VBox):
 
 
         self.fig_widget = go.FigureWidget()
-        # self.fig_widget.add_trace(go.Scatter(name = modality1_label, x=[0,1,2,3], y=[0,1,2,3], mode="markers", marker_color=self.mark_colors[0]))
-        # self.fig_widget.add_trace(go.Scatter(name = modality2_label, x=[3,2,1,0], y=[0,1,2,3], mode="markers", marker_color=self.mark_colors[1]))
         self.fig_widget.update_layout(width=400, 
                                       height=300, 
                                       margin=dict(l=10, r=10, t=10, b=10),
@@ -300,12 +295,6 @@ class ScatterPlotWidget(widgets.VBox):
                                             x=0.01  
                                             )
                                       )
-
-        # self.scatter_image = self.fig_widget.data[0]
-        # self.scatter_text = self.fig_widget.data[1]
-        
-        # self.modality1_label = modality1_label
-        # self.modality2_label = modality2_label
 
         self.select_projection_method = widgets.Dropdown(
             description='Method: ',
@@ -331,23 +320,6 @@ class ScatterPlotWidget(widgets.VBox):
         self.use_oos_projection.disabled = not available_projection_methods[self.select_projection_method.value]['OOS']
         self.onUpdateValue(change)
 
-    # @traitlets.validate("modality1_label", "modality2_label")
-    # def _validate_modality_label(self, proposal):
-    #     # TODO: validate modality label
-    #     return proposal.value
-    
-    # @traitlets.observe("modality1_label", "modality2_label")
-    # def onUpdateModalityLabel(self, change):
-    #     self.scatter_image.name = self.modality1_label
-    #     self.scatter_text.name = self.modality2_label
-        # self.fig_widget.update_layout(legend=dict(
-        #                                     yanchor="top",
-        #                                     y=0.99,
-        #                                     xanchor="left",
-        #                                     x=0.01  
-        #                                     )
-        #                               )
-
     @traitlets.validate("embedding")
     def _validate_value(self, proposal):
         # print("TODO: validate embedding")
@@ -372,22 +344,8 @@ class ScatterPlotWidget(widgets.VBox):
         if not self.use_oos_projection.disabled and self.use_oos_projection.value:
             # only possible with umap; fit by one modality only and project other modalities out of sample
             projection.fit(self.embedding[list(self.embedding.keys())[0]])
-
-            # project_by = 'image' # TODO: add user select for this
-            # if project_by == "image":
-            #     self.image_embedding_projection = projection.fit_transform(self.embedding[:int(len(self.embedding)/2),:])
-            #     self.text_embedding_projection = projection.transform(self.embedding[int(len(self.embedding)/2):,:])
-            # elif project_by == "text":
-            #     self.text_embedding_projection = projection.fit_transform(self.embedding[int(len(self.embedding)/2):,:])
-            #     self.image_embedding_projection = projection.transform(self.embedding[:int(len(self.embedding)/2),:])
-
-            # self.embedding_projection = np.concatenate((self.image_embedding_projection, self.text_embedding_projection))
-            
         else:
-            projection.fit(np.concatenate(list(self.embedding.values())))
-            # self.embedding_projection = projection.fit_transform(self.embedding)
-            # self.image_embedding_projection = self.embedding_projection[:int(len(self.embedding)/2),:]
-            # self.text_embedding_projection = self.embedding_projection[int(len(self.embedding)/2):,:]
+            projection = projection.fit(np.concatenate(list(self.embedding.values())))
 
         embedding_projection = {}
         for modality in self.embedding.keys():

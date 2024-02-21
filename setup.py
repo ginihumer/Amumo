@@ -19,7 +19,7 @@ URL = 'https://github.com/ginihumer/Amumo'
 EMAIL = 'ginihumer96@yahoo.de'
 AUTHOR = 'Gin'
 REQUIRES_PYTHON = '>=3.9.7'
-VERSION = '0.2.0'
+VERSION = '0.2.1'
 
 # What packages are required for this module to be executed?
 # TODO: update the required packages
@@ -47,7 +47,7 @@ OPEN_CLIP_REQUIRE = [
     'open-clip-torch==2.20.0',
 ]
 CLOOB_REQUIRE = CLIP_REQUIRE + ['torchvision']
-CLOOME_REQUIRE = CLOOB_REQUIRE
+CLOOME_REQUIRE = CLOOB_REQUIRE + ['pandas', 'huggingface_hub']
 
 BLIP_REQUIRE = [
     'transformers==4.31.0',

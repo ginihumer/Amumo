@@ -587,7 +587,7 @@ class SimilarityHeatmapClusteringWidget(widgets.VBox):
         settings = widgets.HBox([self.cluster_similarity_matrix_widget, 
                                  self.cluster_similarity_matrix_by_widget1, 
                                  self.cluster_similarity_matrix_by_widget2], 
-                                 layout=widgets.Layout(width="430px"))
+                                 layout=widgets.Layout(width="450px"))
         self.children = [settings, widgets.HBox([self.fig_widget])]
 
 

@@ -1669,39 +1669,24 @@
             uses the InfoNCE loss (cite: https://arxiv.org/pdf/1807.03748.pdf ).
         </p>
 
-        <!-- <figure style="grid-column: screen;">
+        <figure style="grid-column: screen;">
             <div id="clip-explorer-imagebind-textimage" class="container"></div>
         </figure>
         <script>
-            clip_explorer_widget('MSCOCO-Val_size-100', "clip-explorer-imagebind-textimage", mscoco_val_prompts_promise, mscoco_val_projections_promise, 'UMAP', ["CLIP", "ImageBind"])
-        </script> -->
+            clip_explorer_widget('MSCOCO-Val_size-100', "clip-explorer-imagebind-textimage", mscoco_val_prompts_promise, mscoco_val_projections_promise, 'PCA', ["ImageBind", ...AVAILABLE_MODELS])
+        </script>
 
         <p>
-            ...
-        </p>
-
-
-        <h4 id="section-amumo-imagebind-textaudio">
-            Text + Audio
-        </h4>
-        <p>
-            For analyzing the implicit pairing of text and audio modalities, we use a subset of the AudioSet (cite)
-            dataset that contains animal sounds of birds, cats, dogs, and horses.
-        </p>
-
-        <p>
-            ...
+            ...TODO...
         </p>
 
 
         <h4 id="section-amumo-imagebind-textimageaudio">
-            Text + Audio + Image
+            Text + Image + Audio
         </h4>
         <p>
-            Let us now look into triplets of text, audio, and image modalities. The AudioSet dataset from our previous
-            analysis only contains text and audio pairs. However, each instance also contains the YouTube ID from which
-            the audio data was retrieved. We use this ID to retrieve thumbnail images for each audio instance. This
-            results in a triplet dataset of text-audio-image pairs that we can analyze with Amumo.
+            For analyzing the implicit pairing of text and audio modalities, we use a subset of the AudioSet (cite)
+            dataset that contains animal sounds of birds, cats, dogs, and horses.
         </p>
 
         <p>

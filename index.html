@@ -27,6 +27,13 @@
 
     <link href="styles/bootstrap.min.css" rel="stylesheet">
     <style>
+        .fake-img {
+            background: #bbb;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 12px;
+        }
+
         /* title */
         d-title h1,
         d-title p {
@@ -788,8 +795,8 @@
 
 
         // TODO: add cluster functionality
-        const available_models = ['CLIP', 'CyCLIP', 'CLOOB', 'CLOOB_LAION400M'];
-        function clip_explorer_widget(dataset_name, el_id, prompts_promise, projection_promise, projection_method = 'UMAP') {
+        const AVAILABLE_MODELS = ['CLIP', 'CyCLIP', 'CLOOB', 'CLOOB_LAION400M'];
+        function clip_explorer_widget(dataset_name, el_id, prompts_promise, projection_promise, projection_method = 'UMAP', available_models = AVAILABLE_MODELS) {
             // init model select
             const model_select = document.createElement('select');
             for (const key in available_models) {
@@ -932,13 +939,21 @@
     <d-front-matter>
         <script id='distill-front-matter' type="text/json">{
         "title": "Understanding and Comparing Multi-Modal Models",
-        "description": "Exploring the Latent Space of CLIP-like Models (CLIP, CyCLIP, CLOOB) Using Inter-Modal Pairs.",
-        "published": "July 21, 2023",
+        "description": "Exploring the Latent Space of CLIP-like Models Using Inter-Modal Pairs.",
+        "published": "February 22, 2024",
         "authors": [
         {
             "author":"Christina Humer",
             "authorURL":"https://jku-vds-lab.at/persons/humer/",
-            "affiliations": [{"name": "Johannes Kepler University Linz", "url": "https://www.jku.at/"}]
+            "affiliations": [{"name": "Visual Data Science Lab, Johannes Kepler University Linz", "url": "https://jku-vds-lab.at"}]
+        },
+        {
+            "author":"Elisabeth Rumetshofer",
+            "affiliations": [{"name": "TODO", "url": "https://www.jku.at/"}]
+        },
+        {
+            "author":"Ana Sánchez",
+            "affiliations": [{"name": "TODO", "url": "https://www.jku.at/"}]
         },
         {
             "author":"Vidya Prasad",
@@ -946,9 +961,14 @@
             "affiliations": [{"name": "Eindhoven University of Technology", "url": "https://www.tue.nl/en/our-university/departments/mathematics-and-computer-science"}]
         },
         {
+            "author":"Günter Klambauer",
+            "authorURL":"https://www.jku.at/institut-fuer-machine-learning/ueber-uns/team/assocprof-mag-dr-guenter-klambauer/",
+            "affiliations": [{"name": "Institute for Machine Learnine, Johannes Kepler University Linz", "url": "https://www.jku.at/en/institute-for-machine-learning/"}]
+        },
+        {
             "author":"Marc Streit",
             "authorURL":"https://marc-streit.com",
-            "affiliations": [{"name": "Johannes Kepler University Linz", "url": "https://www.jku.at/"}]
+            "affiliations": [{"name": "Visual Data Science Lab, Johannes Kepler University Linz", "url": "https://jku-vds-lab.at"}]
         },
         {
             "author":"Hendrik Strobelt",
@@ -965,7 +985,7 @@
     </d-front-matter>
     <d-title>
         <p>
-            Exploring and Analysing the Latent Space of CLIP-like Models (CLIP, CyCLIP, CLOOB) Using Inter-Modal Pairs.
+            Exploring the Latent Space of CLIP-like Models Using Inter-Modal Pairs
         </p>
     </d-title>
     <d-byline></d-byline>
@@ -991,8 +1011,52 @@
                 <div><a href="#section-conclusion">Conclusion</a></div>
             </nav>
         </d-contents> -->
+        <div class="l-page">
+            <!-- style="background: #f8f8fb;"> -->
+            <h2 id="section-abstract">
+                Abstract
+            </h2>
+            <p id="section-abstract-introduction">
+                <b>Introduction</b> <br>
+                Multi-modal contrastive learning models are trained to map data from two or more modalities to a shared
+                embedding space. This latent data representation can then be used for zero- or few-shot classification,
+                cross-modal data retrieval, or generation tasks. Although remarkable results have been reported when
+                testing multi-modal models on these tasks, understanding the latent representations remains challenging.
+                In particular, many multi-modal models exhibit a phenomenon called the “modality gap”, leading to a
+                latent space that cleanly separates the modalities.
+            </p>
+            <p id="section-abstract-conclusion">
+                <b>Conclusion</b> <br>
+                This article introduces and compares three models trained on image-text pairs. We use these models and
+                interactive visualizations to explain where the modality gap arises from, how it can be closed, and why
+                closing it is important. In the second part, we introduce “Amumo”, a framework we implemented for
+                analyzing multi-modal models. We describe various analysis tasks that can be performed with Amumo. In
+                particular, Amumo can be used for (i) analyzing models, (ii) comparing models with each other, and (iii)
+                analyzing multi-modal datasets. We demonstrate Amumo’s capabilities and generalizability using image,
+                text, audio, and molecule data in combination with several different models.
+            </p>
+            <p id="section-abstract-impl">
+                <b>Implementation</b> <br>
+                For smooth integration into research workflows, we implemented the Amumo as a Python package with
+                Jupyter widgets. We implemented the interactive visualizations in this article with JavaScript and
+                plotly.js.
+            </p>
+            <p id="section-abstract-demo">
+                <b>Demonstration & Materials</b> <br>
+                TODO: either link to cloom binder or deploy some other minimal example with binder...
 
-        <p id="section-introduction">
+                Code for the Amumo python package and guidelines on how to use it can be found in the <a target="_blank"
+                    href="https://github.com/ginihumer/Amumo/" title="Link to the Amumo python package.">github
+                    repository</a>.
+            </p>
+        </div>
+
+        <hr>
+
+        <h2 id="section-introduction">
+            Introduction
+        </h2>
+        <p>
             Contrastive Language Image Pre-training (CLIP)<d-cite key="radford_learning_2021"></d-cite> and variations
             of this approach, like CyCLIP<d-cite key="goel_cyclip_2022"></d-cite> or CLOOB<d-cite
                 key="furst_cloob_2022"></d-cite>, are trained on image-text pairs with a contrastive objective. The goal
@@ -1009,7 +1073,7 @@
         <figure style="grid-column: text; margin: 1rem 0;">
             <img src="./exported_data/idea_figure.png" style="width:100%;"
                 alt="Example of how we imagined a 2-dimensional projection of CLIP's image and text embeddings. Image and text points are shown in one scatter plot and instants that are semantically similar are plotted close together.">
-            
+
             <figcaption style="text-align: center; margin-left: 10%; width: 80%;">
                 Example of how we imagined a two-dimensional projection of CLIP's image and text embeddings.
             </figcaption>
@@ -1061,27 +1125,28 @@
         </p>
         <p>
             The similarity heatmap below shows the same subset of 100 image-text pairs previously shown in a scatter
-            plot. However, in this case, we show the cosine similarities<d-footnote>Note that the cosine similarity can yield values between [-1; 1].</d-footnote> calculated between all image and text embeddings. 
-            This results in a matrix with four quadrants: 
-            <ul>
-                <li>
-                    top-left: in-modal similarities of the 100 image embeddings,
-                </li>
-                <li>
-                    bottom-right: in-modal similarities of the 100 text embeddings, 
-                </li>
-                <li>
-                    top-right: cross-modal similarities between the 100 image embeddings and the 100 text embeddings,
-                </li>
-                <li>
-                    bottom-left: a transposed version of the cross-modal image-text similarities. 
-                </li>
-            </ul>
-            The diagonal axis of each quadrant
-            represents the matching data points (i.e., for the in-modal similarities, the diagonal shows the
-            similarities of the image or text embedding to itself, while for the cross-modal similarities, the diagonal
-            shows the matching image-text pairs). The modality gap is immediately visible: the in-modal similarities are
-            much higher overall compared to the cross-modal similarities.
+            plot. However, in this case, we show the cosine similarities<d-footnote>Note that the cosine similarity can
+                yield values between [-1; 1].</d-footnote> calculated between all image and text embeddings.
+            This results in a matrix with four quadrants:
+        <ul>
+            <li>
+                top-left: in-modal similarities of the 100 image embeddings,
+            </li>
+            <li>
+                bottom-right: in-modal similarities of the 100 text embeddings,
+            </li>
+            <li>
+                top-right: cross-modal similarities between the 100 image embeddings and the 100 text embeddings,
+            </li>
+            <li>
+                bottom-left: a transposed version of the cross-modal image-text similarities.
+            </li>
+        </ul>
+        The diagonal axis of each quadrant
+        represents the matching data points (i.e., for the in-modal similarities, the diagonal shows the
+        similarities of the image or text embedding to itself, while for the cross-modal similarities, the diagonal
+        shows the matching image-text pairs). The modality gap is immediately visible: the in-modal similarities are
+        much higher overall compared to the cross-modal similarities.
         </p>
         <figure style="grid-column: text;">
             <div id="clip-modalitygap-heatmap" style="display: inline-flex;"></div>
@@ -1138,7 +1203,8 @@
             derived during training. This naturally results in an increasing loss when changing the distance between
             modalities that was originally trained, as shown in the visualization below. The x-axis shows the Euclidean
             distance between the two embedding centers (the black dashed line indicates the original distance). The
-            y-axis shows the contrastive loss that results when moving the two embeddings closer together or further away from each
+            y-axis shows the contrastive loss that results when moving the two embeddings closer together or further
+            away from each
             other. We calculated these values with the whole 5000 samples MSCOCO validation set. It becomes visible that
             the global minimum of this manual intervention is at the point of the original (trained) modality gap.
         </p>
@@ -1159,7 +1225,8 @@
             Now, what do the similarity heatmap and scatter plot look like when we manually close the gap? As shown in
             the visualization below, the similarity matrix seems more homogeneous (i.e., in-modal similarities and
             cross-modal similarities are on a similar level), and points in the scatter plot are closer together.
-            However, the scatter plot also shows that the edges between image-text pairs are still long, and the text embeddings concentrate more on the center compared to the image embeddings.
+            However, the scatter plot also shows that the edges between image-text pairs are still long, and the text
+            embeddings concentrate more on the center compared to the image embeddings.
             <!-- The many edge crossings between the image-text pairs are also a qualitative indicator that the embeddings are not well -->
             <!-- aligned. Furthermore, the text embeddings concentrate more on the center compared to the image embeddings. -->
         </p>
@@ -1176,7 +1243,8 @@
 
         <h2 id="section-other-models">What About Other CLIP-Like Models?</h2>
         <p>
-            As mentioned previously, the two modalities (i.e., texts and images) live on different embedding spaces, and the two embeddings vary
+            As mentioned previously, the two modalities (i.e., texts and images) live on different embedding spaces, and
+            the two embeddings vary
             in structure (i.e., they are not symmetric to each other). Recently published papers propose different
             versions of CLIP, where the objective function has been adjusted to regularize the trained embedding space.
             We look closer into two promising approaches, namely, CyCLIP<d-cite key="goel_cyclip_2022"></d-cite> and
@@ -1301,7 +1369,8 @@
 
         <p>
             Again, when closing the modality gap, the similarity heatmap becomes more homogenous (i.e., the in-modal
-            similarities and cross-modal similarities are similarly strong). The image-text pairs in the scatter plot are closer, but still scattered.
+            similarities and cross-modal similarities are similarly strong). The image-text pairs in the scatter plot
+            are closer, but still scattered.
             <!-- While the image-text pairs in the scatter plot are closer, there are still quite some edge crossings. -->
         </p>
         <figure style="grid-column: screen;">
@@ -1409,7 +1478,8 @@
         </p>
         <p>
             Contrastive Leave One Out Boost (short: CLOOB)<d-cite key="furst_cloob_2022"></d-cite> is a variation of
-            CLIP that proposes an alternative objective together with an associative memory to train the model. The two main components of their method
+            CLIP that proposes an alternative objective together with an associative memory to train the model. The two
+            main components of their method
             function are (i) modern Hopfield networks and (ii) the InfoLOOB loss instead of the InfoNCE loss used by
             CLIP. The authors argue that their modifications solve CLIP's "explaining away" problem (i.e., focusing on a
             small subset of features while ignoring other relevant features) and InfoNCE's saturation
@@ -1430,16 +1500,19 @@
 
 
         <p>
-            We believe that CLOOB’s ability to close the gap during training mainly stems from the cross-modality retrieval 
+            We believe that CLOOB’s ability to close the gap during training mainly stems from the cross-modality
+            retrieval
             applied before calculating the InfoLOOB loss. In this step, the batch of image embeddings
             and text embeddings is used as an associative memory to create a weighted average of embeddings for the
             current instance. Since this is done for each combination of embedding and associative memory (i.e., each
             image and each text embedding is associated with the entire batch of image embeddings AND the entire batch
             of text embeddings), a stronger correlation between the image/text instances to their own
-            modality and the opposite modality is established. 
-            Other influencing factors on closing the modality gap could be the use of InfoLOOB, or the use of modern Hopfield networks 
-            that generally have a denoising effect<d-footnote>See this blog post for a detailed explanation of 
-                modern hopfield networks: <a src=”https://ml-jku.github.io/hopfield-layers/”>https://ml-jku.github.io/hopfield-layers/</a>.</d-footnote>.
+            modality and the opposite modality is established.
+            Other influencing factors on closing the modality gap could be the use of InfoLOOB, or the use of modern
+            Hopfield networks
+            that generally have a denoising effect<d-footnote>See this blog post for a detailed explanation of
+                modern hopfield networks: <a target="_blank" href="https://ml-jku.github.io/hopfield-layers/"
+                    title="Blog post about Hopfield Networks">https://ml-jku.github.io/hopfield-layers/</a>.</d-footnote>.
         </p>
 
         <h3 id="section-modality-gap-summary">Summary of Modality Gap Analysis</h3>
@@ -1476,8 +1549,10 @@
 
         <h2 id="section-amumo">Converting the Technique into a Tool</h2>
         <p>
-            Using the previously introduced techniques, we implemented an interactive prototype called <a target="_blank" href="https://github.com/ginihumer/Amumo/">“Amumo” (Analyze
-            Multi-Modal Models)</a>. Users can switch between models, explore the similarity heatmap and scatter plot
+            Using the previously introduced techniques, we implemented an interactive prototype called <a
+                target="_blank" href="https://github.com/ginihumer/Amumo/">“Amumo” (Analyze
+                Multi-Modal Models)</a>. Users can switch between models, explore the similarity heatmap and scatter
+            plot
             visualizations, manually close the modality gap, and try various projection methods.
         </p>
 
@@ -1568,6 +1643,76 @@
 
             clip_explorer_widget(dataset_name, "clip-explorer-diffusiondb", diffusiondb_val_prompts_promise, diffusiondb_val_projections_promise, 'UMAP')
         </script>
+
+
+
+        <h3 id="section-amumo-imagebind">Analyze ImageBind</h3>
+        <p>
+            So far, we have looked into models trained to map two modalities to a shared space. ImageBind is a model
+            trained to embed six different modalities (cite Imagebind): images, text, audio, depth, thermal, and
+            inertial sensor data. The used approach “binds” the modalities using images-data pairs. More specifically,
+            each modality was only paired with image (and video) data, but not across all other modalities. Although
+            there is no explicit matching between modalities, ImageBind succeeded zero-shot evaluation between the
+            modalities.
+        </p>
+        <p>
+            Going beyond the quantitative verification used by the authors of ImageBind, we are interested in how well
+            the embedding spaces align between explicitly paired modalities and implicit pairing.
+        </p>
+
+        <h4 id="section-amumo-imagebind-textimage">
+            Text + Image
+        </h4>
+        <p>
+            Let us first look into the explicit pairing of image-text modalities using our MSCOCO dataset. Similarly to
+            CLIP, ImageBind exhibits a modality gap between images and texts, which makes sense because ImageBind also
+            uses the InfoNCE loss (cite: https://arxiv.org/pdf/1807.03748.pdf ).
+        </p>
+
+        <!-- <figure style="grid-column: screen;">
+            <div id="clip-explorer-imagebind-textimage" class="container"></div>
+        </figure>
+        <script>
+            clip_explorer_widget('MSCOCO-Val_size-100', "clip-explorer-imagebind-textimage", mscoco_val_prompts_promise, mscoco_val_projections_promise, 'UMAP', ["CLIP", "ImageBind"])
+        </script> -->
+
+        <p>
+            ...
+        </p>
+
+
+        <h4 id="section-amumo-imagebind-textaudio">
+            Text + Audio
+        </h4>
+        <p>
+            For analyzing the implicit pairing of text and audio modalities, we use a subset of the AudioSet (cite)
+            dataset that contains animal sounds of birds, cats, dogs, and horses.
+        </p>
+
+        <p>
+            ...
+        </p>
+
+
+        <h4 id="section-amumo-imagebind-textimageaudio">
+            Text + Audio + Image
+        </h4>
+        <p>
+            Let us now look into triplets of text, audio, and image modalities. The AudioSet dataset from our previous
+            analysis only contains text and audio pairs. However, each instance also contains the YouTube ID from which
+            the audio data was retrieved. We use this ID to retrieve thumbnail images for each audio instance. This
+            results in a triplet dataset of text-audio-image pairs that we can analyze with Amumo.
+        </p>
+
+        <p>
+            ...
+        </p>
+
+
+        <h3 id="section-amumo-cloome">Analyze CLOOME</h3>
+        <p>
+            ...
+        </p>
 
 
         <h3 id="section-amumo-augmentation">Augmentation Analyses</h3>
@@ -1705,6 +1850,34 @@
             subset of data points, and insights must still be verified on a larger scale.
         </p>
 
+
+        <h2 id="section-researchmaterial">Research Material Statements</h2>
+        <p>
+            The data shown in this article were produced with the <a target="_blank"
+                href="https://github.com/ginihumer/Amumo/">Amumo python package</a>.
+            We provide notebooks to reproduce the results of <a target="_blank"
+                href="https://github.com/ginihumer/Amumo/blob/main/notebooks/clip_article.ipynb">CLIP, CyCLIP, and
+                CLOOB</a>
+            ; TODO: add notebooks foradditional analyses…
+            We provide the notebooks for exporting the data used in the interactive article:
+            https://github.com/ginihumer/Amumo/blob/main/notebooks/export_data.ipynb; TODO: add export notebooks for
+            additional analyses…
+        </p>
+
+        <h2 id="section-researchmaterial">Authorship</h2>
+        <p>
+            <b>Christina Humer</b>: Conceptualization, Software, Validation, Investigation, Writing - Original Draft,
+            Visualization. <b>Elisabeth Rumetshofer</b>: Investigation, Resources, Writing - Original Draft. <b>Ana Sánchez</b>:
+            Investigation, Resources, Writing - Original Draft. <b>Vidya Prasad</b>: Investigation, Writing - Review & Editing.
+            <b>Günter Klambauer</b>: Writing - Review & Editing. <b>Marc Streit</b>: Conceptualization, Writing - Review & Editing.
+            <b>Hendrik Strobelt</b>: Conceptualization, Writing - Review & Editing.
+        </p>
+        
+        <h2 id="section-conflict">Conflict of Interest</h2>
+        <p>
+            The authors declare that there are no competing interests.
+        </p>
+
     </d-article>
 
     <d-appendix>
@@ -1733,7 +1906,8 @@
         <h2 id="section-lg-dataset">Closing the Gap Using a Larger Dataset</h2>
 
         <p>
-            Amumo - our interactive prototype - is an easy way to explore a small subset of image-text pairs. This analysis can
+            Amumo - our interactive prototype - is an easy way to explore a small subset of image-text pairs. This
+            analysis can
             help form intuition about a particular dataset or the model used to map them into a latent space embedding.
             In addition to the interactive prototype, we also want to showcase the results of the proposed methods for
             closing the modality gap with a larger dataset. To that end, we again used the entire 5000 sample MSCOCO
@@ -1780,7 +1954,8 @@
 
         <h3 id="section-lg-dataset-inherent">Inherently Removing the Modality Gap</h3>
         <p>
-            The second method of removing the modality gap utilizes a bi-modal model capable of aligning the embedding spaces: CLOOB. 
+            The second method of removing the modality gap utilizes a bi-modal model capable of aligning the embedding
+            spaces: CLOOB.
             In this case, we can directly use the image and text
             embeddings generated by the model and project it to a 2-d space for visualization. We see a similar result
             to before: clusters emerge and a lot of inter-cluster connections, but also plenty of intra-cluster
@@ -1812,7 +1987,8 @@
                 sense if the two embedding spaces are symmetric, like in CyCLIP.
             </li>
             <li>
-                Inherently: define the model architecture and/or training objective in a way that aids the closing of the gap, like in CLOOB.
+                Inherently: define the model architecture and/or training objective in a way that aids the closing of
+                the gap, like in CLOOB.
             </li>
         </ol>
         </p>
@@ -1830,7 +2006,8 @@
             From a visualization point of view, we might not care about the other two reasons, as long as we can
             visually close the modality gap. By visually closing the gap, we do not change the embeddings or the model,
             but map them into a shared low-dimensional space. This can be accomplished in several ways: (i)
-            out-of-sample projection, (ii) concatenating image-text embeddings and treating them as one combined embedding.
+            out-of-sample projection, (ii) concatenating image-text embeddings and treating them as one combined
+            embedding.
             The first method results in a low-dimensional datapoint for each image and each text embedding; the second
             method results in a combined low-dimensional space for the image-text pairs. The method you would want to
             choose depends on the goal of the visualization.
@@ -1838,7 +2015,8 @@
 
         <h3 id="section-lg-dataset-oos">Out-of-Sample Projection</h3>
         <p>
-            We can first project embeddings of either images or texts using UMAP. This projection builds a neighborhood graph using
+            We can first project embeddings of either images or texts using UMAP. This projection builds a neighborhood
+            graph using
             in-modal similarities and results in a low-dimensional projection for one modality. We can utilize UMAP's
             out-of-sample projection to also project the embeddings of the second modality onto the space of the first
             modality. Since the out-of-sample projection again tries to map each point to the most similar points in the
@@ -1859,7 +2037,8 @@
             out-of-sample projection might amplify this effect even further.
         </p>
         <p>
-            Visual analytics tools can be helpful in gaining further insights into the data and why certain pairs seem to
+            Visual analytics tools can be helpful in gaining further insights into the data and why certain pairs seem
+            to
             be far away from each other. Basic interactions like hover information or selection summaries could already
             be a good start for further investigation. The rich nature of image and text data also allows for more
             advanced analytic visualizations; for example, texts can be used to extract labels for clusters that carry

@@ -1,0 +1,100 @@
+Domestic animals, pets, Howl, Dog, Animal
+Bird, Turkey, Bird vocalization, bird call, bird song, Fowl, Gobble
+Horse, Neigh, whinny, Animal
+Cat, Domestic animals, pets, Meow, Caterwaul, Animal
+Bird, Bird vocalization, bird call, bird song, Fowl, Crowing, cock-a-doodle-doo, Chicken, rooster
+Cat, Purr, Domestic animals, pets, Meow, Animal
+Canidae, dogs, wolves, Domestic animals, pets, Pant, Speech, Dog, Animal
+Cat, Domestic animals, pets, Meow, Caterwaul, Animal
+Bird, Turkey, Bird vocalization, bird call, bird song, Fowl, Chirp, tweet, Gobble
+Cat, Purr, Domestic animals, pets, Animal
+Bird, Turkey, Bird vocalization, bird call, bird song, Fowl, Chirp, tweet, Gobble
+Music, Domestic animals, pets, Howl, Yip, Dog, Animal, Whimper (dog)
+Cat, Domestic animals, pets, Caterwaul, Speech, Animal
+Canidae, dogs, wolves, Howl, Bow-wow, Groan, Dog
+Cat, Domestic animals, pets, Meow, Caterwaul, Animal
+Horse, Clip-clop, Animal
+Cat, Domestic animals, pets, Meow, Speech, Animal
+Canidae, dogs, wolves, Domestic animals, pets, Howl, Speech, Dog, Animal, Inside, small room
+Horse, Music, Neigh, whinny, Clip-clop, Speech, Animal
+Snoring, Laughter, Domestic animals, pets, Dog, Animal
+Cat, Domestic animals, pets, Meow, Caterwaul, Animal
+Bird, Bird vocalization, bird call, bird song, Chirp, tweet, Hoot, Owl
+Horse, Clip-clop, Animal
+Bird, Music, Duck
+Horse, Music, Neigh, whinny, Speech, Animal
+Domestic animals, pets, Speech, Dog, Animal, Whimper (dog)
+Cat, Domestic animals, pets, Meow, Animal
+Bird, Bird vocalization, bird call, bird song, Fowl, Honk, Goose
+Cat, Purr, Domestic animals, pets, Animal
+Domestic animals, pets, Dog, Growling, Animal
+Domestic animals, pets, Dog, Growling, Animal
+Bird, Duck
+Horse, Clip-clop, Animal
+Cat, Domestic animals, pets, Meow, Caterwaul, Speech, Animal
+Cat, Domestic animals, pets, Meow, Caterwaul, Speech, Animal
+Horse, Neigh, whinny, Speech, Animal
+Horse, Music, Speech
+Bird, Bird vocalization, bird call, bird song, Fowl, Crowing, cock-a-doodle-doo, Cluck, Chicken, rooster, Livestock, farm animals, working animals
+Canidae, dogs, wolves, Bark, Domestic animals, pets, Bow-wow, Dog, Growling, Animal
+Canidae, dogs, wolves, Music, Domestic animals, pets, Howl, Speech, Dog, Animal
+Horse, Neigh, whinny, Speech, Animal
+Cat, Domestic animals, pets, Meow, Caterwaul, Animal
+Cat, Domestic animals, pets, Meow, Caterwaul
+Horse, Clip-clop, Speech, Animal
+Canidae, dogs, wolves, Bark, Domestic animals, pets, Speech, Dog, Growling, Animal
+Bird, Bird vocalization, bird call, bird song, Coo, Pigeon, dove
+Bird, Turkey, Bird vocalization, bird call, bird song, Fowl, Gobble
+Cat, Domestic animals, pets, Caterwaul, Animal
+Horse, Music, Animal
+Bark, Bow-wow, Dog, Animal
+Domestic animals, pets, Speech, Dog, Animal, Whimper (dog)
+Horse, Walk, footsteps, Clip-clop, Animal
+Domestic animals, pets, Bow-wow, Speech, Dog, Animal, Whimper (dog)
+Domestic animals, pets, Dog, Whimper (dog)
+Bark, Domestic animals, pets, Squeak, Dog, Animal
+Bird, Turkey, Bird vocalization, bird call, bird song, Fowl, Gobble
+Horse, Clip-clop, Speech, Animal
+Babbling, Domestic animals, pets, Dog, Animal
+Bird, Squawk, Speech
+Bird, Turkey, Bird vocalization, bird call, bird song, Fowl, Gobble
+Music, Domestic animals, pets, Pant, Dog, Animal
+Cat, Purr, Domestic animals, pets, Animal
+Bird, Bird vocalization, bird call, bird song, Coo, Pigeon, dove
+Bird, White noise, Outside, urban or manmade
+Bird, Bee, wasp, etc., Bird vocalization, bird call, bird song, Insect, Chirp, tweet, Fly, housefly
+Horse, Neigh, whinny, Clip-clop, Animal
+Domestic animals, pets, Dog, Animal, Whimper (dog)
+Horse, Neigh, whinny, Speech, Animal
+Bird, Bird vocalization, bird call, bird song, Coo, Pigeon, dove
+Cat, Domestic animals, pets, Caterwaul, Animal, Inside, large room or hall
+Cat, Purr, Speech
+Theme music, Horse, Music, Speech, Animal
+Domestic animals, pets, Squeak, Bow-wow, Dog, Animal, Whimper (dog)
+Domestic animals, pets, Speech, Dog, Animal, Whimper (dog)
+Cough, Cat, Domestic animals, pets, Animal
+Horse, Neigh, whinny, Clip-clop, Animal
+Domestic animals, pets, Speech, Dog, Growling, Animal, Inside, small room
+Horse, Speech
+Bird, Turkey, Bird vocalization, bird call, bird song, Fowl, Gobble
+Horse, Clip-clop, Speech, Animal
+Horse, Music, Neigh, whinny, Clip-clop, Speech, Animal
+Horse, Neigh, whinny, Animal
+Horse, Neigh, whinny
+Bird, Bird vocalization, bird call, bird song, Chirp, tweet, Coo, Pigeon, dove
+Cat, Domestic animals, pets, Meow, Speech, Animal
+Horse, Music, Clip-clop, Speech
+Bird, Pour
+Cough, Cat, Domestic animals, pets, Speech, Animal, Breathing
+Cat, Domestic animals, pets, Meow, Animal
+Trickle, dribble, Bow-wow, Dog, Animal
+Bird, Bird vocalization, bird call, bird song, Hoot, Owl
+Bird, Bird vocalization, bird call, bird song, Chirp, tweet, Hoot, Owl
+Laughter, Cat, Domestic animals, pets, Meow, Snicker, Speech
+Laughter, Domestic animals, pets, Speech, Dog, Growling, Animal
+Horse, Music, Neigh, whinny, Speech, Animal
+Cat, Domestic animals, pets, Meow, Caterwaul, Speech, Animal
+Horse, Clip-clop, Animal
+Bird, Bird vocalization, bird call, bird song, Hoot, Owl
+Cat, Purr, Domestic animals, pets, Animal
+Bird, Turkey, Bird vocalization, bird call, bird song, Fowl, Chirp, tweet, Gobble

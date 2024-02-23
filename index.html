@@ -42,50 +42,18 @@
 
         /* table of contents */
 
-        @media (max-width: 1000px) {
-            d-contents {
-                justify-self: start;
-                align-self: start;
-                grid-column-start: 2;
-                grid-column-end: 6;
-                padding-bottom: 0.5em;
-                margin-bottom: 1em;
-                padding-left: 0.25em;
-                border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-                border-bottom-width: 1px;
-                border-bottom-style: solid;
-                border-bottom-color: rgba(0, 0, 0, 0.1);
-            }
-        }
-
-        @media (min-width: 1000px) {
-            d-contents {
-                align-self: start;
-                grid-column-start: 1;
-                grid-column-end: 4;
-                justify-self: end;
-                padding-right: 3em;
-                padding-left: 2em;
-                border-right: 1px solid rgba(0, 0, 0, 0.1);
-                border-right-width: 1px;
-                border-right-style: solid;
-                border-right-color: rgba(0, 0, 0, 0.1);
-            }
-        }
-
-        @media (max-width: 1300px) {
-            d-contents {
-                display: none;
-            }
-        }
 
         b i {
             display: inline;
         }
 
+        .abstract {
+            grid-column: 3 / -2;
+        }
+
         d-article d-contents {
             align-self: start;
-            grid-column: 1 / 4;
+            grid-column-start: 1;
             grid-row: auto / span 4;
             justify-self: end;
             margin-top: 0em;
@@ -150,791 +118,65 @@
         d-contents nav>ul>li>a:hover {
             text-decoration: none;
         }
+        
+        @media (max-width: 1000px) {
+            .abstract {
+                grid-column: 2 / -2;
+            }
+            d-contents {
+                justify-self: start;
+                align-self: start;
+                grid-column-start: 2;
+                grid-column-end: 6;
+                padding-bottom: 0.5em;
+                margin-bottom: 1em;
+                padding-left: 0.25em;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+                border-bottom-width: 1px;
+                border-bottom-style: solid;
+                border-bottom-color: rgba(0, 0, 0, 0.1);
+            }
+        }
+
+        @media (min-width: 1000px) {
+            .abstract {
+                grid-column: 4 / -2;
+            }
+            d-contents {
+                align-self: start;
+                grid-column-start: 1;
+                grid-column-end: 4;
+                justify-self: end;
+                padding-right: 3em;
+                padding-left: 2em;
+                border-right: 1px solid rgba(0, 0, 0, 0.1);
+                border-right-width: 1px;
+                border-right-style: solid;
+                border-right-color: rgba(0, 0, 0, 0.1);
+            }
+        }
+
+        @media (max-width: 1300px) {
+            d-contents {
+                display: none;
+            }
+        }
     </style>
 </head>
 
 <body>
-    <script>
-        var interpolate = d3.scaleSequential(d3.interpolatePlasma);
-        var plasma_colors = [];
-        dark = d3.lab(interpolate(0)).l < 50;
-        for (let i = 0; i < 100; ++i) {
-            plasma_colors.push([i / 99, d3.rgb(interpolate(i / (99))).hex()]);
-        }
-
-        // load data
-        const mscoco_val_prompts_promise = fetch('./exported_data/MSCOCO-Val_size-100/prompts.txt')
-            .then(response => response.text())
-            .then(data => data.split('\n'))
-            .catch(error => console.error(error));
-
-        const mscoco_val_projections_promise = d3.csv("./exported_data/MSCOCO-Val_size-100/projections.csv");
-
-
-        const clip_loss_landscape_promise = fetch('./exported_data/MSCOCO-Val_size-5000/CLIP_loss_landscape.json')
-            .then(response => response.json())
-            .catch(error => console.error(error));
-
-        const cyclip_loss_landscape_promise = fetch('./exported_data/MSCOCO-Val_size-5000/CyCLIP_loss_landscape.json')
-            .then(response => response.json())
-            .catch(error => console.error(error));
-
-        const load_similarities_fn = function (dataset, name) {
-            return fetch('./exported_data/' + dataset + '/similarities/' + name + '.csv')
-                .then(response => response.text())
-                .then(csvData => {
-                    const rows = csvData.split('\n');
-                    const data = rows.filter(row => row.length > 1).map(row => row.split(','));
-                    return data;
-                })
-                .catch(error => console.error(error));
-        }
-
-        const load_meta_info_fn = function (dataset, name) {
-            return fetch('./exported_data/' + dataset + '/similarities/' + name + '_meta_info.json')
-                .then(response => response.json())
-                .catch(error => console.error(error));
-        }
-
-    </script>
-
+    <script src="scripts/data.js"></script>
     <script>
         // have to load it again because distill template somehow overrides plotly css
         window.onload = () => {
             var tag = document.createElement("script");
             tag.src = "./scripts/plotly-2.24.1.min.js";
             document.getElementsByTagName("head")[0].appendChild(tag);
-
+        
         }
-
-        // define widgets
-        class ModalityGapWidget {
-            constructor(title, data, width = 500, height = 400) {
-                this.div = document.createElement('div');
-                var trace1 = {
-                    name: '',
-                    x: data.distances,
-                    y: data.losses,
-                    type: 'scatter',
-                    mode: 'lines+markers',
-                    hovertemplate: 'Distance: %{x:.3f} <br>Loss: %{y:.3f}'
-                };
-
-                var layout = {
-                    xaxis: {
-                        title: 'Euclidean Distance',
-                        zeroline: false,
-                    },
-                    yaxis: {
-                        title: 'Loss',
-                    },
-                    width: width,
-                    height: height,
-                    title: title,
-                    shapes: [
-                        {
-                            type: 'line',
-                            x0: data.original_distance,
-                            x1: data.original_distance,
-                            y0: 0,
-                            y1: Math.max(...data.losses) * 1.2,
-                            line: {
-                                width: 1,
-                                dash: 'dash'
-                            }
-                        }
-                    ]
-                }
-
-                Plotly.newPlot(this.div, [trace1], layout, { displayModeBar: false });
-            }
-        }
-
-        class HoverWidget {
-            constructor(dataset_name, text_list, width = 400, height = 200) {
-                this.dataset_name = dataset_name;
-                this.text_list = text_list;
-                this.width = width;
-                this.height = height;
-
-                this.div1 = document.createElement('div');
-                this.div1.style.wordWrap = 'break-word';
-                this.div1.style.minWidth = '200px';
-                this.div1.style.marginBottom = '20px';
-                this.div2 = document.createElement('div');
-                this.div2.style.wordWrap = 'break-word';
-                this.div2.style.minWidth = '200px';
-
-                this.div = document.createElement('div');
-                // this.div.style.width = width + 'px';
-                // this.div.style.height = height + 'px';
-                this.div.appendChild(this.div1);
-                this.div.appendChild(this.div2);
-                this.div.style.maxHeight = height + 'px';
-            }
-
-            update1(type, idx) {
-                this.update(this.div1, type, idx);
-            }
-            update2(type, idx) {
-                this.update(this.div2, type, idx);
-            }
-
-            update(div, type, idx) {
-                if (type == 'image') {
-                    const img = document.createElement('img');
-                    img.src = './exported_data/' + this.dataset_name + '/images/' + idx + '.jpg';
-                    // img.width = this.width;
-                    // img.height = this.height;
-                    img.style.maxWidth = this.width / 2 + 'px';
-                    img.style.maxHeight = this.height + 'px';
-                    div.innerHTML = '';
-                    div.appendChild(img);
-                } else if (type == 'text') {
-                    div.innerHTML = this.text_list[idx];
-                } else {
-                    div.innerHTML = '';
-                }
-            }
-        }
-
-
-        class ScatterPlotWidget {
-            projection_methods = ['PCA', 'TSNE', 'UMAP'];
-
-            constructor(projection_df, model_name, selected_method = 'PCA', title = '', width = 400, height = 300) {
-                let margin_top = 30;
-                if (title == '') {
-                    margin_top = 10;
-                }
-
-                this.projection_df = projection_df;
-                this.model_name = model_name;
-                this.width = width;
-                this.height = height;
-
-                // projection method selection
-                this.method_select = document.createElement('select');
-                for (const key in this.projection_methods) {
-                    var opt = new Option(this.projection_methods[key], this.projection_methods[key])
-                    this.method_select.appendChild(opt);
-                }
-                this.method_select.selectedIndex = this.projection_methods.findIndex((value) => value == selected_method);
-                this.method_select.onchange = () => {
-                    this.update_scatter();
-                }
-
-
-                // scatter plot
-                this.scatter_div = document.createElement('div');
-                var trace1 = {
-                    name: 'image',
-                    x: Array(100).fill(0),
-                    y: Array(100).fill(0),
-                    type: 'scatter',
-                    mode: 'markers',
-                    hoverinfo: 'text',
-                    marker: {
-                        color: 'blue'
-                    }
-                };
-
-                var trace2 = {
-                    name: 'text',
-                    x: Array(100).fill(0),
-                    y: Array(100).fill(0),
-                    type: 'scatter',
-                    mode: 'markers',
-                    hoverinfo: 'text',
-                    marker: {
-                        color: 'orange'
-                    }
-                };
-
-                var trace_highlight = {
-                    name: 'hover',
-                    x: [],
-                    y: [],
-                    type: 'scatter',
-                    mode: 'markers',
-                    hoverinfo: 'text',
-                    marker: {
-                        size: 10,
-                        color: 'black'
-                    }
-                };
-                var traces = [trace1, trace2, trace_highlight];
-
-                const layout = {
-                    width: this.width,
-                    height: this.height,
-                    margin: { l: 10, r: 10, t: margin_top, b: 10 },
-                    legend: {
-                        yanchor: 'top',
-                        y: 0.99,
-                        xanchor: 'left',
-                        x: 0.01
-                    },
-                    xaxis: {
-                        tickmode: 'none',
-                        showticklabels: false,
-                        // showgrid: false,
-                        zeroline: false,
-                    },
-                    yaxis: {
-                        tickmode: 'none',
-                        showticklabels: false,
-                        // showgrid: false,
-                        zeroline: false,
-                    },
-                    title: title,
-                }
-                Plotly.newPlot(this.scatter_div, traces, layout, { modeBarButtonsToRemove: ['select2d', 'lasso2d'] }); //'pan2d','select2d','lasso2d','resetScale2d','zoomOut2d'
-
-                this.update_scatter();
-
-                this.div = document.createElement('div');
-                this.div.appendChild(this.method_select);
-                this.div.appendChild(this.scatter_div);
-
-                // TODO: when highlighting, the hover events seem to break
-                // const this_ = this;
-                // this.scatter_div.on('plotly_hover', function(data){
-                //     const idx = data.points[0].pointIndex;
-                //     this_.highlight('text', idx);
-                //     this_.highlight('image', idx);
-                // });
-                // this.scatter_div.on('plotly_unhover', function(data){
-                //     this_.highlight('reset', 0);
-                // });
-            }
-
-            get_XY_coordinates() {
-                const x_image = this.projection_df.filter((row) => row.data_type == 'image').map(row => +row[this.model_name + '_' + this.method_select.value + '_x'])
-                const y_image = this.projection_df.filter((row) => row.data_type == 'image').map(row => +row[this.model_name + '_' + this.method_select.value + '_y'])
-                const x_text = this.projection_df.filter((row) => row.data_type == 'text').map(row => +row[this.model_name + '_' + this.method_select.value + '_x'])
-                const y_text = this.projection_df.filter((row) => row.data_type == 'text').map(row => +row[this.model_name + '_' + this.method_select.value + '_y'])
-                return { x_image: x_image, y_image: y_image, x_text: x_text, y_text: y_text };
-            }
-
-            update_scatter() {
-                const coords = this.get_XY_coordinates();
-
-                let lines = []
-                for (let line_idx = 0; line_idx < coords.x_image.length; line_idx++) {
-                    const line = {
-                        name: 'connections',
-                        type: 'line',
-                        x0: coords.x_image[line_idx],
-                        y0: coords.y_image[line_idx],
-                        x1: coords.x_text[line_idx],
-                        y1: coords.y_text[line_idx],
-                        line: {
-                            width: 1,
-                            color: 'grey'
-                        }
-                    }
-                    lines.push(line);
-                }
-                Plotly.update(this.scatter_div, { 'x': [coords.x_image, coords.x_text], 'y': [coords.y_image, coords.y_text] }, { shapes: lines }, [0, 1]);
-            }
-
-            // TODO: when highlighting, the hover events seem to break
-            // highlight(mode, idx){
-            //     console.log('highlight', idx)
-            //     const coords = this.get_XY_coordinates();
-            //     let coords_x = this.scatter_div.data[2].x;
-            //     let coords_y = this.scatter_div.data[2].y;
-            //     if(mode == 'image'){
-            //         coords_x.push(coords.x_image[idx]);
-            //         coords_y.push(coords.y_image[idx]);
-            //     }else if(mode == 'text'){
-            //         coords_x.push(coords.x_text[idx]);
-            //         coords_y.push(coords.y_text[idx]);
-            //     }else{
-            //         Plotly.restyle(this.scatter_div, {'x': [[]], 'y': [[]]}, {}, [2])
-            //         return;
-            //     }
-
-            //     Plotly.restyle(this.scatter_div, {'x': [coords_x], 'y': [coords_y]}, {}, [2])
-            // }
-        }
-
-
-        class SimilarityHeatmapWidget {
-            constructor(do_cluster = false, title = '', width = 500, height = 420, z_min = null, z_max = null) {
-                this.do_cluster = do_cluster;
-
-                const data = Array.from(Array(200), () => Array(200).fill(0));
-                var trace1 = {
-                    name: '',
-                    z: data,
-                    type: 'heatmap',
-                    // hoverinfo: 'text',
-                    hovertemplate: '%{z:.3f}',
-                    colorscale: plasma_colors, //'Viridis',//'YlOrRd', 
-                    // reversescale: true
-                    zmin: z_min,
-                    zmax: z_max,
-                };
-                var traces = [trace1];
-
-                var layout = {
-                    width: width,
-                    height: height,
-                    margin: { l: 50, r: 10, t: 10, b: 25 },
-                }
-                this.heatmap_div = document.createElement('div');
-                Plotly.newPlot(this.heatmap_div, traces, layout);
-
-                this.meta_info_div = document.createElement('div');
-                this.meta_info_div.style.fontSize = '12px';
-                this.meta_info_div.style.marginLeft = '50px';
-
-                this.div = document.createElement('div');
-                if (title !== '') {
-                    const title_el = document.createElement('h4');
-                    title_el.innerHTML = title;
-                    title_el.style.marginLeft = '50px';
-                    title_el.style.marginBottom = '0px';
-                    this.div.appendChild(title_el);
-                }
-                this.div.appendChild(this.meta_info_div);
-                this.div.appendChild(this.heatmap_div);
-
-            }
-
-            _set_plotly_event() {
-                const this_ = this;
-                this.heatmap_div.on('plotly_hover', function (data) {
-                    const idx = data.points[0].pointIndex;
-                    this_.update_hoverIdx([idx]);
-                })
-            }
-
-            _get_matrix_gridlines(data) {
-                return [
-                    {
-                        type: 'line',
-                        x0: data.length / 2 - 0.5,
-                        x1: data.length / 2 - 0.5,
-                        y0: 0 - 0.5,
-                        y1: data.length - 0.5,
-                        line: {
-                            width: 1,
-                            color: 'black'
-                        }
-                    },
-                    {
-                        type: 'line',
-                        y0: data.length / 2 - 0.5,
-                        y1: data.length / 2 - 0.5,
-                        x0: 0 - 0.5,
-                        x1: data.length - 0.5,
-                        line: {
-                            width: 1,
-                            color: 'black'
-                        }
-                    },
-                ]
-            }
-
-            async update_heatmap(dataset_name, model_name, show_meta_info = true) {
-                return load_meta_info_fn(dataset_name, model_name).then(async (meta_data) => {
-                    if (show_meta_info) {
-                        this.meta_info_div.innerHTML = `Modality distance: ${meta_data.gap_distance.toFixed(2)} | Loss: ${meta_data.loss.toFixed(2)}`;
-                    }
-
-                    this.cluster_sort_idcs = meta_data.cluster_sort_idcs;
-                    this.cluster_sort_idcs_reverse = meta_data.cluster_sort_idcs_reverse;
-
-                    await load_similarities_fn(dataset_name, model_name).then((data) => {
-                        if (self.do_cluster) {
-                            var clustered_data = Array.from(Array(data.length), () => Array(data[0].length).fill(0));
-
-                            for (let i = 0; i < this.cluster_sort_idcs.length; i++) {
-                                const i_x = this.cluster_sort_idcs[i];
-                                for (let j = 0; j < this.cluster_sort_idcs.length; j++) {
-                                    const i_y = this.cluster_sort_idcs[j];
-
-                                    // sort and add to clustered array for each quadrant
-                                    clustered_data[i][j] = data[i_x][i_y];
-                                    clustered_data[i][j + this.cluster_sort_idcs.length] = data[i_x][i_y + this.cluster_sort_idcs.length];
-                                    clustered_data[i + this.cluster_sort_idcs.length][j] = data[i_x + this.cluster_sort_idcs.length][i_y];
-                                    clustered_data[i + this.cluster_sort_idcs.length][j + this.cluster_sort_idcs.length] = data[i_x + this.cluster_sort_idcs.length][i_y + this.cluster_sort_idcs.length];
-                                }
-                            }
-                            data = clustered_data;
-                        }
-
-                        const shapes = this._get_matrix_gridlines(data);
-
-                        if (this.do_cluster) {
-                            const cluster_labels = meta_data.cluster_labels;
-                            const cluster_sizes = meta_data.cluster_sizes;
-
-                            let offset = 0 - 0.5 // -0.5 because heatmap rectangles are drawn around [-0.5, 0.5]
-                            for (let i = 0; i < cluster_labels.length; i++) {
-                                const cluster_label = cluster_labels[i];
-                                const cluster_size = cluster_sizes[i];
-
-                                if (cluster_size > 5) {
-                                    let textposition = 'middle right';
-                                    if (offset < data.length / 2 / 2) {
-                                        textposition = 'middle left';
-                                    }
-                                    shapes.push(
-                                        {
-                                            type: 'rect',
-                                            x0: data.length / 2 + offset,
-                                            y0: offset,
-                                            x1: data.length / 2 + offset + cluster_size,
-                                            y1: offset + cluster_size,
-                                            label: {
-                                                text: cluster_label,
-                                                textposition: textposition,
-                                                font: { size: 10, color: 'white' },
-                                                padding: Math.log(cluster_size) * 10
-                                            },
-                                            line: {
-                                                width: 1,
-                                                color: 'white'
-                                            },
-                                        }
-                                    );
-                                }
-                                offset += cluster_size;
-                            }
-
-                        }
-                        Plotly.update(this.heatmap_div, { 'z': [data] }, {
-                            xaxis: {
-                                tickmode: 'array',
-                                ticktext: ['Image', 'Text'],
-                                tickvals: [data.length / 4, 3 * data.length / 4],
-                                fixedrange: false
-                            },
-                            yaxis: {
-                                tickmode: 'array',
-                                tickvals: [data.length / 4, 3 * data.length / 4],
-                                ticktext: ['Image', 'Text'],
-                                fixedrange: false,
-                                autorange: 'reversed',
-                            },
-                            shapes: shapes
-                        }, [0]);
-
-                        this._set_plotly_event();
-
-                    });
-                });
-
-            }
-
-            update_hoverIdx(idcs) {
-                const data = this.heatmap_div.data[0].z;
-                let shapes = this.heatmap_div.layout.shapes?.filter((shape) => shape.name !== 'hover_idx');
-                for (let i = 0; i < idcs.length; i++) {
-                    const y_idx = idcs[i][0];
-                    const x_idx = idcs[i][1];
-
-                    if (x_idx >= 0 & x_idx < data.length) {
-                        const shape = {
-                            name: 'hover_idx',
-                            type: 'line',
-                            x0: x_idx,
-                            x1: x_idx,
-                            y0: 0 - 0.5,
-                            y1: data.length - 0.5,
-                            line: {
-                                width: 1,
-                                color: 'grey'
-                            }
-                        }
-                        shapes.push(shape)
-                    }
-                    if (y_idx >= 0 & y_idx < data.length) {
-                        const shape = {
-                            name: 'hover_idx',
-                            type: 'line',
-                            y0: y_idx,
-                            y1: y_idx,
-                            x0: 0 - 0.5,
-                            x1: data.length - 0.5,
-                            line: {
-                                width: 1,
-                                color: 'grey'
-                            }
-                        }
-                        shapes.push(shape)
-                    }
-                }
-                Plotly.update(this.heatmap_div, {}, { shapes: shapes });
-            }
-
-        }
-
     </script>
+    <script src="scripts/widgets.js"></script>
 
-    <script>
-        // helper functions
-
-        function connect_scatter_hover(scatter_widget, hover_widget) {
-            scatter_widget.scatter_div.on('plotly_hover', function (data) {
-                const idx = data.points[0].pointIndex;
-                hover_widget.update1('text', idx);
-                hover_widget.update2('image', idx);
-            })
-        }
-
-        function connect_heatmap_hover(heatmap_widget, hover_widget) {
-            heatmap_widget.heatmap_div.on('plotly_hover', function (data) {
-                const idx = data.points[0].pointIndex;
-                let y_idx = idx[0];
-                let x_idx = idx[1];
-                const z_data = data.points[0].data.z;
-                let mode1 = 'text';
-                let mode2 = 'text';
-                if (x_idx < z_data.length / 2) {
-                    mode1 = 'image';
-                }
-                if (y_idx < z_data.length / 2) {
-                    mode2 = 'image';
-                }
-                x_idx = x_idx % (z_data.length / 2);
-                y_idx = y_idx % (z_data.length / 2);
-
-                if (heatmap_widget.do_cluster) {
-                    y_idx = heatmap_widget.cluster_sort_idcs[y_idx];
-                    x_idx = heatmap_widget.cluster_sort_idcs[x_idx];
-                }
-
-                hover_widget.update1(mode1, x_idx);
-                hover_widget.update2(mode2, y_idx);
-            })
-        }
-
-        function connect_scatter_heatmap(scatter_widget, heatmap_widget) {
-            scatter_widget.scatter_div.on('plotly_hover', function (data) {
-                const idx = data.points[0].pointIndex;
-                heatmap_idx = idx;
-                if (heatmap_widget.do_cluster) {
-                    heatmap_idx = heatmap_widget.cluster_sort_idcs_reverse[idx];
-                }
-                heatmap_widget.update_hoverIdx([
-                    [heatmap_idx, data.points[0].data.x.length + heatmap_idx],
-                    [data.points[0].data.x.length + heatmap_idx, heatmap_idx]
-                ])
-            });
-
-            scatter_widget.scatter_div.on('plotly_unhover', function (data) {
-                heatmap_widget.update_hoverIdx([])
-            });
-
-            // TODO: when highlighting, the hover events seem to break
-            // heatmap_widget.heatmap_div.on('plotly_hover', function(data){
-            //   console.log('hi')
-            //     const idx = data.points[0].pointIndex;
-            //     let y_idx = idx[0];
-            //     let x_idx = idx[1];
-            //     const z_data = data.points[0].data.z;
-            //     let mode1 = 'text';
-            //     let mode2 = 'text';
-            //     if(x_idx < z_data.length/2){
-            //         mode1 = 'image';
-            //     }
-            //     if(y_idx < z_data.length/2){
-            //         mode2 = 'image';
-            //     }
-            //     x_idx = x_idx%(z_data.length/2);
-            //     y_idx = y_idx%(z_data.length/2);
-
-            //     if(heatmap_widget.do_cluster){
-            //       y_idx = heatmap_widget.cluster_sort_idcs[y_idx];
-            //       x_idx = heatmap_widget.cluster_sort_idcs[x_idx];
-            //     }
-
-            //     scatter_widget.highlight(mode1, x_idx);
-            //     scatter_widget.highlight(mode2, y_idx);
-            // });
-
-            // heatmap_widget.heatmap_div.on('plotly_unhover', function(data){
-            //     scatter_widget.highlight('reset', 0);
-            // });
-        }
-
-        function clip_explorer_by_model(dataset_name, model_name, el, prompts_promise, projection_promise, projection_method = 'PCA', do_cluster = false) {
-
-            if (!(el instanceof Element)) {
-                el = document.getElementById(el);
-            }
-            projection_promise.then(function (data) {
-                const heatmap_widget = new SimilarityHeatmapWidget(do_cluster = do_cluster);
-                heatmap_widget.update_heatmap(dataset_name, model_name).then(() => {
-                    heatmap_widget.div.classList.add('col-xl-5', 'col-sm-auto');
-                    el.appendChild(heatmap_widget.div)
-
-                    const scatter_widget = new ScatterPlotWidget(data, model_name, selected_method = projection_method);
-                    scatter_widget.div.classList.add('col-xl-4', 'col-sm-auto');
-                    el.appendChild(scatter_widget.div)
-
-                    connect_scatter_heatmap(scatter_widget, heatmap_widget);
-
-                    prompts_promise.then(captions => {
-                        const hover_widget = new HoverWidget(dataset_name, captions);
-                        connect_scatter_hover(scatter_widget, hover_widget)
-                        connect_heatmap_hover(heatmap_widget, hover_widget);
-                        hover_widget.div.classList.add('col-xl-3', 'col-sm-auto');
-                        el.appendChild(hover_widget.div)
-                        return captions;
-                    });
-                });
-                return data;
-            });
-        }
-
-
-        // TODO: add cluster functionality
-        const AVAILABLE_MODELS = ['CLIP', 'CyCLIP', 'CLOOB', 'CLOOB_LAION400M'];
-        function clip_explorer_widget(dataset_name, el_id, prompts_promise, projection_promise, projection_method = 'UMAP', available_models = AVAILABLE_MODELS) {
-            // init model select
-            const model_select = document.createElement('select');
-            for (const key in available_models) {
-                var opt = new Option(available_models[key], available_models[key])
-                model_select.appendChild(opt);
-            }
-            model_select.selectedIndex = 0;
-            model_select.style.marginLeft = '50px';
-            const div = document.getElementById(el_id);
-            div.appendChild(model_select);
-
-            // init modality gap checkbox
-            const close_gap = document.createElement('input');
-            close_gap.type = 'checkbox';
-            close_gap.id = el_id + '_close_gap'
-            close_gap.style = 'margin-left: 20px;'
-            const label = document.createElement('label');
-            label.setAttribute('for', close_gap.id);
-            label.textContent = 'Close modality gap';
-            label.style = 'font-size:15px; margin-left:5px;';
-            div.appendChild(close_gap);
-            div.appendChild(label);
-
-            // init cluster checkbox
-            const cluster_checkbox = document.createElement('input');
-            cluster_checkbox.type = 'checkbox';
-            cluster_checkbox.id = el_id + '_cluster'
-            cluster_checkbox.style = 'margin-left: 20px;'
-            const cluster_label = document.createElement('label');
-            cluster_label.setAttribute('for', cluster_checkbox.id);
-            cluster_label.textContent = 'Cluster matrix by similarity';
-            cluster_label.style = 'font-size:15px; margin-left:5px;';
-            div.appendChild(cluster_checkbox);
-            div.appendChild(cluster_label);
-
-
-            // init explorer div
-            const explorer_div = document.createElement('div');
-            explorer_div.style = 'display: flex;'
-            explorer_div.classList.add('row', 'd-flex', 'justify-content-center');
-            div.appendChild(explorer_div);
-
-            // handle UI changes
-            const update_explorer = () => {
-                explorer_div.innerHTML = ''
-                let model_name = model_select.value;
-                if (close_gap.checked) {
-                    model_name += '_nogap';
-                }
-                clip_explorer_by_model(dataset_name, model_name, explorer_div, prompts_promise, projection_promise, projection_method, do_cluster = cluster_checkbox.checked)
-            };
-            model_select.onchange = update_explorer;
-            close_gap.onchange = update_explorer;
-            cluster_checkbox.onchange = update_explorer;
-
-            update_explorer();
-
-        }
-
-        clip_comparer = (models, prompts_promise, dataset_name, el_id, z_min = null, z_max = null) => {
-            prompts_promise.then(async captions => {
-                let heatmap_widgets = {}
-
-                function highlight_hover(data) {
-                    for (const key in heatmap_widgets) {
-                        if (Object.hasOwnProperty.call(heatmap_widgets, key)) {
-                            const element = heatmap_widgets[key];
-                            const idx = data.points[0].pointIndex;
-                            element.update_hoverIdx([idx]);
-                        }
-                    }
-                }
-
-                const hover_widget = new HoverWidget(dataset_name, captions);
-
-                for (const key in models) {
-                    const model = models[key];
-                    heatmap_widgets[model] = new SimilarityHeatmapWidget(do_cluster = false, title = model, width = 500, height = 420, z_min = z_min, z_max = z_max);
-                    await heatmap_widgets[model].update_heatmap(dataset_name, model, show_meta_info = false);
-                    heatmap_widgets[model].div.classList.add('col-md-6', 'col-xs-12');
-                    document.getElementById(el_id).appendChild(heatmap_widgets[model].div)
-                    heatmap_widgets[model].heatmap_div.on('plotly_hover', highlight_hover)
-                    connect_heatmap_hover(heatmap_widgets[model], hover_widget);
-                }
-
-                document.getElementById(el_id + '-hover').appendChild(hover_widget.div)
-
-                return captions;
-            })
-        }
-
-
-        const augmented_heatmap_comparer = (augmentation, el_id) => {
-
-            const img_thumbnails = [];
-
-            const update_augmented_clip_comparer = (id) => {
-
-                img_thumbnails.forEach((img) => {
-                    img.style.borderColor = 'transparent';
-                    img.style.opacity = 0.3;
-                });
-                img_thumbnails[id].style.borderColor = 'black';
-                img_thumbnails[id].style.opacity = 0.9;
-
-                const dataset_name = augmentation + '-' + id + '_size-100';
-
-                const prompts_promise = fetch('./exported_data/' + dataset_name + '/prompts.txt')
-                    .then(response => response.text())
-                    .then(data => data.split('\n'))
-                    .catch(error => console.error(error));
-
-                document.getElementById(el_id).innerHTML = '';
-                document.getElementById(el_id + '-hover').innerHTML = '';
-
-                clip_comparer(['CLIP', 'CyCLIP', 'CLOOB', 'CLOOB_LAION400M'], prompts_promise, dataset_name, el_id, z_min = 0, z_max = 1)
-            }
-
-            document.getElementById(el_id + '-picker').innerHTML = '';
-            for (let i = 0; i < 10; i++) {
-                const img = document.createElement('img');
-                img.src = './exported_data/example_images/' + i + '.jpg';
-                img.style.cursor = 'pointer';
-                img.style.border = 'transparent 2px solid';
-                img.style.width = '100px';
-                img.style.height = '100px';
-                document.getElementById(el_id + '-picker').appendChild(img);
-                img_thumbnails.push(img);
-                img.addEventListener("click", function () {
-                    update_augmented_clip_comparer(i)
-                });
-            }
-
-            update_augmented_clip_comparer(0);
-
-        }
-
-    </script>
 
     <d-front-matter>
         <script id='distill-front-matter' type="text/json">{
@@ -990,7 +232,10 @@
     </d-title>
     <d-byline></d-byline>
     <d-article>
-        <!-- <d-contents>
+        <d-contents>
+            <figure style="width: 100%; padding-bottom: 3em; padding-right: 3em; padding-left: 2em;">
+                <img style="max-width: 200px;" src="exported_data/amumo.jpg" alt="Amumo Logo: A mummy disguised as a detective with a magnifying glass. Generated with Bing Create.">
+            </figure>
             <nav class="toc figcaption">
                 <h4>Contents</h4>
                 <div><a href="#section-introduction">Introduction</a></div>
@@ -1010,10 +255,10 @@
                 </ul>
                 <div><a href="#section-conclusion">Conclusion</a></div>
             </nav>
-        </d-contents> -->
-        <div class="l-page">
+        </d-contents>
+        <div class="abstract">
             <!-- style="background: #f8f8fb;"> -->
-            <h2 id="section-abstract">
+            <h2 id="section-abstract" style="margin-top: 0px;">
                 Abstract
             </h2>
             <p id="section-abstract-introduction">

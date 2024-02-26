@@ -1,0 +1,101 @@
+,id,video_id,labels,animal
+0,59,7AhpZQt1Ml0,"['Domestic animals', 'pets', 'Howl', 'Dog', 'Animal']",Dog
+1,24,N68rDUSvx9Y,"['Bird', 'Turkey', 'Bird vocalization', 'bird call', 'bird song', 'Fowl', 'Gobble']",Bird
+2,95,IzmlHf6JXFI,"['Horse', 'Neigh', 'whinny', 'Animal']",Horse
+3,49,6Kn4bXCPvaA,"['Cat', 'Domestic animals', 'pets', 'Meow', 'Caterwaul', 'Animal']",Cat
+4,14,MI6AgoqRlZg,"['Bird', 'Bird vocalization', 'bird call', 'bird song', 'Fowl', 'Crowing', 'cock-a-doodle-doo', 'Chicken', 'rooster']",Bird
+5,42,39rXWSXGOyo,"['Cat', 'Purr', 'Domestic animals', 'pets', 'Meow', 'Animal']",Cat
+6,60,7LQOu6zQjfM,"['Canidae', 'dogs', 'wolves', 'Domestic animals', 'pets', 'Pant', 'Speech', 'Dog', 'Animal']",Dog
+7,34,7MXamVgKszI,"['Cat', 'Domestic animals', 'pets', 'Meow', 'Caterwaul', 'Animal']",Cat
+8,22,8VoDhx0Zsxc,"['Bird', 'Turkey', 'Bird vocalization', 'bird call', 'bird song', 'Fowl', 'Chirp', 'tweet', 'Gobble']",Bird
+9,39,8gyY5kN5IjA,"['Cat', 'Purr', 'Domestic animals', 'pets', 'Animal']",Cat
+10,12,NxP9CfxfJxg,"['Bird', 'Turkey', 'Bird vocalization', 'bird call', 'bird song', 'Fowl', 'Chirp', 'tweet', 'Gobble']",Bird
+11,50,2rW2I6KmWhw,"['Music', 'Domestic animals', 'pets', 'Howl', 'Yip', 'Dog', 'Animal', 'Whimper (dog)']",Dog
+12,33,7CRVoUCXg_A,"['Cat', 'Domestic animals', 'pets', 'Caterwaul', 'Speech', 'Animal']",Cat
+13,69,SW0qQMAZKfo,"['Canidae', 'dogs', 'wolves', 'Howl', 'Bow-wow', 'Groan', 'Dog']",Dog
+14,37,8JgqLELdUkY,"['Cat', 'Domestic animals', 'pets', 'Meow', 'Caterwaul', 'Animal']",Cat
+15,92,9BIA1d9MOlA,"['Horse', 'Clip-clop', 'Animal']",Horse
+16,35,OV8eysG8KEk,"['Cat', 'Domestic animals', 'pets', 'Meow', 'Speech', 'Animal']",Cat
+17,65,MUJmWnjGEBk,"['Canidae', 'dogs', 'wolves', 'Domestic animals', 'pets', 'Howl', 'Speech', 'Dog', 'Animal', 'Inside', 'small room']",Dog
+18,99,AoUn8I-RtRk,"['Horse', 'Music', 'Neigh', 'whinny', 'Clip-clop', 'Speech', 'Animal']",Horse
+19,66,MaG2BHKuTD8,"['Snoring', 'Laughter', 'Domestic animals', 'pets', 'Dog', 'Animal']",Dog
+20,31,75PJeJ2hGcw,"['Cat', 'Domestic animals', 'pets', 'Meow', 'Caterwaul', 'Animal']",Cat
+21,19,SJVuopldMyU,"['Bird', 'Bird vocalization', 'bird call', 'bird song', 'Chirp', 'tweet', 'Hoot', 'Owl']",Bird
+22,84,GvRM_UnjJoE,"['Horse', 'Clip-clop', 'Animal']",Horse
+23,13,MFgB7gT-OLM,"['Bird', 'Music', 'Duck']",Bird
+24,75,-0jeONf82dE,"['Horse', 'Music', 'Neigh', 'whinny', 'Speech', 'Animal']",Horse
+25,72,8qMwRaqKt3Y,"['Domestic animals', 'pets', 'Speech', 'Dog', 'Animal', 'Whimper (dog)']",Dog
+26,28,LyIhmCTPLUc,"['Cat', 'Domestic animals', 'pets', 'Meow', 'Animal']",Cat
+27,17,M_DVTqmMne0,"['Bird', 'Bird vocalization', 'bird call', 'bird song', 'Fowl', 'Honk', 'Goose']",Bird
+28,32,7916WqcPKBA,"['Cat', 'Purr', 'Domestic animals', 'pets', 'Animal']",Cat
+29,57,DaaY_n80b2Y,"['Domestic animals', 'pets', 'Dog', 'Growling', 'Animal']",Dog
+30,63,N_bWjtccFg0,"['Domestic animals', 'pets', 'Dog', 'Growling', 'Animal']",Dog
+31,18,MabLWpJ3BuE,"['Bird', 'Duck']",Bird
+32,76,2pikqXJeOAg,"['Horse', 'Clip-clop', 'Animal']",Horse
+33,45,8ws1ligErwo,"['Cat', 'Domestic animals', 'pets', 'Meow', 'Caterwaul', 'Speech', 'Animal']",Cat
+34,46,8xoenlVVBZw,"['Cat', 'Domestic animals', 'pets', 'Meow', 'Caterwaul', 'Speech', 'Animal']",Cat
+35,88,8_2zsOKcxK0,"['Horse', 'Neigh', 'whinny', 'Speech', 'Animal']",Horse
+36,94,IlrFGNeZQdo,"['Horse', 'Music', 'Speech']",Horse
+37,9,7l_TPfOhh5c,"['Bird', 'Bird vocalization', 'bird call', 'bird song', 'Fowl', 'Crowing', 'cock-a-doodle-doo', 'Cluck', 'Chicken', 'rooster', 'Livestock', 'farm animals', 'working animals']",Bird
+38,70,8CrTpWNBiTo,"['Canidae', 'dogs', 'wolves', 'Bark', 'Domestic animals', 'pets', 'Bow-wow', 'Dog', 'Growling', 'Animal']",Dog
+39,74,Mr2kGT6i7e4,"['Canidae', 'dogs', 'wolves', 'Music', 'Domestic animals', 'pets', 'Howl', 'Speech', 'Dog', 'Animal']",Dog
+40,86,8TVOesBBLPg,"['Horse', 'Neigh', 'whinny', 'Speech', 'Animal']",Horse
+41,43,3LtXT2KVI-c,"['Cat', 'Domestic animals', 'pets', 'Meow', 'Caterwaul', 'Animal']",Cat
+42,36,86p6UVFIcFI,"['Cat', 'Domestic animals', 'pets', 'Meow', 'Caterwaul']",Cat
+43,96,9mu6h8pTooE,"['Horse', 'Clip-clop', 'Speech', 'Animal']",Horse
+44,53,3qesirWAGt4,"['Canidae', 'dogs', 'wolves', 'Bark', 'Domestic animals', 'pets', 'Speech', 'Dog', 'Growling', 'Animal']",Dog
+45,6,hIqYFdJ9v0o,"['Bird', 'Bird vocalization', 'bird call', 'bird song', 'Coo', 'Pigeon', 'dove']",Bird
+46,15,MMUQckEa_ME,"['Bird', 'Turkey', 'Bird vocalization', 'bird call', 'bird song', 'Fowl', 'Gobble']",Bird
+47,48,6FUmapkqPn0,"['Cat', 'Domestic animals', 'pets', 'Caterwaul', 'Animal']",Cat
+48,82,OYWhhc1k8sI,"['Horse', 'Music', 'Animal']",Horse
+49,71,8TWtLCjUI5I,"['Bark', 'Bow-wow', 'Dog', 'Animal']",Dog
+50,51,2tBRn4xKmzM,"['Domestic animals', 'pets', 'Speech', 'Dog', 'Animal', 'Whimper (dog)']",Dog
+51,79,hMsu6w5Ay44,"['Horse', 'Walk', 'footsteps', 'Clip-clop', 'Animal']",Horse
+52,55,7-htobm4qu0,"['Domestic animals', 'pets', 'Bow-wow', 'Speech', 'Dog', 'Animal', 'Whimper (dog)']",Dog
+53,58,75bMAERnvng,"['Domestic animals', 'pets', 'Dog', 'Whimper (dog)']",Dog
+54,73,MgD5JedaXGs,"['Bark', 'Domestic animals', 'pets', 'Squeak', 'Dog', 'Animal']",Dog
+55,11,7uifiqanNoM,"['Bird', 'Turkey', 'Bird vocalization', 'bird call', 'bird song', 'Fowl', 'Gobble']",Bird
+56,98,LJbM0DMRM4Q,"['Horse', 'Clip-clop', 'Speech', 'Animal']",Horse
+57,61,7uK5ctEget0,"['Babbling', 'Domestic animals', 'pets', 'Dog', 'Animal']",Dog
+58,16,MYxmiVKdL3w,"['Bird', 'Squawk', 'Speech']",Bird
+59,7,7JqR7JlgRlE,"['Bird', 'Turkey', 'Bird vocalization', 'bird call', 'bird song', 'Fowl', 'Gobble']",Bird
+60,56,FrlIx-FwBO0,"['Music', 'Domestic animals', 'pets', 'Pant', 'Dog', 'Animal']",Dog
+61,30,DjcbzPb1_Tk,"['Cat', 'Purr', 'Domestic animals', 'pets', 'Animal']",Cat
+62,8,7gyHD8EZcAs,"['Bird', 'Bird vocalization', 'bird call', 'bird song', 'Coo', 'Pigeon', 'dove']",Bird
+63,0,-116CjQ3MAg,"['Bird', 'White noise', 'Outside', 'urban or manmade']",Bird
+64,1,GCo2uCLXvhk,"['Bird', 'Bee', 'wasp', 'etc.', 'Bird vocalization', 'bird call', 'bird song', 'Insect', 'Chirp', 'tweet', 'Fly', 'housefly']",Bird
+65,80,DegSrwcSF3k,"['Horse', 'Neigh', 'whinny', 'Clip-clop', 'Animal']",Horse
+66,67,SC9jczwzY-k,"['Domestic animals', 'pets', 'Dog', 'Animal', 'Whimper (dog)']",Dog
+67,87,8YSDo1wTo3M,"['Horse', 'Neigh', 'whinny', 'Speech', 'Animal']",Horse
+68,21,Sa_ovp-50Tc,"['Bird', 'Bird vocalization', 'bird call', 'bird song', 'Coo', 'Pigeon', 'dove']",Bird
+69,29,MF88IYF2MHY,"['Cat', 'Domestic animals', 'pets', 'Caterwaul', 'Animal', 'Inside', 'large room or hall']",Cat
+70,27,Fup02r6oh-8,"['Cat', 'Purr', 'Speech']",Cat
+71,97,ALNk7_3zj68,"['Theme music', 'Horse', 'Music', 'Speech', 'Animal']",Horse
+72,54,6uxFXWS8xvw,"['Domestic animals', 'pets', 'Squeak', 'Bow-wow', 'Dog', 'Animal', 'Whimper (dog)']",Dog
+73,52,3TyBFLPxDw8,"['Domestic animals', 'pets', 'Speech', 'Dog', 'Animal', 'Whimper (dog)']",Dog
+74,40,NjazulpHxNY,"['Cough', 'Cat', 'Domestic animals', 'pets', 'Animal']",Cat
+75,77,6zKhO6NCchE,"['Horse', 'Neigh', 'whinny', 'Clip-clop', 'Animal']",Horse
+76,64,NuvgBjmUW1g,"['Domestic animals', 'pets', 'Speech', 'Dog', 'Growling', 'Animal', 'Inside', 'small room']",Dog
+77,85,828eRs9Gb7A,"['Horse', 'Speech']",Horse
+78,5,MVDR9JeJA6o,"['Bird', 'Turkey', 'Bird vocalization', 'bird call', 'bird song', 'Fowl', 'Gobble']",Bird
+79,83,MUC3GjvBI7I,"['Horse', 'Clip-clop', 'Speech', 'Animal']",Horse
+80,78,M4wVyP9D5Qk,"['Horse', 'Music', 'Neigh', 'whinny', 'Clip-clop', 'Speech', 'Animal']",Horse
+81,90,Mtkhv22SoZ8,"['Horse', 'Neigh', 'whinny', 'Animal']",Horse
+82,81,7PxNzIkuptI,"['Horse', 'Neigh', 'whinny']",Horse
+83,10,7oNljd7R1f8,"['Bird', 'Bird vocalization', 'bird call', 'bird song', 'Chirp', 'tweet', 'Coo', 'Pigeon', 'dove']",Bird
+84,41,2yX9079mMB4,"['Cat', 'Domestic animals', 'pets', 'Meow', 'Speech', 'Animal']",Cat
+85,93,JqfJ5xfAMbE,"['Horse', 'Music', 'Clip-clop', 'Speech']",Horse
+86,3,6xY_cTzrob0,"['Bird', 'Pour']",Bird
+87,26,39IZIbmQPzA,"['Cough', 'Cat', 'Domestic animals', 'pets', 'Speech', 'Animal', 'Breathing']",Cat
+88,44,UfMr4FFsS28,"['Cat', 'Domestic animals', 'pets', 'Meow', 'Animal']",Cat
+89,62,NZH_tmf9kRM,"['Trickle', 'dribble', 'Bow-wow', 'Dog', 'Animal']",Dog
+90,4,6xlLMbiEsIM,"['Bird', 'Bird vocalization', 'bird call', 'bird song', 'Hoot', 'Owl']",Bird
+91,23,N0jVgldCwAk,"['Bird', 'Bird vocalization', 'bird call', 'bird song', 'Chirp', 'tweet', 'Hoot', 'Owl']",Bird
+92,25,2tXE7snh6Ak,"['Laughter', 'Cat', 'Domestic animals', 'pets', 'Meow', 'Snicker', 'Speech']",Cat
+93,68,SUFOgc9Pkd8,"['Laughter', 'Domestic animals', 'pets', 'Speech', 'Dog', 'Growling', 'Animal']",Dog
+94,91,3GbIhQLCH9I,"['Horse', 'Music', 'Neigh', 'whinny', 'Speech', 'Animal']",Horse
+95,38,8ewn7JCJbEM,"['Cat', 'Domestic animals', 'pets', 'Meow', 'Caterwaul', 'Speech', 'Animal']",Cat
+96,89,8mhecLr6Veo,"['Horse', 'Clip-clop', 'Animal']",Horse
+97,2,GESrnHr-SjU,"['Bird', 'Bird vocalization', 'bird call', 'bird song', 'Hoot', 'Owl']",Bird
+98,47,IcDsqSC5Z-c,"['Cat', 'Purr', 'Domestic animals', 'pets', 'Animal']",Cat
+99,20,SVoLykPMwAs,"['Bird', 'Turkey', 'Bird vocalization', 'bird call', 'bird song', 'Fowl', 'Chirp', 'tweet', 'Gobble']",Bird

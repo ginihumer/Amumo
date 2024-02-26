@@ -1123,7 +1123,7 @@ ${math}
     if (!title) {
       title = dom.createElement('d-title');
       body.insertBefore(title, byline);
-    }
+    } 
 
     let h1 = title.querySelector('h1');
     if (!h1) {

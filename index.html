@@ -27,17 +27,18 @@
 
     <link href="styles/bootstrap.min.css" rel="stylesheet">
     <style>
-        .fake-img {
-            background: #bbb;
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            box-shadow: 0 0px 4px rgba(0, 0, 0, 0.1);
-            margin-bottom: 12px;
-        }
 
         /* title */
-        d-title h1,
-        d-title p {
-            grid-column: page;
+        d-title {
+            /* grid-column-gap: 10px; */
+        }
+
+        d-title div {
+            grid-column: 4 / 11;
+        }
+
+        d-title figure {
+            grid-column: 11 / span 3;
         }
 
         /* table of contents */
@@ -61,6 +62,10 @@
             padding-left: 2em;
             padding-top: 1em;
             border-right: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        d-article hr{
+            margin-top: 30px;
+            margin-bottom: 30px;
         }
 
         d-contents a:hover {
@@ -122,7 +127,7 @@
         
         @media (max-width: 1000px) {
             .abstract {
-                grid-column: 2 / -2;
+                grid-column: page;
             }
             d-contents {
                 justify-self: start;
@@ -136,6 +141,14 @@
                 border-bottom-width: 1px;
                 border-bottom-style: solid;
                 border-bottom-color: rgba(0, 0, 0, 0.1);
+            }
+            
+            d-title div {
+                grid-column: page;
+            }
+
+            d-title figure {
+                display: none;
             }
         }
 
@@ -227,9 +240,15 @@
     }</script>
     </d-front-matter>
     <d-title>
-        <p>
-            Exploring the Latent Space of CLIP-like Models Using Inter-Modal Pairs
-        </p>
+        <div>
+            <h1>Understanding and Comparing Multi-Modal Models</h1>
+            <p>
+                Exploring the Latent Space of CLIP-like Models Using Inter-Modal Pairs
+            </p>
+        </div>
+        <figure style="width: 200px;">
+            <img style="width: 100%;" src="exported_data/amumo.jpg" alt="Amumo Logo: A mummy disguised as a detective with a magnifying glass. Generated with Bing Create.">
+        </figure>
     </d-title>
     <d-byline></d-byline>
     <d-article>
@@ -237,8 +256,8 @@
             <nav class="toc figcaption">
                 <h4>Contents</h4>
                 <div><a href="#section-introduction">Introduction</a></div>
-                <div><a href="#section-modality-gap-clip">CLIP and its Modality Gap</a></div>
-                <div><a href="#section-other-models">Other CLIP-Like Models</a></div>
+                <div><a href="#section-modality-gap-clip">CLIP and Its Modality Gap</a></div>
+                <div><a href="#section-other-models">What About Other CLIP-Like Models?</a></div>
                 <ul>
                     <li><a href="#section-modality-gap-cyclip">CyCLIP</a></li>
                     <li><a href="#section-reason">Why Do We Want to Close the Modality Gap?</a></li>
@@ -248,10 +267,23 @@
                 <div><a href="#section-amumo">Converting the Technique into a Tool</a></div>
                 <ul>
                     <li><a href="#section-amumo-subsets">Identifying Data Subsets</a></li>
-                    <li><a href="#section-amumo-diffusiondb">Analyze DiffusionDB Dataset</a></li>
+                    <li><a href="#section-amumo-diffusiondb">Analyzing the DiffusionDB Dataset</a></li>
+                    <li><a href="#section-amumo-imagebind">Analyzing ImageBind Using Text-Image-Audio Data</a></li>
+                    <li><a href="#section-amumo-cloome">Analyzing CLOOME Using Microscopy-Molecule Data</a></li>
                     <li><a href="#section-amumo-augmentation">Augmentation Analyses</a></li>
                 </ul>
                 <div><a href="#section-conclusion">Conclusion</a></div>
+                <div><a href="#section-acknowledgements">Acknowledgements</a></div>
+                <div><a href="#section-researchmaterial">Research Material Statements</a></div>
+                <div><a href="#section-reproduce">Reproducibility</a></div>
+                <div><a href="#section-authorship">Authorship</a></div>
+                <div><a href="#section-conflict">Conflict of Interest</a></div>
+                <div><a href="#section-appendix">Appendix</a></div>
+                <ul>
+                    <li><a href="#section-lg-dataset">Closing the Gap Using a Larger Dataset</a></li>
+                    <li><a href="#section-lg-dataset-visually">Visually Closing the Modality Gap</a></li>
+                </ul>
+                
             </nav>
             <!-- <figure style="width: 100%; padding-top: 3em; padding-right: 3em; padding-left: 2em;">
                 <img style="max-width: 200px;" src="exported_data/amumo.jpg" alt="Amumo Logo: A mummy disguised as a detective with a magnifying glass. Generated with Bing Create.">
@@ -840,7 +872,7 @@
         </script>
 
 
-        <h3 id="section-amumo-diffusiondb">Analyze DiffusionDB Dataset</h3>
+        <h3 id="section-amumo-diffusiondb">Analyzing the DiffusionDB Dataset</h3>
         <p>
             We would like to see what the models’ latent-space embeddings look like for a dataset that is not (entirely)
             procured by humans. To this end, we use DiffusionDB<d-cite key="wang_diffusiondb_2023"></d-cite>, a
@@ -892,7 +924,7 @@
 
 
 
-        <h3 id="section-amumo-imagebind">Analyze ImageBind</h3>
+        <h3 id="section-amumo-imagebind">Analyzing ImageBind Using Text-Image-Audio Data</h3>
         <p>
             So far, we have looked into models trained to map two modalities to a shared space. ImageBind is a model
             trained to embed six different modalities<d-cite key="girdhar_imagebind_2023"></d-cite>: images, text, audio, depth, thermal, and
@@ -954,7 +986,7 @@
         </p>
 
 
-        <h3 id="section-amumo-cloome">Analyze CLOOME</h3>
+        <h3 id="section-amumo-cloome">Analyzing CLOOME Using Microscopy-Molecule Data</h3>
         <p>
             <d-cite key="sanchez-fernandez_contrastive_2022"></d-cite>...
         </p>
@@ -1131,7 +1163,7 @@
             article or as a starting point for your own investigations.
         </p>
 
-        <h2 id="section-researchmaterial">Authorship</h2>
+        <h2 id="section-authorship">Authorship</h2>
         <p>
             <b>Christina Humer</b>: Conceptualization, Software, Validation, Investigation, Writing - Original Draft,
             Visualization. <b>Elisabeth Rumetshofer</b>: Investigation, Resources, Writing - Original Draft. <b>Ana Sánchez</b>:

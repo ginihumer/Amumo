@@ -207,13 +207,16 @@ class ScatterPlotWidget {
         this.div.appendChild(this.scatter_div);
 
         const this_ = this;
-        this.scatter_div.on('plotly_hover', function(data){
+        const evnt = function(data){
+            this_.highlight('reset', 0);
             const idx = data.points[0].pointIndex;
             for (let modality in this_.modalities) {
                 this_.highlight(modality, idx);
             }
             this_.highlight('connection_line', idx);
-        });
+        };
+        this.scatter_div.on('plotly_hover', evnt);
+        this.scatter_div.on('plotly_click', evnt);
         this.scatter_div.on('plotly_unhover', function(data){
             this_.highlight('reset', 0);
         });
@@ -378,10 +381,12 @@ class SimilarityHeatmapWidget {
 
     _set_plotly_event() {
         const this_ = this;
-        this.heatmap_div.on('plotly_hover', function (data) {
+        const evnt = function (data) {
             const idx = data.points[0].pointIndex;
             this_.update_hoverIdx([idx]);
-        })
+        };
+        this.heatmap_div.on('plotly_hover', evnt)
+        this.heatmap_div.on('plotly_click', evnt)
     }
 
     _get_matrix_gridlines(data) {
@@ -582,7 +587,7 @@ class SimilarityHeatmapWidget {
 // helper functions
 
 function connect_scatter_hover(scatter_widget, hover_widget) {
-    scatter_widget.scatter_div.on('plotly_hover', function (data) {
+    const evnt = function (data) {
         const idx = data.points[0].pointIndex;
 
         if(Object.keys(scatter_widget.modalities).includes('Text'))
@@ -599,11 +604,14 @@ function connect_scatter_hover(scatter_widget, hover_widget) {
             hover_widget.update3('Image', idx);
         else
             hover_widget.update3('', 0);
-    })
+    };
+
+    scatter_widget.scatter_div.on('plotly_hover', evnt)
+    scatter_widget.scatter_div.on('plotly_click', evnt)
 }
 
 function connect_heatmap_hover(heatmap_widget, hover_widget) {
-    heatmap_widget.heatmap_div.on('plotly_hover', function (data) {
+    const evnt = function (data) {
         const idx = data.points[0].pointIndex;
         let y_idx = idx[0];
         let x_idx = idx[1];
@@ -625,11 +633,14 @@ function connect_heatmap_hover(heatmap_widget, hover_widget) {
         hover_widget.update1(mode_x, x_idx);
         hover_widget.update2(mode_y, y_idx);
         hover_widget.update3('', 0);
-    })
+    };
+    heatmap_widget.heatmap_div.on('plotly_hover', evnt)
+    heatmap_widget.heatmap_div.on('plotly_click', evnt)
 }
 
 function connect_scatter_heatmap(scatter_widget, heatmap_widget) {
-    scatter_widget.scatter_div.on('plotly_hover', function (data) {
+    const scatter_evnt = function (data) {
+        heatmap_widget.update_hoverIdx([])
         const idx = data.points[0].pointIndex;
         heatmap_idx = idx;
         if (heatmap_widget.do_cluster) {
@@ -640,13 +651,17 @@ function connect_scatter_heatmap(scatter_widget, heatmap_widget) {
             hover_idcs.push([scatter_widget.size * i + heatmap_idx, scatter_widget.size * i + heatmap_idx]);
         }
         heatmap_widget.update_hoverIdx(hover_idcs)
-    });
+    }
+    scatter_widget.scatter_div.on('plotly_hover', scatter_evnt);
+    scatter_widget.scatter_div.on('plotly_click', scatter_evnt);
 
     scatter_widget.scatter_div.on('plotly_unhover', function (data) {
         heatmap_widget.update_hoverIdx([])
     });
 
-    heatmap_widget.heatmap_div.on('plotly_hover', function(data){
+    const heatmap_evnt = function(data){
+        scatter_widget.highlight('reset', 0);
+
         const idx = data.points[0].pointIndex;
         let y_idx = idx[0];
         let x_idx = idx[1];
@@ -670,7 +685,9 @@ function connect_scatter_heatmap(scatter_widget, heatmap_widget) {
         if (mode_x !== mode_y && x_idx === y_idx){
             scatter_widget.highlight('connection_line', y_idx);
         }
-    });
+    };
+    heatmap_widget.heatmap_div.on('plotly_hover', heatmap_evnt);
+    heatmap_widget.heatmap_div.on('plotly_click', heatmap_evnt);
 
     heatmap_widget.heatmap_div.on('plotly_unhover', function(data){
         scatter_widget.highlight('reset', 0);
@@ -846,6 +863,7 @@ clip_comparer = (models, prompts_promise, dataset_name, el_id, z_min = null, z_m
             heatmap_widgets[model].div.classList.add('col-md-6', 'col-xs-12');
             document.getElementById(el_id).appendChild(heatmap_widgets[model].div)
             heatmap_widgets[model].heatmap_div.on('plotly_hover', highlight_hover)
+            heatmap_widgets[model].heatmap_div.on('plotly_click', highlight_hover)
             connect_heatmap_hover(heatmap_widgets[model], hover_widget);
         }
 

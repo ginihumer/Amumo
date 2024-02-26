@@ -59,6 +59,7 @@
             margin-top: 0em;
             padding-right: 3em;
             padding-left: 2em;
+            padding-top: 1em;
             border-right: 1px solid rgba(0, 0, 0, 0.1);
         }
 
@@ -233,9 +234,6 @@
     <d-byline></d-byline>
     <d-article>
         <d-contents>
-            <figure style="width: 100%; padding-bottom: 3em; padding-right: 3em; padding-left: 2em;">
-                <img style="max-width: 200px;" src="exported_data/amumo.jpg" alt="Amumo Logo: A mummy disguised as a detective with a magnifying glass. Generated with Bing Create.">
-            </figure>
             <nav class="toc figcaption">
                 <h4>Contents</h4>
                 <div><a href="#section-introduction">Introduction</a></div>
@@ -255,6 +253,9 @@
                 </ul>
                 <div><a href="#section-conclusion">Conclusion</a></div>
             </nav>
+            <!-- <figure style="width: 100%; padding-top: 3em; padding-right: 3em; padding-left: 2em;">
+                <img style="max-width: 200px;" src="exported_data/amumo.jpg" alt="Amumo Logo: A mummy disguised as a detective with a magnifying glass. Generated with Bing Create.">
+            </figure> -->
         </d-contents>
         <div class="abstract">
             <!-- style="background: #f8f8fb;"> -->
@@ -933,6 +934,20 @@
             For analyzing the implicit pairing of text and audio modalities, we use a subset of the AudioSet (cite)
             dataset that contains animal sounds of birds, cats, dogs, and horses.
         </p>
+
+        <figure style="grid-column: screen;">
+            <div id="clip-explorer-imagebind-textimageaudio" class="container"></div>
+        </figure>
+        <script>
+            const triplet_prompts_promise = fetch('./exported_data/Triplet_size-100/prompts.txt')
+                .then(response => response.text())
+                .then(data => data.split('\n'))
+                .catch(error => console.error(error));
+
+            const triplet_projections_promise = d3.csv("./exported_data/Triplet_size-100/projections.csv");
+
+            clip_explorer_widget('Triplet_size-100', "clip-explorer-imagebind-textimageaudio", triplet_prompts_promise, triplet_projections_promise, 'PCA', ["ImageBind"], {"Image": null, "Text": null, "Audio": null})
+        </script>
 
         <p>
             ...

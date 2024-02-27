@@ -954,19 +954,17 @@
             clip_explorer_widget('MSCOCO-Val_size-100', "clip-explorer-imagebind-textimage", mscoco_val_prompts_promise, mscoco_val_projections_promise, 'PCA', ["ImageBind", ...AVAILABLE_MODELS])
         </script>
 
-        <p>
-            ...TODO...
-        </p>
-
 
         <h4 id="section-amumo-imagebind-textimageaudio">
             Text + Image + Audio
         </h4>
         <p>
-            For analyzing the implicit pairing of text and audio modalities, we use a subset of the AudioSet (cite)
-            dataset that contains animal sounds of birds, cats, dogs, and horses.
+            For analyzing the implicit pairing of image, text, and audio modalities, we use a subset of the AudioSet (TODO: cite) dataset that contains animal sounds of birds, cats, dogs, and horses. The AudioSet dataset only contains text and audio pairs. However, each instance also contains the YouTube ID from which the audio data was retrieved. We use this ID to retrieve thumbnail images for each audio instance. This results in a triplet dataset of text-audio-image pairs that we can analyze with Amumo. 
         </p>
-
+        <p>
+            Here we can see that the in-modal similarities of images and texts are very pronounced (similar to how the CLIP similarities of images and texts look), which indicates a modality gap. The audio embeddings, on the other hand, have a lower overall similarity to other audio embeddings. In particular, similarities between audio embeddings and embeddings from other modalities seem more evenly distributed, which we previously saw in models that do not suffer from a modality gap. This could indicate that a modality gap's severity depends on the modality type. Another reason could be the availability and quality of training data for each modality.
+        </p>
+        
         <figure style="grid-column: screen;">
             <div id="clip-explorer-imagebind-textimageaudio" class="container"></div>
         </figure>
@@ -982,13 +980,19 @@
         </script>
 
         <p>
-            ...
+            When clustering the similarity matrix by text embeddings, four main clusters emerge—one for each type of animal included in the dataset—and one smaller cluster that contains a mix of cats and dogs labeled “domestic animals”. 
+        </p>
+        <p>
+            We can also use the audio-to-audio similarities for clustering the heatmap. Interestingly, the audio embeddings seem to be very similar among all instances of cats and dogs. These instances are clustered under the label “domestic animals | pets”. When listening to the audio samples in this cluster, it becomes apparent that most instances contain human chatter. 
         </p>
 
 
         <h3 id="section-amumo-cloome">Analyzing CLOOME Using Microscopy-Molecule Data</h3>
         <p>
-            <d-cite key="sanchez-fernandez_contrastive_2022"></d-cite>...
+            In this experiment, we focus on analyzing the modality gap between microscopy images and molecular structures. We visualized the resulting embeddings from CLOOME<d-cite key="sanchez-fernandez_contrastive_2022"></d-cite>, an adapted version of CLIP and CLOOB for this kind of data. Both models were trained with an image resolution of 520x520 and structure-based vector representation (ECFP fingerprint). In both cases, images and molecules from a hold-out test set were used for this experiment. As it can be observed in the heatmap, for both models the molecule-to-molecule distances seem to be the most pronounced. Also, for the CLOOB-based model, the average distance between modalities is lower.
+        </p>
+        <p>
+            Interestingly, the modality gap for CLIP trained with microscopy images and molecular structures is not as pronounced as for natural image and text pairs. For the latter, it can be observed in the dimensionality reduction plots (cite figure) that the sets of samples corresponding to each modality are parallel to each other, while for the former this is not the case. This could be caused by the fact that CLIP was trained with a considerably larger dataset than CLOOME. Hence, if a molecule and its corresponding image are similar enough to a pair of samples in the training set, it would be easier for the model to have learned to encode them with high similarity. However, this hypothesis needs to be further studied.
         </p>
 
 

@@ -840,7 +840,12 @@ function clip_explorer_widget(dataset_name, el_id, prompts_promise, projection_p
 
 }
 
-clip_comparer = (models, prompts_promise, dataset_name, el_id, z_min = null, z_max = null) => {
+clip_comparer = (models, prompts_promise, dataset_name, el_id, z_min = null, z_max = null, show_meta_info = false) => {
+    // models can either be a list of strings or an object of {model_title: model}
+    if(models instanceof Array){
+        models = models.reduce((a, v) => ({ ...a, [v]: v}), {}) 
+    }
+    
     prompts_promise.then(async captions => {
         let heatmap_widgets = {}
 
@@ -856,15 +861,16 @@ clip_comparer = (models, prompts_promise, dataset_name, el_id, z_min = null, z_m
 
         const hover_widget = new HoverWidget(dataset_name, captions);
 
-        for (const key in models) {
-            const model = models[key];
-            heatmap_widgets[model] = new SimilarityHeatmapWidget(do_cluster = false, title = model, width = 500, height = 420, z_min = z_min, z_max = z_max);
-            await heatmap_widgets[model].update_heatmap(dataset_name, model, show_meta_info = false);
-            heatmap_widgets[model].div.classList.add('col-md-6', 'col-xs-12');
-            document.getElementById(el_id).appendChild(heatmap_widgets[model].div)
-            heatmap_widgets[model].heatmap_div.on('plotly_hover', highlight_hover)
-            heatmap_widgets[model].heatmap_div.on('plotly_click', highlight_hover)
-            connect_heatmap_hover(heatmap_widgets[model], hover_widget);
+        for (const model_title in models) {
+            const model = models[model_title];
+            heatmap_widgets[model_title] = new SimilarityHeatmapWidget(do_cluster = false, title = model_title, width = 500, height = 420, z_min = z_min, z_max = z_max);
+            await heatmap_widgets[model_title].update_heatmap(dataset_name, model, show_meta_info = show_meta_info);
+            heatmap_widgets[model_title].div.classList.add('col-md-6', 'col-xs-12');
+            heatmap_widgets[model_title].div.style.marginTop = '10px';
+            document.getElementById(el_id).appendChild(heatmap_widgets[model_title].div)
+            heatmap_widgets[model_title].heatmap_div.on('plotly_hover', highlight_hover)
+            heatmap_widgets[model_title].heatmap_div.on('plotly_click', highlight_hover)
+            connect_heatmap_hover(heatmap_widgets[model_title], hover_widget);
         }
 
         document.getElementById(el_id + '-hover').appendChild(hover_widget.div)

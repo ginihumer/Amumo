@@ -533,7 +533,7 @@
         <p>
             According to Goel et al.<d-cite key="goel_cyclip_2022"></d-cite> using CLIP-generated image-text embeddings
             interchangeably (e.g., for Language-guided image generation) is suboptimal because the embeddings are–in
-            practice–not aligned. They propose an augmentation of the InfoNCE loss used to optimize CLIP that adds two
+            practice–not aligned. They propose an augmentation of the InfoNCE loss<d-cite key="oord_representation_2019"></d-cite> used to optimize CLIP that adds two
             regularization terms that enforce the two embedding spaces to be symmetric: one for in-modal symmetry
             (<d-math>L_I</d-math>) and one for cross-modal symmetry (<d-math>L_C</d-math>) of the similarities.
         </p>
@@ -793,6 +793,64 @@
                     title="Blog post about Hopfield Networks">https://ml-jku.github.io/hopfield-layers/</a>.</d-footnote>.
         </p>
 
+        
+        <figure style="grid-column: screen;">
+            <div class="container" id="cloob_ablation">
+                <div class="row">
+                    <div id="cloob_ablation_compare" class="col-md-10 col-xs-12 row"></div>
+                    <div id="cloob_ablation_compare-hover" class="col-md-2 col-xs-12"></div>
+                </div>
+            </div>
+        </figure>
+        <script>
+            
+            const mscoco_val_ablation_prompts_promise = fetch('./exported_data/MSCOCO-Val_size-100_CLOOB_ablation/prompts.txt')
+                .then(response => response.text())
+                .then(data => data.split('\n'))
+                .catch(error => console.error(error));
+
+            const mscoco_val_ablation_projections_promise = d3.csv("./exported_data/MSCOCO-Val_size-100_CLOOB_ablation/projections.csv");
+
+            const cloob_ablation_models = {'clip': 'Info NCE (aka CLIP)', 'clip_infoLOOB': 'Info LOOB', 'cloob_infoNCE': 'Info NCE + Hopfield', 'cloob': 'Info LOOB + Hopfield (aka CLOOB)'};
+            const cloob_ablation_variants = ['rn50_cc_epoch_31', 'rn50_cc_epoch_128', 'rn50_yfcc_epoch_28']
+
+            // const cartesian = (...a) => a.reduce((a, b) => a.flatMap(d => b.map(e => [d, e].flat())));
+            // console.log(cartesian(cloob_ablation_models, cloob_ablation_variants))
+
+            
+            const div = document.getElementById('cloob_ablation');
+            // init variant select
+            const variant_select = document.createElement('select');
+            for (const key in cloob_ablation_variants) {
+                var opt = new Option(cloob_ablation_variants[key], cloob_ablation_variants[key])
+                variant_select.appendChild(opt);
+            }
+            variant_select.id = 'cloob_ablation_variant_select';
+            variant_select.selectedIndex = 0;
+            variant_select.style.marginLeft = '5px';
+            div.prepend(variant_select);
+            
+            const label = document.createElement('label');
+            label.setAttribute('for', variant_select.id);
+            label.textContent = 'Variant:';
+            label.style = 'font-size:15px; margin-left:5px;';
+            div.prepend(label);
+            
+            
+            // handle UI changes
+            const update_comparer = () => {
+                document.getElementById("cloob_ablation_compare").innerHTML = ''
+                document.getElementById("cloob_ablation_compare-hover").innerHTML = ''
+                const ablation_models = Object.keys(cloob_ablation_models).reduce((a, v) => ({ ...a, [cloob_ablation_models[v]]: v + "_" + variant_select.value}), {});
+                clip_comparer(ablation_models, mscoco_val_ablation_prompts_promise, 'MSCOCO-Val_size-100_CLOOB_ablation', 'cloob_ablation_compare', z_min = -0.25, z_max = 1, show_meta_info = true)
+            };
+            variant_select.addEventListener("change", update_comparer);
+
+            update_comparer()
+            
+        </script>
+
+
         <h3 id="section-modality-gap-summary">Summary of Modality Gap Analysis</h3>
         <p>
             The following visualizations give an overview of the similarity heatmap for CLIP and CyCLIP before (left)
@@ -944,7 +1002,7 @@
         <p>
             Let us first look into the explicit pairing of image-text modalities using our MSCOCO dataset. Similarly to
             CLIP, ImageBind exhibits a modality gap between images and texts, which makes sense because ImageBind also
-            uses the InfoNCE loss (cite: https://arxiv.org/pdf/1807.03748.pdf ).
+            uses the InfoNCE loss<d-cite key="oord_representation_2019"></d-cite>.
         </p>
 
         <figure style="grid-column: screen;">
@@ -959,7 +1017,7 @@
             Text + Image + Audio
         </h4>
         <p>
-            For analyzing the implicit pairing of image, text, and audio modalities, we use a subset of the AudioSet (TODO: cite) dataset that contains animal sounds of birds, cats, dogs, and horses. The AudioSet dataset only contains text and audio pairs. However, each instance also contains the YouTube ID from which the audio data was retrieved. We use this ID to retrieve thumbnail images for each audio instance. This results in a triplet dataset of text-audio-image pairs that we can analyze with Amumo. 
+            For analyzing the implicit pairing of image, text, and audio modalities, we use a subset of the AudioSet<d-cite key="gemmeke_audio_2017"></d-cite> dataset that contains animal sounds of birds, cats, dogs, and horses. The AudioSet dataset only contains text and audio pairs. However, each instance also contains the YouTube ID from which the audio data was retrieved. We use this ID to retrieve thumbnail images for each audio instance. This results in a triplet dataset of text-audio-image pairs that we can analyze with Amumo. 
         </p>
         <p>
             Here we can see that the in-modal similarities of images and texts are very pronounced (similar to how the CLIP similarities of images and texts look), which indicates a modality gap. The audio embeddings, on the other hand, have a lower overall similarity to other audio embeddings. In particular, similarities between audio embeddings and embeddings from other modalities seem more evenly distributed, which we previously saw in models that do not suffer from a modality gap. This could indicate that a modality gap's severity depends on the modality type. Another reason could be the availability and quality of training data for each modality.
@@ -1137,7 +1195,7 @@
 
     <d-appendix>
 
-        <h2 id="section-acknowledgements">Acknowledgements</h2>
+        <h2 id="section-acknowledgements">Acknowledgments</h2>
         <p>
             This work was funded by the Austrian Marshall Plan Foundation under the Marshall Plan Scholarship, the
             Austrian Science Fund under grant number FWF DFH 23--N, and under the Human-Interpretable Machine Learning

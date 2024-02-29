@@ -1,0 +1,1 @@
+This dataset was extracted from [AudioSet](https://ieeexplore.ieee.org/abstract/document/7952261). We extracted 100 audio-text pairs by filtering the texts for bird, cat, dog, and horse. We then extracted thumbnails of the videos where the audio data was extracted. The video ID for each audio-text-image triplet is provided in the "info.csv" file.

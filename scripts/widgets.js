@@ -113,7 +113,7 @@ class HoverWidget {
 class ScatterPlotWidget {
     projection_methods = ['PCA', 'TSNE', 'UMAP'];
 
-    constructor(projection_df, model_name, selected_method = 'PCA', title = '', width = 400, height = 300, modalities = {"Image": null, "Text": null}) {
+    constructor(projection_df, model_name, selected_method = 'PCA', title = '', width = 400, height = 300, modalities = {"Image": "Image", "Text": "Text"}) {
         this.modalities = modalities;
         this.nr_modalities = Object.keys(modalities).length;
         this.size = 100;
@@ -122,7 +122,6 @@ class ScatterPlotWidget {
         if (title == '') {
             margin_top = 10;
         }
-
         this.projection_df = projection_df;
         this.model_name = model_name;
         this.width = width;
@@ -147,7 +146,7 @@ class ScatterPlotWidget {
         let traces = [];
         for(let i = 0; i < this.nr_modalities; i++){
             traces.push({
-                name: Object.keys(this.modalities)[i],
+                name: Object.values(this.modalities)[i],
                 x: Array(this.size).fill(0),
                 y: Array(this.size).fill(0),
                 type: 'scatter',
@@ -158,6 +157,17 @@ class ScatterPlotWidget {
                 }
             });
         }
+        // traces.push({
+        //     name: "connections",
+        //     x: [0,0],
+        //     y: [1,1],
+        //     type: 'line',
+        //     mode: 'lines',
+        //     hoverinfo: 'text',
+        //     marker: {
+        //         color: 'grey'
+        //     }
+        // })
 
 
         // var trace_highlight = {
@@ -214,11 +224,13 @@ class ScatterPlotWidget {
                 this_.highlight(modality, idx);
             }
             this_.highlight('connection_line', idx);
+            this_.highlight('update', 0);
         };
         this.scatter_div.on('plotly_hover', evnt);
         this.scatter_div.on('plotly_click', evnt);
         this.scatter_div.on('plotly_unhover', function(data){
             this_.highlight('reset', 0);
+            this_.highlight('update', 0);
         });
     }
 
@@ -239,7 +251,7 @@ class ScatterPlotWidget {
         const coords = this.get_XY_coordinates();
         const coords_x_T = coords.x[0].map((_, colIndex) => coords.x.map(row => row[colIndex]))
         const coords_y_T = coords.y[0].map((_, colIndex) => coords.y.map(row => row[colIndex]))
-
+        
         let lines = []
         for (let line_idx = 0; line_idx < this.size; line_idx++) {
             const curr_line_x = coords_x_T[line_idx];
@@ -264,14 +276,22 @@ class ScatterPlotWidget {
                 lines.push(line);
             }
         }
+        // coords.x.push([0,0]), coords.y.push([1,1]); 
         Plotly.update(this.scatter_div, { 'x': coords.x, 'y': coords.y }, { shapes: lines });
     }
 
+    highlight_shapes_buffer = [];
     highlight(mode, idx){
-        let shapes = this.scatter_div.layout.shapes;
+        // use mode "update" to trigger the update of the highlight shapes
+        if(mode == 'update'){
+            // TODO: updating takes too much time; the lag stems from redrawing the grey connection lines between the pairs
+            // Plotly.update(this.scatter_div, {}, {shapes: this.highlight_shapes_buffer});
+            return;
+        }
+        // let shapes = this.scatter_div.layout.shapes;
         if(mode == 'reset'){
-            shapes = shapes?.filter((shape) => shape.name !== 'hover_shape');
-            Plotly.update(this.scatter_div, {}, {shapes: shapes});
+            this.highlight_shapes_buffer = this.scatter_div.layout.shapes?.filter((shape) => shape.name !== 'hover_shape');
+            // Plotly.update(this.scatter_div, {}, {shapes: shapes});
             return;
         }
 
@@ -298,9 +318,9 @@ class ScatterPlotWidget {
                         color: 'yellow'
                     },
                 }
-                shapes.push(line);
+                this.highlight_shapes_buffer.push(line);
             }
-            Plotly.update(this.scatter_div, {}, {shapes: shapes});
+            // Plotly.update(this.scatter_div, {}, {shapes: shapes});
             return;
         }
 
@@ -326,14 +346,14 @@ class ScatterPlotWidget {
             },
             fillcolor: "yellow"
         },]
-        shapes.push(...highlight_points);
-        Plotly.update(this.scatter_div, {}, {shapes: shapes});
+        this.highlight_shapes_buffer.push(...highlight_points);
+        // Plotly.update(this.scatter_div, {}, {shapes: shapes});
     }
 }
 
 
 class SimilarityHeatmapWidget {
-    constructor(do_cluster = false, title = '', width = 500, height = 420, z_min = null, z_max = null, size = 100, cluster_between = ["Image", "Text"], modalities = {"Image": null, "Text": null}) {
+    constructor(do_cluster = false, title = '', width = 500, height = 420, z_min = null, z_max = null, size = 100, cluster_between = ["Image", "Text"], modalities = {"Image": "Image", "Text": "Text"}) {
         this.do_cluster = do_cluster;
         this.cluster_between = cluster_between;
         this.size = size;
@@ -348,6 +368,7 @@ class SimilarityHeatmapWidget {
             // hoverinfo: 'text',
             hovertemplate: '%{z:.3f}',
             colorscale: plasma_colors, //'Viridis',//'YlOrRd', 
+            colorbar: {"title": 'Similarity'},
             // reversescale: true
             zmin: z_min,
             zmax: z_max,
@@ -357,7 +378,7 @@ class SimilarityHeatmapWidget {
         var layout = {
             width: width,
             height: height,
-            margin: { l: 50, r: 10, t: 10, b: 25 },
+            margin: { l: 65, r: 10, t: 10, b: 25 },
         }
         this.heatmap_div = document.createElement('div');
         Plotly.newPlot(this.heatmap_div, traces, layout);
@@ -519,14 +540,14 @@ class SimilarityHeatmapWidget {
                 Plotly.update(this.heatmap_div, { 'z': [data] }, {
                     xaxis: {
                         tickmode: 'array',
-                        ticktext: Object.keys(this.modalities),
+                        ticktext: Object.values(this.modalities),
                         tickvals: tickvals,
                         fixedrange: false
                     },
                     yaxis: {
                         tickmode: 'array',
                         tickvals: tickvals,
-                        ticktext: Object.keys(this.modalities),
+                        ticktext: Object.values(this.modalities),
                         fixedrange: false,
                         autorange: 'reversed',
                     },
@@ -685,16 +706,18 @@ function connect_scatter_heatmap(scatter_widget, heatmap_widget) {
         if (mode_x !== mode_y && x_idx === y_idx){
             scatter_widget.highlight('connection_line', y_idx);
         }
+        scatter_widget.highlight('update', 0);
     };
     heatmap_widget.heatmap_div.on('plotly_hover', heatmap_evnt);
     heatmap_widget.heatmap_div.on('plotly_click', heatmap_evnt);
 
     heatmap_widget.heatmap_div.on('plotly_unhover', function(data){
         scatter_widget.highlight('reset', 0);
+        scatter_widget.highlight('update', 0);
     });
 }
 
-function clip_explorer_by_model(dataset_name, model_name, el, prompts_promise, projection_promise, projection_method = 'PCA', do_cluster = false, cluster_between = ["Image", "Text"], modalities = {"Image": null, "Text": null}) {
+function clip_explorer_by_model(dataset_name, model_name, el, prompts_promise, projection_promise, projection_method = 'PCA', do_cluster = false, cluster_between = ["Image", "Text"], modalities = {"Image": "Image", "Text": "Text"}) {
 
     if (!(el instanceof Element)) {
         el = document.getElementById(el);
@@ -726,8 +749,15 @@ function clip_explorer_by_model(dataset_name, model_name, el, prompts_promise, p
 
 
 const AVAILABLE_MODELS = ['CLIP', 'CyCLIP', 'CLOOB', 'CLOOB_LAION400M'];
-function clip_explorer_widget(dataset_name, el_id, prompts_promise, projection_promise, projection_method = 'UMAP', available_models = AVAILABLE_MODELS, modalities = {"Image": null, "Text": null}) {
+function clip_explorer_widget(dataset_name, el_id, prompts_promise, projection_promise, projection_method = 'UMAP', available_models = AVAILABLE_MODELS, modalities = {"Image": "Image", "Text": "Text"}) {
     const div = document.getElementById(el_id);
+
+    // set modality values if null -> keys are used as ID's for data selection and filtering; values are used for display
+    for(const key in modalities){
+        if(modalities[key] === null){
+            modalities[key] = key;
+        }
+    }
 
     // init model select
     const model_select = document.createElement('select');

@@ -16,7 +16,7 @@
 <!doctype html>
 
 <head>
-    <title>Understanding and Comparing Multi-Modal Models</title>
+    <title>Understanding and Comparing Latent Space Characteristics of Multi-Modal Models</title>
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <script src="scripts/template.v2.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -194,8 +194,8 @@
 
     <d-front-matter>
         <script id='distill-front-matter' type="text/json">{
-        "title": "Understanding and Comparing Multi-Modal Models",
-        "description": "Exploring the Latent Space of CLIP-like Models Using Inter-Modal Pairs.",
+        "title": "",
+        "description": "",
         "published": "February 22, 2024",
         "authors": [
         {
@@ -241,7 +241,8 @@
     </d-front-matter>
     <d-title>
         <div>
-            <h1>Understanding and Comparing Multi-Modal Models</h1>
+            <!-- Understanding and Comparing Latent Space Characteristics of Multi-Modal Models -->
+            <h2>Understanding and Comparing Latent Space Characteristics of Multi-Modal Models</h2>
             <p>
                 Exploring the Latent Space of CLIP-like Models Using Inter-Modal Pairs
             </p>
@@ -406,25 +407,25 @@
             plot. However, in this case, we show the cosine similarities<d-footnote>Note that the cosine similarity can
                 yield values between [-1; 1].</d-footnote> calculated between all image and text embeddings.
             This results in a matrix with four quadrants:
-        <ul>
-            <li>
-                top-left: in-modal similarities of the 100 image embeddings,
-            </li>
-            <li>
-                bottom-right: in-modal similarities of the 100 text embeddings,
-            </li>
-            <li>
-                top-right: cross-modal similarities between the 100 image embeddings and the 100 text embeddings,
-            </li>
-            <li>
-                bottom-left: a transposed version of the cross-modal image-text similarities.
-            </li>
-        </ul>
-        The diagonal axis of each quadrant
-        represents the matching data points (i.e., for the in-modal similarities, the diagonal shows the
-        similarities of the image or text embedding to itself, while for the cross-modal similarities, the diagonal
-        shows the matching image-text pairs). The modality gap is immediately visible: the in-modal similarities are
-        much higher overall compared to the cross-modal similarities.
+            <ul>
+                <li>
+                    top-left: in-modal similarities of the 100 image embeddings,
+                </li>
+                <li>
+                    bottom-right: in-modal similarities of the 100 text embeddings,
+                </li>
+                <li>
+                    top-right: cross-modal similarities between the 100 image embeddings and the 100 text embeddings,
+                </li>
+                <li>
+                    bottom-left: a transposed version of the cross-modal image-text similarities.
+                </li>
+            </ul>
+            The diagonal axis of each quadrant
+            represents the matching data points (i.e., for the in-modal similarities, the diagonal shows the
+            similarities of the image or text embedding to itself, while for the cross-modal similarities, the diagonal
+            shows the matching image-text pairs). The modality gap is immediately visible: the in-modal similarities are
+            much higher overall compared to the cross-modal similarities.
         </p>
         <figure style="grid-column: text;">
             <div id="clip-modalitygap-heatmap" style="display: inline-flex;"></div>
@@ -1052,6 +1053,21 @@
         <p>
             Interestingly, the modality gap for CLIP trained with microscopy images and molecular structures is not as pronounced as for natural image and text pairs. For the latter, it can be observed in the dimensionality reduction plots (cite figure) that the sets of samples corresponding to each modality are parallel to each other, while for the former this is not the case. This could be caused by the fact that CLIP was trained with a considerably larger dataset than CLOOME. Hence, if a molecule and its corresponding image are similar enough to a pair of samples in the training set, it would be easier for the model to have learned to encode them with high similarity. However, this hypothesis needs to be further studied.
         </p>
+
+        
+        <figure style="grid-column: screen;">
+            <div id="clip-explorer-cloome" class="container"></div>
+        </figure>
+        <script>
+            const cloome_prompts_promise = fetch('./exported_data/CLOOMDataset_size-100/prompts.txt')
+                .then(response => response.text())
+                .then(data => data.split('\n'))
+                .catch(error => console.error(error));
+
+            const cloome_projections_promise = d3.csv("./exported_data/CLOOMDataset_size-100/projections.csv");
+
+            clip_explorer_widget('CLOOMDataset_size-100', "clip-explorer-cloome", cloome_prompts_promise, cloome_projections_promise, 'PCA', ["CLOOME_CLIP", "CLOOME_CLOOB"], {"Image": "BioImage", "Text": "Molecule"})
+        </script>
 
 
         <h3 id="section-amumo-augmentation">Augmentation Analyses</h3>

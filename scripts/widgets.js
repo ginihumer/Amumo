@@ -285,6 +285,7 @@ class ScatterPlotWidget {
         // use mode "update" to trigger the update of the highlight shapes
         if(mode == 'update'){
             // TODO: updating takes too much time; the lag stems from redrawing the grey connection lines between the pairs
+            // uncomment the next line to enable hover highlighting
             // Plotly.update(this.scatter_div, {}, {shapes: this.highlight_shapes_buffer});
             return;
         }

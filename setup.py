@@ -47,7 +47,7 @@ OPEN_CLIP_REQUIRE = [
     'open-clip-torch==2.20.0',
 ]
 CLOOB_REQUIRE = CLIP_REQUIRE + ['torchvision']
-CLOOME_REQUIRE = CLOOB_REQUIRE + ['pandas', 'huggingface_hub']
+CLOOME_REQUIRE = CLOOB_REQUIRE + ['pandas', 'huggingface_hub', 'rdkit']
 
 BLIP_REQUIRE = [
     'transformers==4.31.0',

@@ -1,10 +1,19 @@
-# Understanding and Comparing Multi-Modal Models
-## Exploring the Latent Space of CLIP-like Models (CLIP, CyCLIP, CLOOB) Using Inter-Modal Pairs (Featuring Amumo, Your Friendly Neighborhood Mummy)
+# Understanding and Comparing Latent Space Characteristics of Multi-Modal Models
+## Exploring the Latent Space of CLIP-like Models Using Inter-Modal Pairs
 
-<img src="https://github-production-user-asset-6210df.s3.amazonaws.com/45741696/255124758-3a7b6c57-9c1d-4044-b54d-684711622de8.jpg" width="500"/>
+<img src="https://github-production-user-asset-6210df.s3.amazonaws.com/45741696/255124758-3a7b6c57-9c1d-4044-b54d-684711622de8.jpg" width="200"/>
 
-[Interactive article](https://jku-vds-lab.at/amumo) submitted to the [6th Workshop on Visualization for AI Explainability (VISxAI 2023)](https://visxai.io/).
+Interactive article submitted to the [Journal of Visualization and Interaction](https://www.journalovi.org/).
 
 ### Abstract
-[Contrastive Language Image Pre-training (CLIP)](https://proceedings.mlr.press/v139/radford21a.html) and variations of this approach like [CyCLIP](https://proceedings.neurips.cc/paper_files/paper/2022/file/2cd36d327f33d47b372d4711edd08de0-Paper-Conference.pdf), or [CLOOB](https://proceedings.neurips.cc/paper_files/paper/2022/file/8078e76f913e31b8467e85b4c0f0d22b-Paper-Conference.pdf) are trained on image-text pairs with a contrastive objective. The goal of contrastive loss objectives is to minimize latent-space distances of data points that have the same underlying meaning. We refer to the particular cases of contrastive learning that CLIP-like models perform as multi-modal contrastive learning because they use two (or [more](https://arxiv.org/pdf/2305.05665.pdf)) modes of data (e.g., images and texts) where each mode uses their own encoder to generate a latent embedding space. More specifically, the objective that CLIP is optimized for minimizes the distances between image-text embeddings of pairs that have the same semantic meaning while maximizing the distances to all other combinations of text and image embeddings.
-We would expect that such a shared latent space places similar concepts of images and texts close to each other. However, the reality is a bit more complicated...
+**Introduction:**
+Multi-modal contrastive learning models are trained to map data from two or more modalities to a shared embedding space. This latent data representation can then be used for zero- or few-shot classification, cross-modal data retrieval, or generation tasks. Although remarkable results have been reported when testing multi-modal models on these tasks, understanding the latent representations remains challenging. In particular, many multi-modal models exhibit a phenomenon called the “modality gap”, leading to a latent space that cleanly separates the modalities.
+
+**Conclusion:**
+This article introduces and compares three models trained on image-text pairs. We use these models and interactive visualizations to explain where the modality gap arises from, how it can be closed, and why closing it is important. In the second part, we introduce “Amumo”, a framework we implemented for analyzing multi-modal models. We describe various analysis tasks that can be performed with Amumo. In particular, Amumo can be used for (i) analyzing models, (ii) comparing models with each other, and (iii) analyzing multi-modal datasets. We demonstrate Amumo’s capabilities and generalizability using image, text, audio, and molecule data in combination with several different models.
+
+**Implementation:**
+For smooth integration into research workflows, we implemented Amumo as a Python package with Jupyter widgets. We implemented the interactive visualizations in this article with JavaScript and plotly.js.
+
+**Demonstration & Materials:**
+A minimal usage demonstration of Amumo is [deployed with MyBinder](https://mybinder.org/v2/gh/ginihumer/binder-repo/amumo?labpath=getting_started.ipynb). We also provide a demonstration of [analyzing CLOOME with Amumo](https://mybinder.org/v2/gh/ginihumer/binder-repo/cloome?labpath=modality_gap_cloome.ipynb). The code for the Amumo python package and guidelines on how to use it can be found in the [github repository](https://github.com/ginihumer/Amumo/).

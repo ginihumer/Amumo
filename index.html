@@ -23,6 +23,7 @@
     <meta charset="utf8">
     <script src="scripts/d3.v7.min.js"></script>
     <script src="scripts/plotly-2.24.1.min.js" charset="utf-8"></script>
+    <script src="scripts/RDKit_minimal.js"></script>
     <script src="scripts/bootstrap.bundle.min.js" charset="utf-8"></script>
 
     <link href="styles/bootstrap.min.css" rel="stylesheet">
@@ -181,6 +182,12 @@
 </head>
 
 <body>
+    <script>
+        initRDKitModule().then(function (instance) {
+            RDKitModule = instance;
+            console.log("RDKit version: " + RDKitModule.version());
+        });
+    </script>
     <script src="scripts/data.js"></script>
     <script>
         // have to load it again because distill template somehow overrides plotly css
